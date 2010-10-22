@@ -1,4 +1,77 @@
-PATH_TO_BASE=../$(PATH_TO_LIB_BASE)
-include $(PATH_TO_BASE)/Makefile.lib
+DIR_NAME =
+TOOLBASE = 
+SRCONLY = 
+HDRONLY = 
+VERSION = 0.0.1
+PATH_TO_BASE=../..
+
+# Makefile.tool needs to define:
+#   DIR_NAME - the directory name where this library is located
+#   TOOLBASE - the base filename for files with .h & .cpp versions
+#   SRCONLY - any cpp files without headers.
+#   HDRONLY - any header files without cpp
+#   VERSION - if not 0.0.1
+#   PATH_TO_BASE if it is not ../..
+
+include Makefile.tool
+
+include $(PATH_TO_BASE)/Makefile.include
 
 PATH_INCLUDE_TO_LIB_BASE=..
+
+#
+# Goncalo's Generic Makefile -- Compiles and installs a Generic Goncalo Tool
+# (c) 2000-2007 Goncalo Abecasis
+#
+
+# Source File Set
+TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
+TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
+TOOLOBJ = $(TOOLSRC:.cpp=.o)
+
+HEADERS=$(TOOLHDR)
+NEWLIBRARY=$(STAT_GEN_LIB)
+OBJECTS=$(patsubst %,$(OBJDIR)/%,$(TOOLOBJ))
+
+# make everything
+all : $(addprefix $(INCLUDE_PATH)/, $(HEADERS)) $(NEWLIBRARY)
+
+$(INCLUDE_PATH)/%.h: %.h
+	ln  -s $(PATH_INCLUDE_TO_LIB_BASE)/$(DIR_NAME)/$< $@
+
+$(OBJECTS): $(TOOLHDR) | $(OBJDIR)
+
+$(OBJDIR):
+	mkdir $(OBJDIR)
+
+$(NEWLIBRARY) : $(OBJECTS)
+	ar -cr $@ $(OBJECTS)
+	ranlib $@
+
+clean :
+	-rm -f $(OBJDIR)/*.o *~ $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
+	$(AR) d $(STAT_GEN_LIB) $(OBJECTS)
+	$(RANLIB) $(STAT_GEN_LIB)
+	$(MAKE) $(PARALLEL_MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@
+
+test: all
+	$(MAKE) $(PARALLEL_MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@
+
+$(OBJDIR)/%.o: %.c
+	$(CXX) $(CFLAGS) -o $@ -c $*.c 
+
+$(OBJDIR)/%.o: %.cpp 
+	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+
+
+.SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
+
+DFLAGS=-Y
+
+cleandepend:
+	        makedepend -- $(DFLAGS) --
+
+depend:
+	        makedepend -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
+
+# DO NOT DELETE THIS LINE -- make depend depends on it
