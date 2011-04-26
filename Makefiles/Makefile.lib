@@ -1,11 +1,4 @@
-DIR_NAME =
-TOOLBASE = 
-SRCONLY = 
-HDRONLY = 
-VERSION = 0.0.1
-PATH_TO_BASE=../..
-
-# Makefile.tool needs to define:
+# Your Makefile should include this Makefile after defining:
 #   DIR_NAME - the directory name where this library is located
 #   TOOLBASE - the base filename for files with .h & .cpp versions
 #   SRCONLY - any cpp files without headers.
@@ -13,9 +6,14 @@ PATH_TO_BASE=../..
 #   VERSION - if not 0.0.1
 #   PATH_TO_BASE if it is not ../..
 
-include Makefile.tool
+DIR_NAME ?=
+TOOLBASE ?= 
+SRCONLY ?= 
+HDRONLY ?= 
+VERSION ?= 0.0.1
+PATH_TO_BASE?=../..
 
-include $(PATH_TO_BASE)/Makefile.include
+include $(PATH_TO_BASE)/Makefiles/Makefile.include
 
 PATH_INCLUDE_TO_LIB_BASE=..
 

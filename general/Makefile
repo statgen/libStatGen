@@ -1,7 +1,6 @@
 DIR_NAME=general
-PATH_TO_LIB_BASE=..
-PATH_TO_BASE=../$(PATH_TO_LIB_BASE)
-include $(PATH_TO_BASE)/Makefile.include
+PATH_TO_BASE=..
+include $(PATH_TO_BASE)/Makefiles/Makefile.include
 
 PATH_INCLUDE_TO_LIB_BASE=..
 
@@ -108,7 +107,7 @@ $(STAT_GEN_LIB) : $(OBJECTS)
 	$(RANLIB) $@
 
 $(INCLUDE_PATH)/%.h: %.h
-	ln  -s $(PATH_INCLUDE_TO_LIB_BASE)/$(DIR_NAME)/$< $@
+	ln -s $(PATH_INCLUDE_TO_LIB_BASE)/$(DIR_NAME)/$< $@
 
 $(OBJDIR)/%.o : %.cpp
 	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION=\"$(VERSION)\"
@@ -139,7 +138,7 @@ clean:
 
 .SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
 
-include $(PATH_TO_BASE)/Makefile.footer
+include $(PATH_TO_MAKEFILES)/Makefile.footer
 
 # DO NOT DELETE THIS LINE -- make depend depends on it
 

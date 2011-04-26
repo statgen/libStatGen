@@ -1,22 +1,20 @@
-TEST_COMMAND=
-EXE=
-TOOLBASE = 
-SRCONLY = 
-HDRONLY = 
-VERSION = 0.0.1
-PATH_TO_BASE=../../..
-
-# Makefile.testtool needs to define:
+# Your Makefile should include this Makefile after defining:
 #   TEST_COMMAND - the commands to run under make test
 #   EXE - executable built for this test.
 #   TOOLBASE - the base filename for files with .h & .cpp versions
 #   SRCONLY - any cpp files without headers.
 #   HDRONLY - any header files without cpp
 #   VERSION - if not 0.0.1
-#   PATH_TO_BASE if it is not ../../..
-include Makefile.testtool
+#   PATH_TO_BASE if it is not ../..
+TEST_COMMAND ?=
+EXE ?=
+TOOLBASE ?= 
+SRCONLY ?= 
+HDRONLY ?= 
+VERSION ?= 0.0.1
+PATH_TO_BASE?=../..
 
-include $(PATH_TO_BASE)/Makefile.include
+include $(PATH_TO_BASE)/Makefiles/Makefile.include
 
 #
 # Goncalo's Generic Makefile -- Compiles and installs a Generic Goncalo Tool

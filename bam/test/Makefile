@@ -1,1 +1,7 @@
-../../../Makefile.test
+EXE = samTest
+TOOLBASE = WriteFiles ValidationTest ReadFiles BamIndexTest ModifyVar Modify SamFileTest Validate TestEquals TestFilter
+SRCONLY = Main.cpp
+TEST_COMMAND = ./test.sh
+
+PATH_TO_BASE=../..
+include $(PATH_TO_BASE)/Makefiles/Makefile.test

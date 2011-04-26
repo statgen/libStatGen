@@ -1,5 +1,5 @@
-PATH_TO_BASE=..
-include $(PATH_TO_BASE)/Makefile.include
+PATH_TO_BASE=.
+include $(PATH_TO_BASE)/Makefiles/Makefile.include
 
 SUBDIRS=general bam fastq glf
 CLEAN_SUBDIRS= $(patsubst %, %_clean, $(SUBDIRS))
