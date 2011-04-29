@@ -1,19 +1,19 @@
 # This Makefile requires that the following values be previously set.
-# PATH_TO_BASE - the path to this Makefile - the path to the base of the tree.
+# LIB_PATH - the path to the base of this tree.
 
-PATH_TO_MAKEFILES = $(PATH_TO_BASE)/Makefiles/
+MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_PATH_TMP := $(patsubst %Makefiles/, %, $(MAKEFILES_PATH))
+BASE_LIB_PATH := $(dir $(MAKEFILES_PATH_TMP))
 
-LIB_PATH = $(PATH_TO_BASE)
-STAT_GEN_LIB = $(LIB_PATH)/libStatGen.a
-REQ_LIBS = $(STAT_GEN_LIB) $(LIB_PATH)/samtools/libbam.a
+STAT_GEN_LIB = $(BASE_LIB_PATH)libStatGen.a
+REQ_LIBS = $(STAT_GEN_LIB) $(BASE_LIB_PATH)samtools/libbam.a
 OBJDIR = obj
 TEST_DIR = test
 
-SAMTOOLS_PATH = $(LIB_PATH)/samtools
-INCLUDE_PATH = $(LIB_PATH)/include
-TCLAP_PATH = $(LIB_PATH)/tclap
+SAMTOOLS_PATH = $(BASE_LIB_PATH)samtools
+INCLUDE_PATH = $(BASE_LIB_PATH)include
 
-include $(PATH_TO_MAKEFILES)/Makefile.toolchain
+include $(MAKEFILES_PATH)Makefile.toolchain
 
 # -fno-ftti is sometimes useful to increase speed
 # 2-5%, but makes linking consistently more difficult

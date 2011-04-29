@@ -1,26 +1,25 @@
 # Your Makefile should include this Makefile after defining:
-#   DIR_NAME - the directory name where this library is located
 #   TOOLBASE - the base filename for files with .h & .cpp versions
 #   SRCONLY - any cpp files without headers.
 #   HDRONLY - any header files without cpp
 #   VERSION - if not 0.0.1
-#   PATH_TO_BASE if it is not ../..
-
-DIR_NAME ?=
 TOOLBASE ?= 
 SRCONLY ?= 
 HDRONLY ?= 
 VERSION ?= 0.0.1
-PATH_TO_BASE?=../..
 
-include $(PATH_TO_BASE)/Makefiles/Makefile.include
+DIR_PARTS := $(subst /, , $(CURDIR))
+DIR_NAME := $(word $(words $(DIR_PARTS)), $(DIR_PARTS))
 
-PATH_INCLUDE_TO_LIB_BASE=..
+MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
+include $(MAKEFILES_PATH)Makefile.include
 
 #
 # Goncalo's Generic Makefile -- Compiles and installs a Generic Goncalo Tool
 # (c) 2000-2007 Goncalo Abecasis
 #
+
+$(info curdir: $(CURDIR))
 
 # Source File Set
 TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
@@ -28,11 +27,10 @@ TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
 TOOLOBJ = $(TOOLSRC:.cpp=.o)
 
 HEADERS=$(TOOLHDR)
-NEWLIBRARY=$(STAT_GEN_LIB)
 OBJECTS=$(patsubst %,$(OBJDIR)/%,$(TOOLOBJ))
 
 # make everything
-all : $(addprefix $(INCLUDE_PATH)/, $(HEADERS)) $(NEWLIBRARY)
+all : $(addprefix $(INCLUDE_PATH)/, $(HEADERS)) $(STAT_GEN_LIB)
 
 install: all
 
@@ -52,14 +50,14 @@ help :
 	@echo "make test         Execute tests (if there are any)"
 
 $(INCLUDE_PATH)/%.h: %.h
-	ln  -s $(PATH_INCLUDE_TO_LIB_BASE)/$(DIR_NAME)/$< $@
+	ln  -s ../$(DIR_NAME)/$< $@
 
 $(OBJECTS): $(TOOLHDR) | $(OBJDIR)
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-$(NEWLIBRARY) : $(OBJECTS)
+$(STAT_GEN_LIB) : $(OBJECTS)
 	ar -cr $@ $(OBJECTS)
 	ranlib $@
 

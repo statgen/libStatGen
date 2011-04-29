@@ -1,13 +1,4 @@
-EXE=
-TOOLBASE=
-SRCONLY=
-HDRONLY = 
-COMPILE_ANY_CHANGE = 
-VERSION = 0.0.1
-PATH_TO_BASE=../..
-BIN_DIR=$(PATH_TO_BASE)/src/bin
-
-# Makefile.tool needs to define:
+# Your Makefile should include this Makefile after defining:
 #   EXE - the executable name
 #   TOOLBASE - the base filename for files with .h & .cpp versions
 #   SRCONLY - any cpp files without headers.
@@ -17,16 +8,20 @@ BIN_DIR=$(PATH_TO_BASE)/src/bin
 #                        included in TOOLBASE or SRCONLY.  Here they are
 #                        just the base name without the extension.
 #   VERSION - if not 0.0.1
-#   PATH_TO_BASE if it is not ../..
-#   BIN_DIR if it is not ../../src/bin
+#   BIN_DIR if it is not bin
 #   USER_INCLUDES if any additional directories need to be included to pick up
 #                 header files (example: USER_INCLUDES=-ImyDir1 -ImyDir2)
 #   INSTALLDIR if not /usr/local/bin
+EXE ?=
+TOOLBASE ?=
+SRCONLY ?=
+HDRONLY ?= 
+COMPILE_ANY_CHANGE ?= 
+VERSION ?= 0.0.1
+BIN_DIR ?= bin
 
-include Makefile.tool
-
-# Must be after the include of Makefile.tool since it uses PATH_TO_BASE
-include $(PATH_TO_BASE)/Makefile.include
+MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
+include $(MAKEFILES_PATH)Makefile.include
 
 TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
 TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
@@ -59,8 +54,11 @@ help :
 	@echo "make test         Execute tests (if there are any)"
 
 # dependencies for executables
-$(PROG) : $(LIBRARY) $(OBJECTS)
+$(PROG) : $(BIN_DIR) $(LIBRARY) $(OBJECTS)
 	$(CXX) $(CFLAGS) -o $(PROG) $(OBJECTS) $(LIBRARY) -lm -lz -lssl
+
+$(BIN_DIR) : 
+	mkdir -p bin
 
 $(OBJECTS): $(TOOLHDR) | $(OBJDIR)
 
@@ -68,7 +66,7 @@ $(OBJDIR):
 	mkdir $(OBJDIR)
 
 clean :
-	-rm -f $(OBJDIR)/*.o $(BIN_DIR)/$(EXE) *~
+	-rm -f $(OBJDIR)/*.o $(PROG) *~
 	@if test -d $(TEST_DIR); \
         then \
 	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
@@ -87,7 +85,7 @@ install : all $(INSTALLDIR)
 	@echo " "
 	@echo make install INSTALLDIR=your_preferred_dir
 	@echo " "
-	cp $(BIN_DIR)/$(EXE) $(INSTALLDIR)
+	cp $(PROG) $(INSTALLDIR)
 
 $(INSTALLDIR) :
 	@echo " "

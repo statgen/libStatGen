@@ -1,4 +1,3 @@
-PATH_TO_BASE=../../..
 EXE = inputFileTest
 TOOLBASE = InputFileTest
 
@@ -11,4 +10,4 @@ TEST_COMMAND=	mkdir -p results && \
 	diff data/InputFileTest.txt results/InputFileTest.glf && \
 	diff data/InputFileTest.txt results/uncompressedFile.glf
 
-include $(PATH_TO_BASE)/Makefiles/Makefile.test
+include ../../../Makefiles/Makefile.test

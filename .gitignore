@@ -1,6 +1,9 @@
-tclap/*
-tclap-1.2.0/*
+*~
+*.o
+*.a
+dox/
+dox_errors.txt
+*#
 samtools/*
 samtools-0.1.7a-hybrid/*
 samtools
-tclap

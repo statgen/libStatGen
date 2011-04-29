@@ -5,5 +5,4 @@ TOOLBASE = ReadFiles Validate WriteFiles
 
 TEST_COMMAND = ./glfTest
 
-PATH_TO_BASE=../..
-include $(PATH_TO_BASE)/Makefiles/Makefile.test
+include ../../Makefiles/Makefile.test

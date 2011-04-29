@@ -19,7 +19,7 @@ test: TARGET = test
 clean: TARGET = clean
 install: TARGET = install
 
-all test: tclap $(SUBDIRS)
+all test: $(SUBDIRS)
 
 install: all samtools_install
 
@@ -53,7 +53,7 @@ help :
 	@echo "make clean        Delete temporary files"
 	@echo "make test         Execute tests (if there are any)"
 
-clean: tclap_clean samtools_clean $(CLEAN_SUBDIRS)
+clean: samtools_clean $(CLEAN_SUBDIRS)
 	rm -f libStatGen.a
 
 # other subdirectories depend on general
@@ -65,24 +65,6 @@ $(CLEAN_SUBDIRS):
 $(SUBDIRS): samtools
 	@$(MAKE) OPTFLAG="$(OPTFLAG)" -C $@ $(TARGET)
 
-
-#
-# from http://tclap.sourceforge.net/
-#
-tclap: tclap-1.2.0
-	ln -s tclap-1.2.0 tclap
-
-#
-# tclap is header only - the tests are done using the
-# host compiler, but no libraries are used, so no need
-# to pass EXPORT_TOOLCHAIN
-#
-tclap-1.2.0: tclap-1.2.0.tar.gz
-	tar xvzf tclap-1.2.0.tar.gz
-	(cd tclap-1.2.0; ./configure; make)
-
-tclap_clean:
-	rm -rf tclap-1.2.0 tclap
 
 samtools: samtools-0.1.7a-hybrid
 	ln -s samtools-0.1.7a-hybrid samtools

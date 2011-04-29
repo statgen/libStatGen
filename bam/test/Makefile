@@ -3,5 +3,4 @@ TOOLBASE = WriteFiles ValidationTest ReadFiles BamIndexTest ModifyVar Modify Sam
 SRCONLY = Main.cpp
 TEST_COMMAND = ./test.sh
 
-PATH_TO_BASE=../..
-include $(PATH_TO_BASE)/Makefiles/Makefile.test
+include ../../Makefiles/Makefile.test

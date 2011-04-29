@@ -1,5 +1,5 @@
 PATH_TO_BASE=../../..
-include $(PATH_TO_BASE)/Makefile.include
+include ../../Makefiles/Makefile.include
 
 SUBDIRS = $(wildcard */)
 

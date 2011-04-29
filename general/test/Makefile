@@ -1,5 +1,5 @@
-PATH_TO_BASE=../../
-include $(PATH_TO_BASE)/Makefiles/Makefile.include
+
+include ../../Makefiles/Makefile.include
 
 SUBDIRS=inputFileTest cigar
 
@@ -70,4 +70,4 @@ gtest_build: $(TOOLTESTOBJ) $(TOOLOBJ) $(GTEST_OBJ)
 gtest: gtest_build
 	./gtest --gtest_color=yes
 
-include $(PATH_TO_MAKEFILES)/Makefile.footer
+include $(MAKEFILES_PATH)/Makefile.footer

@@ -5,16 +5,15 @@
 #   SRCONLY - any cpp files without headers.
 #   HDRONLY - any header files without cpp
 #   VERSION - if not 0.0.1
-#   PATH_TO_BASE if it is not ../..
 TEST_COMMAND ?=
 EXE ?=
 TOOLBASE ?= 
 SRCONLY ?= 
 HDRONLY ?= 
 VERSION ?= 0.0.1
-PATH_TO_BASE?=../..
 
-include $(PATH_TO_BASE)/Makefiles/Makefile.include
+MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
+include $(MAKEFILES_PATH)Makefile.include
 
 #
 # Goncalo's Generic Makefile -- Compiles and installs a Generic Goncalo Tool
@@ -41,8 +40,9 @@ $(OBJECTS): $(TOOLHDR) $(LIBHDR) | $(OBJDIR)
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-clean :
+clean : 
 	-rm -f $(OBJDIR)/*.o $(EXE) *~ results/*
+	$(TEST_CLEAN)
 
 test : all
 	$(TEST_COMMAND)

@@ -27,7 +27,7 @@ CXX=g++
 #                                    long data type and on Windows.
 # 
 OPT_FLAG=-O2
-PATH_TO_BASE=../..
+LIB_PATH
 
 include $(PATH_TO_BASE)/Makefile.include
 
