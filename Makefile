@@ -1,8 +1,6 @@
-PATH_TO_BASE=.
-include $(PATH_TO_BASE)/Makefiles/Makefile.include
+include Makefiles/Makefile.include
 
-SUBDIRS=general bam fastq glf
-CLEAN_SUBDIRS= $(patsubst %, %_clean, $(SUBDIRS))
+SUBDIRS=general bam fastq glf samtools
 
 # Build in all subdirectories.
 #
@@ -13,24 +11,16 @@ CLEAN_SUBDIRS= $(patsubst %, %_clean, $(SUBDIRS))
 # Can't build lib in parallel since multiple subdirs write to the library archive
 .NOTPARALLEL:
 
-.PHONY: $(SUBDIRS) all test clean $(CLEAN_SUBDIRS) samtools_install
+.PHONY: $(SUBDIRS) all test clean debug install 
 all: TARGET = all
+debug: TARGET = debug
 test: TARGET = test
 clean: TARGET = clean
 install: TARGET = install
 
-all test: $(SUBDIRS)
+all test debug: $(SUBDIRS)
 
-install: all samtools_install
-
-samtools_install: samtools $(INSTALLDIR)
-	@echo " "
-	@echo Installing to directory $(INSTALLDIR)
-	@echo To select a different directory, run
-	@echo " "
-	@echo make install INSTALLDIR=your_preferred_dir
-	@echo " "
-	cp samtools/samtools-hybrid $(INSTALLDIR)
+install: all
 
 $(INSTALLDIR) :
 	@echo " "
@@ -53,25 +43,14 @@ help :
 	@echo "make clean        Delete temporary files"
 	@echo "make test         Execute tests (if there are any)"
 
-clean: samtools_clean $(CLEAN_SUBDIRS)
+clean: $(SUBDIRS)
 	rm -f libStatGen.a
+
+# general depends on samtools
+general: samtools
 
 # other subdirectories depend on general
 bam fastq glf: general
 
-$(CLEAN_SUBDIRS):  
-	@$(MAKE) OPTFLAG="$(OPTFLAG)" -C $(patsubst %_clean,%,$@) $(TARGET)
-
-$(SUBDIRS): samtools
+$(SUBDIRS): 
 	@$(MAKE) OPTFLAG="$(OPTFLAG)" -C $@ $(TARGET)
-
-
-samtools: samtools-0.1.7a-hybrid
-	ln -s samtools-0.1.7a-hybrid samtools
-
-samtools-0.1.7a-hybrid: samtools-0.1.7a-hybrid.tar.bz2
-	tar xvf samtools-0.1.7a-hybrid.tar.bz2
-	@$(MAKE) OPTFLAG="$(OPTFLAG)" -C $@
-
-samtools_clean:
-	rm -rf samtools-0.1.7a-hybrid samtools

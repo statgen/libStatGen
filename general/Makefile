@@ -1,31 +1,25 @@
+UNAME := $(shell uname)
 
-MAKEFILES_PATH = ../Makefiles/
+ifeq ($(UNAME), Linux)
+  # For Linux, add a couple extra warnings
+  #
+  # trying to strike the right balance on error/warning
+  # handling is difficult, but here we make most everthing
+  # an error, but allow unused results and variables for the
+  # time being.
+  #
+  USER_WARNINGS ?= -Werror -Wno-unused-variable $(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-unused-result" ; fi)
+endif
+ifeq ($(UNAME), Darwin)
+  # Mac OS, nothing to add.
+  # -Wall contain -Wunused-variable and -Wunused-result from 'man gcc'
+endif
+
+
 include ../Makefiles/Makefile.include
 
 DIR_PARTS := $(subst /, , $(CURDIR))
 DIR_NAME := $(word $(words $(DIR_PARTS)), $(DIR_PARTS))
-
-#
-# trying to strike the right balance on error/warning
-# handling is difficult, but here we make most everthing
-# an error, but allow unused results and variables for the
-# time being.
-#
-#CFLAGS=$(OPTFLAG) -Werror -Wno-unused-variable -Wno-unused-result -pipe -Wall -ggdb -D__ZLIB_AVAILABLE__  -D_FILE_OFFSET_BITS=64 -I$(SAMTOOLS_PATH) -D__STDC_LIMIT_MACROS
-
-UNAME := $(shell uname)
-
-ifeq ($(UNAME), Linux)
-# do something Linux-y
-WARNINGS=-Wno-unused-variable
-WARNINGS+=$(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-unused-result" ; fi)
-CFLAGS=$(OPTFLAG) -Werror $(WARNINGS) -pipe -Wall -ggdb -D__ZLIB_AVAILABLE__  -D_FILE_OFFSET_BITS=64 -I$(SAMTOOLS_PATH) -D__STDC_LIMIT_MACROS
-endif
-ifeq ($(UNAME), Darwin)
-# do something Mac OS
-# -Wall contain -Wunused-variable and -Wunused-result from 'man gcc'
-CFLAGS=$(OPTFLAG) -Werror -pipe -Wall -ggdb -D__ZLIB_AVAILABLE__  -D_FILE_OFFSET_BITS=64 -I$(SAMTOOLS_PATH) -D__STDC_LIMIT_MACROS
-endif
 
 
 SOURCES_WITH_HEADER=\
@@ -148,7 +142,7 @@ $(OBJDIR)/BaseAsciiMap.o: BaseAsciiMap.h StringBasics.h InputFile.h FileType.h
 $(OBJDIR)/BasicHash.o: BasicHash.h Error.h
 $(OBJDIR)/BaseQualityHelper.o: BaseQualityHelper.h
 $(OBJDIR)/BaseUtilities.o: BaseUtilities.h
-$(OBJDIR)/BgzfFileType.o: BgzfFileType.h $(SAMTOOLS_PATH)/bgzf.h
+$(OBJDIR)/BgzfFileType.o: BgzfFileType.h $(INCLUDE_PATH)/bgzf.h
 $(OBJDIR)/BgzfFileType.o: FileType.h
 $(OBJDIR)/CharBuffer.o: CharBuffer.h InputFile.h
 $(OBJDIR)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h FileType.h
@@ -176,7 +170,7 @@ $(OBJDIR)/FortranFormat.o: IntArray.h Error.h
 $(OBJDIR)/Hash.o: Hash.h
 $(OBJDIR)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR)/InputFile.o: InputFile.h FileType.h StringBasics.h GzipHeader.h
-$(OBJDIR)/InputFile.o: BgzfFileType.h $(SAMTOOLS_PATH)/bgzf.h
+$(OBJDIR)/InputFile.o: BgzfFileType.h $(INCLUDE_PATH)/bgzf.h
 $(OBJDIR)/InputFile.o: GzipFileType.h UncompressedFileType.h
 $(OBJDIR)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
 $(OBJDIR)/IntHash.o: IntHash.h Error.h

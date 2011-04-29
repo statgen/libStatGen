@@ -19,8 +19,6 @@ include $(MAKEFILES_PATH)Makefile.include
 # (c) 2000-2007 Goncalo Abecasis
 #
 
-$(info curdir: $(CURDIR))
-
 # Source File Set
 TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
 TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
@@ -49,6 +47,10 @@ help :
 	@echo "make clean        Delete temporary files"
 	@echo "make test         Execute tests (if there are any)"
 
+$(STAT_GEN_LIB) : $(OBJECTS)
+	ar -cr $@ $(OBJECTS)
+	ranlib $@
+
 $(INCLUDE_PATH)/%.h: %.h
 	ln  -s ../$(DIR_NAME)/$< $@
 
@@ -57,15 +59,12 @@ $(OBJECTS): $(TOOLHDR) | $(OBJDIR)
 $(OBJDIR):
 	mkdir $(OBJDIR)
 
-$(STAT_GEN_LIB) : $(OBJECTS)
-	ar -cr $@ $(OBJECTS)
-	ranlib $@
+$(OBJDIR)/%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $*.c 
 
-clean :
-	-rm -f $(OBJDIR)/*.o *~ $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
-	$(AR) d $(STAT_GEN_LIB) $(OBJECTS)
-	$(RANLIB) $(STAT_GEN_LIB)
-	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@
+$(OBJDIR)/%.o: %.cpp 
+	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+
 
 test: all
 	@if test -d $(TEST_DIR); \
@@ -73,12 +72,14 @@ test: all
 	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
         fi
 
-$(OBJDIR)/%.o: %.c
-	$(CXX) $(CFLAGS) -o $@ -c $*.c 
-
-$(OBJDIR)/%.o: %.cpp 
-	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
-
+clean :
+	-rm -f $(OBJDIR)/*.o *~ $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
+	$(AR) d $(STAT_GEN_LIB) $(OBJECTS)
+	$(RANLIB) $(STAT_GEN_LIB)
+	@if test -d $(TEST_DIR); \
+        then \
+	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
+        fi
 
 .SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
 

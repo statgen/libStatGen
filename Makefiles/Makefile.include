@@ -6,11 +6,10 @@ MAKEFILES_PATH_TMP := $(patsubst %Makefiles/, %, $(MAKEFILES_PATH))
 BASE_LIB_PATH := $(dir $(MAKEFILES_PATH_TMP))
 
 STAT_GEN_LIB = $(BASE_LIB_PATH)libStatGen.a
-REQ_LIBS = $(STAT_GEN_LIB) $(BASE_LIB_PATH)samtools/libbam.a
+REQ_LIBS = $(STAT_GEN_LIB)
 OBJDIR = obj
 TEST_DIR = test
 
-SAMTOOLS_PATH = $(BASE_LIB_PATH)samtools
 INCLUDE_PATH = $(BASE_LIB_PATH)include
 
 include $(MAKEFILES_PATH)Makefile.toolchain
@@ -19,13 +18,15 @@ include $(MAKEFILES_PATH)Makefile.toolchain
 # 2-5%, but makes linking consistently more difficult
 #OPTFLAG?=-ggdb -O0
 OPTFLAG?=-O4
-CXX?=g++ 
+CXX ?= g++ 
 
 # User specific variables listed here.
 # USER_INCLUDES =
 # USER_COMPILE_VARS = 
+# USER_WARNINGS =
 
-CFLAGS?= -Wall  $(OPTFLAG) -I$(INCLUDE_PATH) -I$(SAMTOOLS_PATH) $(USER_INCLUDES) -D__ZLIB_AVAILABLE__  -D_FILE_OFFSET_BITS=64 -D__STDC_LIMIT_MACROS $(USER_COMPILE_VARS)
+CFLAGS ?= $(OPTFLAG) $(USER_WARNINGS) -pipe -Wall -I$(INCLUDE_PATH) $(USER_INCLUDES) -D__ZLIB_AVAILABLE__  -D_FILE_OFFSET_BITS=64 -D__STDC_LIMIT_MACROS $(USER_COMPILE_VARS)
+
 
 # default installation directory
 INSTALLDIR?=/usr/local/bin

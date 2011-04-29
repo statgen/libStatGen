@@ -457,7 +457,7 @@ void EqualsTest::validateEqReadBuffer(SamRecord& samRecord,
     int expectedSeqHex = 0;
     for(int i = 0; i < expectedRecord.myReadLength; i++)
     {
-        int hexChar;
+        int hexChar = 0x0;
         switch(expectedSequence[i])
         {
             case '=':
