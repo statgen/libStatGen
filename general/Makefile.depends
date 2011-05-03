@@ -1,0 +1,144 @@
+# DO NOT DELETE
+
+$(OBJDIR_PARAM)/BaseAsciiMap.o: BaseAsciiMap.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/BaseAsciiMap.o: FileType.h
+$(OBJDIR_PARAM)/BaseQualityHelper.o: BaseQualityHelper.h
+$(OBJDIR_PARAM)/BaseUtilities.o: BaseUtilities.h
+$(OBJDIR_PARAM)/BasicHash.o: BasicHash.h Error.h
+$(OBJDIR_PARAM)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
+$(OBJDIR_PARAM)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/Chromosome.o: Chromosome.h GenomeSequence.h MemoryMapArray.h
+$(OBJDIR_PARAM)/Chromosome.o: MemoryMap.h StringArray.h StringBasics.h
+$(OBJDIR_PARAM)/Chromosome.o: InputFile.h FileType.h
+$(OBJDIR_PARAM)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/Cigar.o: FileType.h STLUtilities.h
+$(OBJDIR_PARAM)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
+$(OBJDIR_PARAM)/CigarRoller.o: InputFile.h FileType.h
+$(OBJDIR_PARAM)/Error.o: Error.h
+$(OBJDIR_PARAM)/FastQ.o: FastQ.h
+$(OBJDIR_PARAM)/FileType.o: FileType.h
+$(OBJDIR_PARAM)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/FortranFormat.o: FileType.h IntArray.h Error.h
+$(OBJDIR_PARAM)/GenomeSequence.o: Error.h Generic.h GenomeSequence.h
+$(OBJDIR_PARAM)/GenomeSequence.o: MemoryMapArray.h MemoryMap.h StringArray.h
+$(OBJDIR_PARAM)/GenomeSequence.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/GenotypeLists.o: GenotypeLists.h Pedigree.h Constant.h
+$(OBJDIR_PARAM)/GenotypeLists.o: PedigreeAlleles.h LongInt.h PedigreePerson.h
+$(OBJDIR_PARAM)/GenotypeLists.o: PedigreeGlobals.h StringArray.h
+$(OBJDIR_PARAM)/GenotypeLists.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/GenotypeLists.o: StringHash.h Hash.h IntArray.h MathVector.h
+$(OBJDIR_PARAM)/GenotypeLists.o: PedigreeFamily.h PedigreeDescription.h
+$(OBJDIR_PARAM)/GenotypeLists.o: PedigreeAlleleFreq.h
+$(OBJDIR_PARAM)/glfHandler.o: glfHandler.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/glfHandler.o: StringBasics.h BaseQualityHelper.h
+$(OBJDIR_PARAM)/GzipFileType.o: GzipFileType.h FileType.h
+$(OBJDIR_PARAM)/GzipHeader.o: GzipHeader.h
+$(OBJDIR_PARAM)/Hash.o: Hash.h
+$(OBJDIR_PARAM)/Input.o: Input.h Error.h Constant.h
+$(OBJDIR_PARAM)/InputFile.o: InputFile.h FileType.h StringBasics.h
+$(OBJDIR_PARAM)/InputFile.o: GzipHeader.h BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_PARAM)/InputFile.o: GzipFileType.h UncompressedFileType.h
+$(OBJDIR_PARAM)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
+$(OBJDIR_PARAM)/IntHash.o: IntHash.h Error.h
+$(OBJDIR_PARAM)/LongLongCounter.o: LongLongCounter.h LongHash.h Error.h
+$(OBJDIR_PARAM)/MapFunction.o: MapFunction.h MathConstant.h
+$(OBJDIR_PARAM)/MathMatrix.o: MathMatrix.h MathVector.h StringBasics.h
+$(OBJDIR_PARAM)/MathMatrix.o: InputFile.h FileType.h Error.h MathConstant.h
+$(OBJDIR_PARAM)/MathMatrix.o: Sort.h Constant.h
+$(OBJDIR_PARAM)/MathVector.o: MathVector.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/MathVector.o: FileType.h MathMatrix.h Error.h MathConstant.h
+$(OBJDIR_PARAM)/MathVector.o: Sort.h Constant.h
+$(OBJDIR_PARAM)/MemoryAllocators.o: MemoryAllocators.h
+$(OBJDIR_PARAM)/MemoryInfo.o: MemoryInfo.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/MemoryInfo.o: FileType.h
+$(OBJDIR_PARAM)/MemoryMapArray.o: MemoryMapArray.h MemoryMap.h
+$(OBJDIR_PARAM)/MemoryMap.o: MemoryMap.h
+$(OBJDIR_PARAM)/MiniDeflate.o: MiniDeflate.h
+$(OBJDIR_PARAM)/Parameters.o: Parameters.h StringMap.h StringBasics.h
+$(OBJDIR_PARAM)/Parameters.o: InputFile.h FileType.h Constant.h
+$(OBJDIR_PARAM)/Parameters.o: MathConstant.h Error.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: PedigreeAlleleFreq.h Pedigree.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: Constant.h PedigreeAlleles.h LongInt.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: PedigreePerson.h PedigreeGlobals.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: StringArray.h StringBasics.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: InputFile.h FileType.h StringHash.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: Hash.h IntArray.h MathVector.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: PedigreeFamily.h PedigreeDescription.h
+$(OBJDIR_PARAM)/PedigreeAlleleFreq.o: QuickIndex.h StringMap.h Error.h
+$(OBJDIR_PARAM)/Pedigree.o: Pedigree.h Constant.h PedigreeAlleles.h LongInt.h
+$(OBJDIR_PARAM)/Pedigree.o: PedigreePerson.h PedigreeGlobals.h StringArray.h
+$(OBJDIR_PARAM)/Pedigree.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/Pedigree.o: StringHash.h Hash.h IntArray.h MathVector.h
+$(OBJDIR_PARAM)/Pedigree.o: PedigreeFamily.h PedigreeDescription.h
+$(OBJDIR_PARAM)/Pedigree.o: PedigreeAlleleFreq.h GenotypeLists.h MemoryInfo.h
+$(OBJDIR_PARAM)/Pedigree.o: Error.h Sort.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: PedigreeDescription.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: PedigreeGlobals.h Constant.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: StringArray.h StringBasics.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: InputFile.h FileType.h StringHash.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: Hash.h IntArray.h MathVector.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: PedigreePerson.h PedigreeAlleles.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: LongInt.h MapFunction.h
+$(OBJDIR_PARAM)/PedigreeDescription.o: FortranFormat.h Error.h
+$(OBJDIR_PARAM)/PedigreeFamily.o: Pedigree.h Constant.h PedigreeAlleles.h
+$(OBJDIR_PARAM)/PedigreeFamily.o: LongInt.h PedigreePerson.h
+$(OBJDIR_PARAM)/PedigreeFamily.o: PedigreeGlobals.h StringArray.h
+$(OBJDIR_PARAM)/PedigreeFamily.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/PedigreeFamily.o: StringHash.h Hash.h IntArray.h MathVector.h
+$(OBJDIR_PARAM)/PedigreeFamily.o: PedigreeFamily.h PedigreeDescription.h
+$(OBJDIR_PARAM)/PedigreeFamily.o: PedigreeAlleleFreq.h MathConstant.h Error.h
+$(OBJDIR_PARAM)/PedigreeGlobals.o: PedigreeGlobals.h Constant.h StringArray.h
+$(OBJDIR_PARAM)/PedigreeGlobals.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/PedigreeGlobals.o: StringHash.h Hash.h IntArray.h
+$(OBJDIR_PARAM)/PedigreeGlobals.o: MathVector.h Sort.h Error.h
+$(OBJDIR_PARAM)/PedigreePerson.o: PedigreePerson.h Constant.h
+$(OBJDIR_PARAM)/PedigreePerson.o: PedigreeAlleles.h LongInt.h
+$(OBJDIR_PARAM)/PedigreePerson.o: PedigreeGlobals.h StringArray.h
+$(OBJDIR_PARAM)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/PedigreePerson.o: StringHash.h Hash.h IntArray.h MathVector.h
+$(OBJDIR_PARAM)/PedigreePerson.o: Error.h
+$(OBJDIR_PARAM)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
+$(OBJDIR_PARAM)/QuickIndex.o: InputFile.h FileType.h StringArray.h
+$(OBJDIR_PARAM)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
+$(OBJDIR_PARAM)/QuickIndex.o: StringMap.h Error.h
+$(OBJDIR_PARAM)/Random.o: Random.h MathConstant.h Error.h
+$(OBJDIR_PARAM)/SmithWaterman.o: SmithWaterman.h CigarRoller.h Cigar.h
+$(OBJDIR_PARAM)/SmithWaterman.o: Generic.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/SmithWaterman.o: FileType.h
+$(OBJDIR_PARAM)/Sort.o: Sort.h Constant.h Error.h
+$(OBJDIR_PARAM)/STLUtilities.o: STLUtilities.h
+$(OBJDIR_PARAM)/StringAlias.o: StringAlias.h StringArray.h StringBasics.h
+$(OBJDIR_PARAM)/StringAlias.o: InputFile.h FileType.h StringHash.h Constant.h
+$(OBJDIR_PARAM)/StringAlias.o: Hash.h
+$(OBJDIR_PARAM)/StringArray.o: StringArray.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/StringArray.o: FileType.h Sort.h Constant.h Error.h
+$(OBJDIR_PARAM)/StringBasics.o: StringBasics.h InputFile.h FileType.h Error.h
+$(OBJDIR_PARAM)/StringBasics.o: Constant.h MathConstant.h
+$(OBJDIR_PARAM)/StringHash.o: StringHash.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/StringHash.o: FileType.h Constant.h Hash.h Error.h
+$(OBJDIR_PARAM)/StringMap.o: StringMap.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/StringMap.o: FileType.h
+$(OBJDIR_PARAM)/TrimSequence.o: TrimSequence.h
+$(OBJDIR_PARAM)/UncompressedFileType.o: UncompressedFileType.h FileType.h
+$(OBJDIR_PARAM)/WindowsHelper.o: WindowsHelper.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: LongInt.h PedigreePerson.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: PedigreeGlobals.h StringArray.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: StringHash.h Hash.h IntArray.h MathVector.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: PedigreeFamily.h PedigreeDescription.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: PedigreeAlleleFreq.h FortranFormat.h
+$(OBJDIR_PARAM)/PedigreeLoader.o: Error.h
+$(OBJDIR_PARAM)/PedigreeTrim.o: Pedigree.h Constant.h PedigreeAlleles.h
+$(OBJDIR_PARAM)/PedigreeTrim.o: LongInt.h PedigreePerson.h PedigreeGlobals.h
+$(OBJDIR_PARAM)/PedigreeTrim.o: StringArray.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/PedigreeTrim.o: FileType.h StringHash.h Hash.h IntArray.h
+$(OBJDIR_PARAM)/PedigreeTrim.o: MathVector.h PedigreeFamily.h
+$(OBJDIR_PARAM)/PedigreeTrim.o: PedigreeDescription.h PedigreeAlleleFreq.h
+$(OBJDIR_PARAM)/PedigreeTwin.o: Pedigree.h Constant.h PedigreeAlleles.h
+$(OBJDIR_PARAM)/PedigreeTwin.o: LongInt.h PedigreePerson.h PedigreeGlobals.h
+$(OBJDIR_PARAM)/PedigreeTwin.o: StringArray.h StringBasics.h InputFile.h
+$(OBJDIR_PARAM)/PedigreeTwin.o: FileType.h StringHash.h Hash.h IntArray.h
+$(OBJDIR_PARAM)/PedigreeTwin.o: MathVector.h PedigreeFamily.h
+$(OBJDIR_PARAM)/PedigreeTwin.o: PedigreeDescription.h PedigreeAlleleFreq.h
+$(OBJDIR_PARAM)/PedigreeTwin.o: Error.h

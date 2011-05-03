@@ -13,12 +13,14 @@ SUBDIRS=general bam fastq glf samtools
 
 .PHONY: $(SUBDIRS) all test clean debug install 
 all: TARGET = all
+opt: TARGET = opt
 debug: TARGET = debug
+profile: TARGET = profile
 test: TARGET = test
 clean: TARGET = clean
 install: TARGET = install
 
-all test debug: $(SUBDIRS)
+all test opt debug profile: $(SUBDIRS)
 
 install: all
 
@@ -36,7 +38,10 @@ help :
 	@echo "Type...           To..."
 	@echo "make              Compile everything "
 	@echo "make help         Display this help screen"
-	@echo "make all          Compile everything "
+	@echo "make all          Compile everything (opt, debug, & profile)"
+	@echo "make opt          Compile everything optimized"
+	@echo "make debug        Compile everything with debug"
+	@echo "make profile      Compile everything with profile"
 	@echo "make install      Install binaries in $(INSTALLDIR)"
 	@echo "make install INSTALLDIR=directory_for_binaries"
 	@echo "                  Install binaries in directory_for_binaries"
@@ -44,7 +49,9 @@ help :
 	@echo "make test         Execute tests (if there are any)"
 
 clean: $(SUBDIRS)
-	rm -f libStatGen.a
+	rm -f $(STAT_GEN_LIB)
+	rm -f $(STAT_GEN_LIB_DEBUG)
+	rm -f $(STAT_GEN_LIB_PROFILE)
 
 # general depends on samtools
 general: samtools
