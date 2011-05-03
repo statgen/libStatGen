@@ -5,14 +5,21 @@ MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 MAKEFILES_PATH_TMP := $(patsubst %Makefiles/, %, $(MAKEFILES_PATH))
 BASE_LIB_PATH := $(dir $(MAKEFILES_PATH_TMP))
 
-STAT_GEN_LIB = $(BASE_LIB_PATH)libStatGen.a
+STAT_GEN_LIB_OPT = $(BASE_LIB_PATH)libStatGen.a
+STAT_GEN_LIB = $(STAT_GEN_LIB_OPT)
 STAT_GEN_LIB_DEBUG = $(BASE_LIB_PATH)libStatGen_debug.a
 STAT_GEN_LIB_PROFILE = $(BASE_LIB_PATH)libStatGen_profile.a
-REQ_LIBS = $(STAT_GEN_LIB)
+REQ_LIBS = $(REQ_LIBS_OPT)
+REQ_LIBS_OPT = $(STAT_GEN_LIB)
 REQ_LIBS_DEBUG = $(STAT_GEN_LIB_DEBUG)
+REQ_LIBS_PROFILE = $(STAT_GEN_LIB_PROFILE)
+SUBDIR_OPT = 
+SUBDIR_DEBUG = /debug
+SUBDIR_PROFILE = /profile
 OBJDIR = obj
-OBJDIR_DEBUG = obj/debug
-OBJDIR_PROFILE = obj/profile
+OBJDIR_OPT = obj
+OBJDIR_DEBUG = $(OBJDIR_OPT)$(SUBDIR_DEBUG)
+OBJDIR_PROFILE = $(OBJDIR_OPT)$(SUBDIR_PROFILE)
 TEST_DIR = test
 
 INCLUDE_PATH = $(BASE_LIB_PATH)include
@@ -22,6 +29,7 @@ include $(MAKEFILES_PATH)Makefile.toolchain
 # -fno-ftti is sometimes useful to increase speed
 # 2-5%, but makes linking consistently more difficult
 OPTFLAG?=-O4
+OPTFLAG_OPT?=$(OPTFLAG)
 OPTFLAG_DEBUG?=-ggdb -O0
 OPTFLAG_PROFILE?=-pg
 CXX ?= g++ 

@@ -1,0 +1,128 @@
+# This makefile is common for both Makefile.lib and Makefile.src
+TOOLBASE ?= 
+SRCONLY ?= 
+HDRONLY ?= 
+VERSION ?= 0.0.1
+
+include $(MAKEFILES_PATH)Makefile.include
+
+MAKE_DEPENDS=Makefile.depends
+
+# Source File Set
+TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
+TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
+TOOLOBJ = $(TOOLSRC:.cpp=.o)
+
+BUILD=opt
+VARIABLE_EXT=_OPT
+
+# override for debug or profile settings
+ifeq ($(BUILD), debug)
+VARIABLE_EXT=_DEBUG
+else ifeq ($(BUILD), profile)
+VARIABLE_EXT=_PROFILE
+endif
+
+OBJECTS=$(patsubst %,$(OBJDIR$(VARIABLE_EXT))/%,$(TOOLOBJ))
+OBJDIR=$(OBJDIR$(VARIABLE_EXT))
+STAT_GEN_LIB=$(STAT_GEN_LIB$(VARIABLE_EXT))
+
+SUBDIR=$(SUBDIR$(VARIABLE_EXT))
+
+
+# all, build as opt, debug, and profile.
+all :
+	@$(MAKE) OPTFLAG="$(OPTFLAG_OPT)" BUILD=opt --no-print-directory param
+	@$(MAKE) OPTFLAG="$(OPTFLAG_DEBUG)" BUILD=debug --no-print-directory param
+	@$(MAKE) OPTFLAG="$(OPTFLAG_PROFILE)" BUILD=profile --no-print-directory param
+
+opt:
+	@$(MAKE) OPTFLAG="$(OPTFLAG_OPT)" BUILD=opt --no-print-directory param
+
+debug:
+	@$(MAKE) OPTFLAG="$(OPTFLAG_DEBUG)" BUILD=debug --no-print-directory param
+
+profile:
+	@$(MAKE) OPTFLAG="$(OPTFLAG_PROFILE)" BUILD=profile --no-print-directory param
+
+#########
+# Help
+help : 
+	@echo "Generic Source Distribution"
+	@echo " "
+	@echo "This Makefile will compile libStatGen on your system"
+	@echo " "
+	@echo "Type...           To..."
+	@echo "make              Compile everything "
+	@echo "make help         Display this help screen"
+	@echo "make all          Compile everything (opt, debug, & profile)"
+	@echo "make opt          Compile everything optimized"
+	@echo "make debug        Compile everything for debug"
+	@echo "make profile      Compile everything for profiling"
+	@echo "make clean        Delete temporary files"
+	@echo "make test         Execute tests (if there are any)"
+	$(ADDITIONAL_HELP)
+
+#######
+# Objects
+# The objects are dependent on the object directory.
+$(OBJECTS): | $(OBJDIR)
+
+# Create the object directory
+$(OBJDIR):
+	mkdir -p $@
+
+# Compile the source
+$(OBJDIR)/%.o : %.c
+	$(CC) $(CFLAGS) -o $@ -c $*.c 
+
+$(OBJDIR)/%.o : %.cpp 
+	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+
+#########
+# Test
+test: debug
+	@if test -d $(TEST_DIR); \
+        then \
+	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
+        fi
+
+#########
+# clean
+clean : specific_clean
+	-rm -f $(OBJDIR)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~ 
+	@if test -d $(TEST_DIR); \
+        then \
+	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
+        fi
+
+.SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
+
+#
+# The newest version of astyle will remove parens in a statement
+# header (the character following if/while/do).  The current
+# version in Ubuntu does not.
+#
+# See http://astyle.sourceforge.net/astyle.html#_Padding_Options
+#
+style:
+	(command -v astyle || echo "astyle not installed.")
+	(command -v astyle && astyle --style=ansi --preserve-date --unpad-paren --indent-switches *.cpp *.h)
+
+###############
+# Dependencies
+DFLAGS=-Y $(CFLAGS)
+
+cleandepend:
+	        makedepend -- $(DFLAGS) --
+
+depend:
+	touch $(MAKE_DEPENDS)
+	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
+
+
+ifeq ($(wildcard $(MAKE_DEPENDS)),)
+$(OBJECTS) : $(HEADERS)
+else
+include $(MAKE_DEPENDS)
+endif

@@ -13,70 +13,45 @@
 #                 header files (example: USER_INCLUDES=-ImyDir1 -ImyDir2)
 #   INSTALLDIR if not /usr/local/bin
 EXE ?=
-TOOLBASE ?=
-SRCONLY ?=
-HDRONLY ?= 
 COMPILE_ANY_CHANGE ?= 
-VERSION ?= 0.0.1
 BIN_DIR ?= bin
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
-include $(MAKEFILES_PATH)Makefile.include
+include $(MAKEFILES_PATH)Makefile.common
 
-TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
-TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
-TOOLOBJ = $(TOOLSRC:.cpp=.o)
-LIBRARY = $(USER_LIBS) $(REQ_LIBS)
-OBJECTS=$(patsubst %,$(OBJDIR)/%,$(TOOLOBJ))
+LIBRARY = $(USER_LIBS) $(REQ_LIBS$(VARIABLE_EXT))
 ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR)/%,$(COMPILE_ANY_CHANGE:=.o))
 
-PROG = $(BIN_DIR)/$(EXE)
 
-.PHONY: all test clean install
+BIN_DIR_OPT = $(BIN_DIR)
+BIN_DIR_DEBUG = $(BIN_DIR)$(SUBDIR_DEBUG)
+BIN_DIR_PROFILE = $(BIN_DIR)$(SUBDIR_PROFILE)
+
+BIN_DIR_SRC = $(BIN_DIR$(VARIABLE_EXT))
+
+PROG = $(BIN_DIR_SRC)/$(EXE)
+
+ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
+	echo "make install INSTALLDIR=directory_for_binaries";\
+	echo "                  Install binaries in directory_for_binaries"
+
+
+.PHONY: all test clean debug profile param install specific_clean
+
 
 # make everything
-all : $(PROG)
+param : $(PROG)
 
-# helpful screen listing available options
-help : 
-	@echo "Generic Source Distribution"
-	@echo " "
-	@echo "This Makefile will compile and install" $(TOOL) "on your system"
-	@echo " "
-	@echo "Type...           To..."
-	@echo "make              Compile everything "
-	@echo "make help         Display this help screen"
-	@echo "make all          Compile everything "
-	@echo "make install      Install binaries in $(INSTALLDIR)"
-	@echo "make install INSTALLDIR=directory_for_binaries"
-	@echo "                  Install binaries in directory_for_binaries"
-	@echo "make clean        Delete temporary files"
-	@echo "make test         Execute tests (if there are any)"
 
 # dependencies for executables
-$(PROG) : $(BIN_DIR) $(LIBRARY) $(OBJECTS)
+$(PROG) : $(BIN_DIR_SRC) $(LIBRARY) $(OBJECTS)
 	$(CXX) $(CFLAGS) -o $(PROG) $(OBJECTS) $(LIBRARY) -lm -lz -lssl
 
-$(BIN_DIR) : 
-	mkdir -p bin
+$(BIN_DIR_SRC) : 
+	mkdir -p $(BIN_DIR_SRC)
 
-$(OBJECTS): $(TOOLHDR) | $(OBJDIR)
-
-$(OBJDIR):
-	mkdir $(OBJDIR)
-
-clean :
-	-rm -f $(OBJDIR)/*.o $(PROG) *~
-	@if test -d $(TEST_DIR); \
-        then \
-	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
-        fi
-
-test : all
-	@if test -d $(TEST_DIR); \
-        then \
-        $(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
-        fi
+specific_clean :
+	-rm $(PROG)
 
 install : all $(INSTALLDIR)
 	@echo " "
@@ -95,20 +70,3 @@ $(INSTALLDIR) :
 
 $(ALWAYS_COMP_OBJ):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ),$(OBJECTS))
 	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
-
-$(OBJDIR)/%.o: %.c
-	$(CXX) $(CFLAGS) -o $@ -c $<
-
-$(OBJDIR)/%.o: %.cpp 
-	$(CXX) $(CFLAGS) -o $@ -c $< -DVERSION="\"$(VERSION)\""
-
-.SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
-
-DFLAGS=-Y
-
-cleandepend:
-	        makedepend -fMakefile.tool -- $(DFLAGS) --
-
-depend:
-	        makedepend -fMakefile.tool -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
-

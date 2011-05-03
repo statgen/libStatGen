@@ -16,7 +16,7 @@ MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.include
 
 # Use debug opt flag.
-OPTFLAG=OPTFLAG_DEBUG
+OPTFLAG=$(OPTFLAG_DEBUG)
 
 #
 # Goncalo's Generic Makefile -- Compiles and installs a Generic Goncalo Tool

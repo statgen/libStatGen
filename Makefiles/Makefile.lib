@@ -3,93 +3,22 @@
 #   SRCONLY - any cpp files without headers.
 #   HDRONLY - any header files without cpp
 #   VERSION - if not 0.0.1
-TOOLBASE ?= 
-SRCONLY ?= 
-HDRONLY ?= 
-VERSION ?= 0.0.1
 
 DIR_PARTS := $(subst /, , $(CURDIR))
 DIR_NAME := $(word $(words $(DIR_PARTS)), $(DIR_PARTS))
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
-include $(MAKEFILES_PATH)Makefile.include
-
-MAKE_DEPENDS=Makefile.depends
-
-#
-# Goncalo's Generic Makefile -- Compiles and installs a Generic Goncalo Tool
-# (c) 2000-2007 Goncalo Abecasis
-#
-
-# Source File Set
-TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
-TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
-TOOLOBJ = $(TOOLSRC:.cpp=.o)
+include $(MAKEFILES_PATH)Makefile.common
 
 HEADERS=$(TOOLHDR)
 
 
-OBJECTS_OPT=$(patsubst %,$(OBJDIR)/%,$(TOOLOBJ))
-OBJECTS_DEBUG=$(patsubst %,$(OBJDIR_DEBUG)/%,$(TOOLOBJ))
-OBJECTS_PROFILE=$(patsubst %,$(OBJDIR_PROFILE)/%,$(TOOLOBJ))
+.PHONY: all test clean debug profile param install specific_clean
 
-
-BUILD=OPT
-LIB_STATGEN=$(STAT_GEN_LIB)
-OBJDIR_PARAM=$(OBJDIR)
-OBJECTS=$(OBJECTS_OPT)
-
-# override for debug or profile settings
-ifeq ($(BUILD), debug)
-LIB_STATGEN=$(STAT_GEN_LIB_DEBUG)
-OBJDIR_PARAM=$(OBJDIR_DEBUG)
-OBJECTS=$(OBJECTS_DEBUG)
-else ifeq ($(BUILD), profile)
-LIB_STATGEN=$(STAT_GEN_LIB_PROFILE)
-OBJDIR_PARAM=$(OBJDIR_PROFILE)
-OBJECTS=$(OBJECTS_PROFILE)
-endif
-
-
-# all, build as opt, debug, and profile.
-all :
-	@$(MAKE) OPTFLAG="$(OPTFLAG)" BUILD=opt --no-print-directory param
-	@$(MAKE) OPTFLAG="$(OPTFLAG_DEBUG)" BUILD=debug --no-print-directory param
-	@$(MAKE) OPTFLAG="$(OPTFLAG_PROFILE)" BUILD=profile --no-print-directory param
-
-opt:
-	@$(MAKE) OPTFLAG="$(OPTFLAG)" BUILD=opt --no-print-directory param
-
-debug:
-	@$(MAKE) OPTFLAG="$(OPTFLAG_DEBUG)" BUILD=debug --no-print-directory param
-
-profile:
-	@$(MAKE) OPTFLAG="$(OPTFLAG_PROFILE)" BUILD=profile --no-print-directory param
-
-
-# make everything
+# make everything, ensure headers are in the include direcotry.
 param : $(addprefix $(INCLUDE_PATH)/, $(HEADERS)) 
 
 install: opt
-
-help : 
-	@echo "Generic Source Distribution"
-	@echo " "
-	@echo "This Makefile will compile and install" $(TOOL) "on your system"
-	@echo " "
-	@echo "Type...           To..."
-	@echo "make              Compile everything "
-	@echo "make help         Display this help screen"
-	@echo "make all          Compile everything (opt, debug, & profile)"
-	@echo "make opt          Compile everything optimized"
-	@echo "make debug        Compile everything for debug"
-	@echo "make profile      Compile everything for profiling"
-	@echo "make install      Install binaries in $(INSTALLDIR)"
-	@echo "make install INSTALLDIR=directory_for_binaries"
-	@echo "                  Install binaries in directory_for_binaries"
-	@echo "make clean        Delete temporary files"
-	@echo "make test         Execute tests (if there are any)"
-
 
 # Link into the include directory
 $(INCLUDE_PATH)/%.h: %.h
@@ -98,79 +27,18 @@ $(INCLUDE_PATH)/%.h: %.h
 
 #########
 # Build the library
-param: $(LIB_STATGEN)
+param: $(STAT_GEN_LIB)
 
 # To build the library, build the objects
 # Then add them to the library
-$(LIB_STATGEN): $(OBJECTS)
+$(STAT_GEN_LIB): $(OBJECTS)
 	ar -cr $@ $(OBJECTS)
-	ranlib $@
 
-# The objects are dependent on the headers and the object directory.
-$(OBJECTS): | $(OBJDIR_PARAM)
-
-# Create the object directory
-$(OBJDIR_PARAM):
-	mkdir -p $@
-
-# Compile the source
-$(OBJDIR_PARAM)/%.o : %.c
-	$(CC) $(CFLAGS) -o $@ -c $*.c 
-
-$(OBJDIR_PARAM)/%.o : %.cpp 
-	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
-
-
-#########
-# Test
-test: debug
-	@if test -d $(TEST_DIR); \
-        then \
-	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
-        fi
-
-clean :
-	-rm -f $(OBJDIR)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~  $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
-	$(AR) d $(STAT_GEN_LIB) $(OBJECTS_OPT)
-	$(RANLIB) $(STAT_GEN_LIB)
+specific_clean:
+	-rm -f  $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
+	$(AR) d $(STAT_GEN_LIB_OPT) $(OBJECTS_OPT)
+	$(RANLIB) $(STAT_GEN_LIB_OPT)
 	$(AR) d $(STAT_GEN_LIB_DEBUG) $(OBJECTS_DEBUG)
 	$(RANLIB) $(STAT_GEN_LIB_DEBUG)
 	$(AR) d $(STAT_GEN_LIB_PROFILE) $(OBJECTS_PROFILE)
 	$(RANLIB) $(STAT_GEN_LIB_PROFILE)
-	@if test -d $(TEST_DIR); \
-        then \
-	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
-        fi
-
-.SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
-
-#
-# The newest version of astyle will remove parens in a statement
-# header (the character following if/while/do).  The current
-# version in Ubuntu does not.
-#
-# See http://astyle.sourceforge.net/astyle.html#_Padding_Options
-#
-style:
-	(command -v astyle || echo "astyle not installed.")
-	(command -v astyle && astyle --style=ansi --preserve-date --unpad-paren --indent-switches *.cpp *.h)
-
-DFLAGS=-Y $(CFLAGS)
-
-cleandepend:
-	        makedepend -- $(DFLAGS) --
-
-depend:
-	touch $(MAKE_DEPENDS)
-	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR_PARAM\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
-
-
-#have_a := $(wildcard A)
-# 
-#ifeq ($(strip $(have_a)),)
-
-ifeq ($(wildcard $(MAKE_DEPENDS)),)
-$(OBJECTS) : $(HEADERS)
-else
-include $(MAKE_DEPENDS)
-endif
