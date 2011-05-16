@@ -37,12 +37,40 @@ public:
     static const int16_t FAILED_QUALITY      = 0x0200;
     static const int16_t DUPLICATE           = 0x0400;
 
+    static const int16_t FRAGMENT_INFO       = 0x00C0;
+    static const int16_t FRAGMENT_SHIFT      = 6;
+
     static inline bool isMapped(uint16_t flag) {return(!(flag & UNMAPPED));}
     static inline bool isPaired(uint16_t flag) {return(flag & PAIRED);}
     static inline bool isReverse(uint16_t flag) {return(flag & REVERSE);}
     static inline bool isProperPair(uint16_t flag) {return(flag & PROPER_PAIR);}
     static inline bool isDuplicate(uint16_t flag) {return(flag & DUPLICATE);}
     static inline bool isQCFailure(uint16_t flag) {return(flag & FAILED_QUALITY);}
+    static inline bool isFirstFragment(uint16_t flag) 
+    {
+        // first fragment if FIRST_READ is set and SECOND_READ is not.
+        return((flag & FIRST_READ) && !(flag & SECOND_READ));
+    }
+    static inline bool isLastFragment(uint16_t flag) 
+    {
+        // last fragment if FIRST_READ is not set and SECOND_READ is set.
+        return(!(flag & FIRST_READ) && (flag & SECOND_READ));
+    }
+    static inline bool isMidFragment(uint16_t flag) 
+    {
+        // mid fragment if both FIRST_READ and SECOND_READ are set.
+        return((flag & FIRST_READ) && (flag & SECOND_READ));
+    }
+    static inline bool isUnknownFragment(uint16_t flag) 
+    {
+        // unknown fragment index if neither FIRST_READ nor SECOND_READ are not.
+        return(!(flag & FIRST_READ) && !(flag & SECOND_READ));
+    }
+
+    static inline uint8_t getFragmentType(uint16_t flag)
+    {
+        return((flag & FRAGMENT_INFO) >> FRAGMENT_SHIFT);
+    }
 
     static inline void setUnmapped(uint16_t& flag) { flag |= UNMAPPED;}
 
