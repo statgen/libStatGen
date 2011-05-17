@@ -56,9 +56,9 @@ help :
 	@echo "make              Compile everything "
 	@echo "make help         Display this help screen"
 	@echo "make all          Compile everything (opt, debug, & profile)"
-	@echo "make opt          Compile everything optimized"
-	@echo "make debug        Compile everything for debug"
-	@echo "make profile      Compile everything for profiling"
+	@echo "make opt          Compile optimized"
+	@echo "make debug        Compile for debug"
+	@echo "make profile      Compile for profiling"
 	@echo "make clean        Delete temporary files"
 	@echo "make test         Execute tests (if there are any)"
 	$(ADDITIONAL_HELP)
