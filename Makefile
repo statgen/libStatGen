@@ -31,10 +31,8 @@ $(INSTALLDIR) :
 	@mkdir -p $(INSTALLDIR)
 
 help : 
-	@echo "Generic Source Distribution"
-	@echo " "
-	@echo "This Makefile will compile and install" $(TOOL) "on your system"
-	@echo " "
+	@echo "Makefile help"
+	@echo "-------------"
 	@echo "Type...           To..."
 	@echo "make              Compile everything "
 	@echo "make help         Display this help screen"
