@@ -1655,6 +1655,108 @@ const SamStatus& SamRecord::getStatus()
 }
 
 
+bool SamRecord::getTagsString(const char* tags, String& returnString, char delim)
+{
+    const char* currentTagPtr = tags;
+
+    returnString.Clear();
+    myStatus = SamStatus::SUCCESS;
+    if(myNeedToSetTagsFromBuffer)
+    {
+        if(!setTagsFromBuffer())
+        {
+            // Failed to read the tags from the buffer, so cannot
+            // get tags.
+            return(false);
+        }
+    }
+    
+    bool returnStatus = true;
+
+    while(*currentTagPtr != '\0')
+    {
+        // Tags are formatted as: XY:Z
+        // Where X is [A-Za-z], Y is [A-Za-z], and
+        // Z is A,i,f,Z,H (cCsSI are also excepted)
+        if((currentTagPtr[0] == '\0') || (currentTagPtr[1] == '\0') ||
+           (currentTagPtr[2] != ':') || (currentTagPtr[3] == '\0'))
+        {
+            myStatus.setStatus(SamStatus::INVALID, 
+                               "getTagsString called with improperly formatted tags.\n");
+            returnStatus = false;
+            break;
+        }
+
+        // Construct the key.
+        int key = MAKEKEY(currentTagPtr[0], currentTagPtr[1], 
+                          currentTagPtr[3]);
+        // Look to see if the key exsists in the hash.
+        int offset = extras.Find(key);
+
+        if(offset >= 0)
+        {
+            // Offset is set, so the key was found.
+            if(!returnString.IsEmpty())
+            {
+                returnString += '\t';
+            }
+            returnString += currentTagPtr[0];
+            returnString += currentTagPtr[1];
+            returnString += ':';
+            returnString += currentTagPtr[3];
+            returnString += ':';
+
+            // First if it is an integer, determine the actual type of the int.
+            char vtype;
+            getTypeFromKey(key, vtype);
+
+            
+            // Offset is set, so recalculate the buffer size without this entry.
+            // Do NOT remove from strings, integers, or doubles because then
+            // extras would need to be updated for all entries with the new indexes
+            // into those variables.
+            switch(vtype)
+            {
+                case 'i':
+                    returnString += *(int*)getIntegerPtr(offset, vtype);
+                    break;
+                case 'f':
+                    returnString += *(double*)getDoublePtr(offset);
+                    break;
+                case 'Z':
+                    returnString += *(String*)getStringPtr(offset);
+                    break;
+                default:
+                    myStatus.setStatus(SamStatus::INVALID, 
+                                       "rmTag called with unknown type.\n");
+                    returnStatus = false;
+                    break;
+            };
+        }
+        // Increment to the next tag.
+        if(currentTagPtr[4] == ';')
+        {
+            // Increment once more.
+            currentTagPtr += 5;
+        }
+        else if(currentTagPtr[4] != '\0')
+        {
+            // Invalid tag format. 
+            myStatus.setStatus(SamStatus::INVALID, 
+                               "rmTags called with improperly formatted tags.\n");
+            returnStatus = false;
+            break;
+        }
+        else
+        {
+            // Last Tag.
+            currentTagPtr += 4;
+        }
+    }
+    return(returnStatus);
+}
+
+
 String* SamRecord::getStringTag(const char * tag)
 {
     // Parse the buffer if necessary.

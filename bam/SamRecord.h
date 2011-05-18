@@ -500,6 +500,18 @@ public:
     /// \return SamStatus of the last command that sets status.
     const SamStatus& getStatus();
     
+    /// Get the string representation of the tags from the record, formatted
+    /// as TAG:TYPE:VALUE<delim>TAG:TYPE:VALUE...
+    /// Sets the Status to SUCCESS when the tags are successfully returned or
+    /// the tags were not found.  If a different error occured, the status is
+    /// set appropriately.
+    /// \param tags the tags to retrieve, formatted as TAG:TYPE;TAG:TYPE...
+    /// \param returnString the String to set (this method first clears returnString)
+    ///                     to TAG:TYPE:VALUE<delim>TAG:TYPE:VALUE...
+    /// \param delim delimiter to use to separate two tags, default is a tab.
+    /// \return true if there were not any errors even if no tags were found.
+    bool getTagsString(const char* tags, String& returnString, char delim = '\t');
+
     /// Get the string value for the specified tag.
     /// \param tag tag to retrieve
     /// \param pointer to the tag's string value if found, NULL if not found.
