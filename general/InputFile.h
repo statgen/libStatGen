@@ -547,7 +547,7 @@ inline bool ifseek(IFILE file, long int offset, int origin)
 /// \param file file to write to - IFILE is a pointer to an InputFile object
 /// \param format printf format for writing, followed by parameters.
 /// \return number of bytes written
-int ifprintf(IFILE output, char * format, ...);
+int ifprintf(IFILE output, const char * format, ...);
 
 /// Read a line from a file using streaming.
 /// \param stream file to read from - IFILE is a pointer to an InputFile object

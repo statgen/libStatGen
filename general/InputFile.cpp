@@ -253,7 +253,7 @@ InputFile::~InputFile()
 }
 
 
-int ifprintf(IFILE output, char * format, ...)
+int ifprintf(IFILE output, const char * format, ...)
 {
     String buffer;
 
