@@ -4,6 +4,7 @@ SRCONLY ?=
 HDRONLY ?= 
 VERSION ?= 0.0.1
 
+MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.include
 
 MAKE_DEPENDS=Makefile.depends
