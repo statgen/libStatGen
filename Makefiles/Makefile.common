@@ -80,7 +80,7 @@ $(OBJDIR)/%.o : %.cpp
 
 #########
 # Test
-test: debug
+test: all
 	@if test -d $(TEST_DIR); \
         then \
 	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \

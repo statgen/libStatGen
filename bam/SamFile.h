@@ -134,6 +134,10 @@ public:
     /// Close the file if there is one open.
     void Close();
 
+    /// Returns whether or not the file has been opened successfully.
+    /// \return true = open; false = not open.
+    bool IsOpen();
+   
     /// Returns whether or not the end of the file has been reached.
     /// \return true = EOF; false = not eof.
     /// If the file is not open, false is returned.

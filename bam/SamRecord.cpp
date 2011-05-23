@@ -466,12 +466,107 @@ SamStatus::Status SamRecord::setBuffer(const char* fromBuffer,
 
 // Add the specified tag to the record.
 // Returns true if the tag was successfully added, false otherwise.
+bool SamRecord::addIntTag(const char* tag, int32_t value)
+{
+    myStatus = SamStatus::SUCCESS;
+    int key = 0;
+    int index = 0;
+    char bamvtype;
+
+    int tagBufferSize = 0;
+
+    // First check to see if the tags need to be synced to the buffer.
+    if(myNeedToSetTagsFromBuffer)
+    {
+        if(!setTagsFromBuffer())
+        {
+            // Failed to read tags from the buffer, so cannot add new ones.
+            return(false);
+        }
+    }
+
+    index = integers.Length();
+
+    // Ints come in as int.  But it can be represented in fewer bits.
+    // So determine a more specific type that is in line with the
+    // types for BAM files.
+    // First check to see if it is a negative.
+    if(value < 0)
+    {
+        // The int is negative, so it will need to use a signed type.
+        // See if it is greater than the min value for a char.
+        if(value > std::numeric_limits<char>::min())
+        {
+            // It can be stored in a signed char.
+            bamvtype = 'c';
+            tagBufferSize += 4;
+        }
+        else if(value > std::numeric_limits<short>::min())
+        {
+            // It fits in a signed short.
+            bamvtype = 's';
+            tagBufferSize += 5;
+        }
+        else
+        {
+            // Just store it as a signed int.
+            bamvtype = 'i';
+            tagBufferSize += 7;
+        }
+    }
+    else
+    {
+        // It is positive, so an unsigned type can be used.
+        if(value < std::numeric_limits<unsigned char>::max())
+        {
+            // It is under the max of an unsigned char.
+            bamvtype = 'C';
+            tagBufferSize += 4;
+        }
+        else if(value < std::numeric_limits<unsigned short>::max())
+        {
+            // It is under the max of an unsigned short.
+            bamvtype = 'S';
+            tagBufferSize += 5;
+        }
+        else
+        {
+            // Just store it as an unsigned int.
+            bamvtype = 'I';
+            tagBufferSize += 7;
+        }
+    }
+    integers.Push(value);
+    intType.push_back(bamvtype);
+
+    // The buffer tags are now out of sync.
+    myNeedToSetTagsInBuffer = true;
+    myIsTagsBufferValid = false;
+    myIsBufferSynced = false;
+    
+    key = MAKEKEY(tag[0], tag[1], bamvtype);
+    extras.Add(key, index);
+    myTagBufferSize += tagBufferSize;
+
+    return(true);
+}
+
+
+// Add the specified tag to the record.
+// Returns true if the tag was successfully added, false otherwise.
 bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
 {
+    if(vtype == 'i')
+    {
+        // integer type.  Call addIntTag to handle it.
+        int intVal = atoi((const char *)valuePtr);
+        return(addIntTag(tag, intVal));
+    }
+
+    // Non-int type.
     myStatus = SamStatus::SUCCESS;
     bool status = true; // default to successful.
     int key = 0;
-    int intVal = 0;
     int index = 0;
     char bamvtype;
 
@@ -495,61 +590,6 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
             integers.Push((const int)*(valuePtr));
             intType.push_back(vtype);
             tagBufferSize += 4;
-            break;
-        case 'i' :
-            index = integers.Length();
-            intVal = atoi((const char *)valuePtr);
-            // Ints come in as int.  But it can be represented in fewer bits.
-            // So determine a more specific type that is in line with the
-            // types for BAM files.
-            // First check to see if it is a negative.
-            if(intVal < 0)
-            {
-                // The int is negative, so it will need to use a signed type.
-                // See if it is greater than the min value for a char.
-                if(intVal > std::numeric_limits<char>::min())
-                {
-                    // It can be stored in a signed char.
-                    bamvtype = 'c';
-                    tagBufferSize += 4;
-                }
-                else if(intVal > std::numeric_limits<short>::min())
-                {
-                    // It fits in a signed short.
-                    bamvtype = 's';
-                    tagBufferSize += 5;
-                }
-                else
-                {
-                    // Just store it as a signed int.
-                    bamvtype = 'i';
-                    tagBufferSize += 7;
-                }
-            }
-            else
-            {
-                // It is positive, so an unsigned type can be used.
-                if(intVal < std::numeric_limits<unsigned char>::max())
-                {
-                    // It is under the max of an unsigned char.
-                    bamvtype = 'C';
-                    tagBufferSize += 4;
-                }
-                else if(intVal < std::numeric_limits<unsigned short>::max())
-                {
-                    // It is under the max of an unsigned short.
-                    bamvtype = 'S';
-                    tagBufferSize += 5;
-                }
-                else
-                {
-                    // Just store it as an unsigned int.
-                    bamvtype = 'I';
-                    tagBufferSize += 7;
-                }
-            }
-            integers.Push(intVal);
-            intType.push_back(bamvtype);
             break;
         case 'Z' :
             index = strings.Length();
@@ -1698,7 +1738,7 @@ bool SamRecord::getTagsString(const char* tags, String& returnString, char delim
             // Offset is set, so the key was found.
             if(!returnString.IsEmpty())
             {
-                returnString += '\t';
+                returnString += delim;
             }
             returnString += currentTagPtr[0];
             returnString += currentTagPtr[1];

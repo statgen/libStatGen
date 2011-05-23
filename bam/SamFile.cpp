@@ -383,6 +383,20 @@ void SamFile::Close()
 }
 
 
+// Returns whether or not the file has been opened.
+// return: int - true = open; false = not open.
+bool SamFile::IsOpen()
+{
+    if (myFilePtr != NULL)
+    {
+        // File Pointer is set, so return if it is open.
+        return(myFilePtr->isOpen());
+    }
+    // File pointer is not set, so return false, not open.
+    return false;
+}
+
+
 // Returns whether or not the end of the file has been reached.
 // return: int - true = EOF; false = not eof.
 bool SamFile::IsEOF()

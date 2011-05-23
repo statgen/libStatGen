@@ -216,6 +216,14 @@ public:
     SamStatus::Status setBuffer(const char* fromBuffer, uint32_t fromBufferSize,
                                 SamFileHeader& header);
 
+    /// Add the specified integer tag to the record.  Internal processing
+    /// handles switching between SAM/BAM formats when read/written and 
+    /// determining the type for BAM format.
+    /// \param tag two character tag to be added to the SAM/BAM record.
+    /// \param value value for the specified tag.
+    /// \return true if the tag was successfully added, false otherwise.
+    bool addIntTag(const char* tag, int32_t value);
+
     /// Add the specified tag to the record.  Internal processing handles 
     /// switching between SAM/BAM formats when read/written.
     /// \param tag two character tag to be added to the SAM/BAM record.
