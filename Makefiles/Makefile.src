@@ -51,7 +51,9 @@ $(BIN_DIR_SRC) :
 	mkdir -p $(BIN_DIR_SRC)
 
 specific_clean :
-	-rm $(PROG)
+	-rm $(BIN_DIR_OPT)/$(EXE)
+	-rm -rf $(BIN_DIR_DEBUG)
+	-rm -rf $(BIN_DIR_PROFILE)
 
 install : all $(INSTALLDIR)
 	@echo " "
