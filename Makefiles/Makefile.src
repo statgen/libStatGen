@@ -22,6 +22,7 @@ include $(MAKEFILES_PATH)Makefile.common
 LIBRARY = $(USER_LIBS) $(REQ_LIBS$(VARIABLE_EXT))
 ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR)/%,$(COMPILE_ANY_CHANGE:=.o))
 
+RELEASE_FILE?=$(DIR_NAME).$(VERSION).tgz
 
 BIN_DIR_OPT = $(BIN_DIR)
 BIN_DIR_DEBUG = $(BIN_DIR)$(SUBDIR_DEBUG)
@@ -72,3 +73,9 @@ $(INSTALLDIR) :
 
 $(ALWAYS_COMP_OBJ):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ),$(OBJECTS))
 	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
+
+package : 
+# the touch gets rid of a tar warning
+#	echo directory name = $(DIR_NAME)
+	touch $(RELEASE_FILE)
+	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/,' * --show-transformed-names 
