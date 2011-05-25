@@ -25,6 +25,8 @@
 SamFile::SamFile()
     : myFilePtr(NULL),
       myInterfacePtr(NULL),
+      myExcludedFlags(0x0000),
+      myRequiredFlags(0x0000),
       myStatistics(NULL),
       myStatus(),
       myBamIndex(NULL),
@@ -40,6 +42,8 @@ SamFile::SamFile()
 SamFile::SamFile(ErrorHandler::HandlingType errorHandlingType)
     : myFilePtr(NULL),
       myInterfacePtr(NULL),
+      myExcludedFlags(0x0000),
+      myRequiredFlags(0x0000),
       myStatistics(NULL),
       myStatus(errorHandlingType),
       myBamIndex(NULL),
@@ -526,7 +530,36 @@ bool SamFile::ReadRecord(SamFileHeader& header,
 
     // File is open for reading and the header has been read, so read the next
     // record.
-    myInterfacePtr->readRecord(myFilePtr, header, record, myStatus);
+    bool keepSearching = true;
+    while(keepSearching)
+    {
+        myInterfacePtr->readRecord(myFilePtr, header, record, myStatus);
+        if(myStatus != SamStatus::SUCCESS)
+        {
+            // A record was not successfully read, so stop searching.
+            keepSearching = false;
+        }
+        else
+        {
+            // Check to see if this record matches the include/exclude flags.
+            uint16_t flag = record.getFlag();
+            if(flag & myExcludedFlags)
+            {
+                // This record has an excluded flag set, 
+                // so continue to the next one.
+                continue;
+            }
+            if((flag & myRequiredFlags) != myRequiredFlags)
+            {
+                // This record does not have all required flags set, 
+                // so continue to the next one.
+                continue;
+            }
+            // Found a record that does not contain any of the excluded flag and
+            // has all required flags, so stop searching
+            keepSearching = false;
+        }
+    }
     if(myStatus == SamStatus::SUCCESS)
     {
         // A record was successfully read, so increment the record count.
@@ -615,6 +648,19 @@ uint32_t SamFile::GetCurrentRecordCount()
     return(myRecordCount);
 }
 
+
+// Sets a flag to indicate what records should be excluded.  
+void SamFile::SetExcludedFlags(int16_t excludedFlags)
+{
+    myExcludedFlags = excludedFlags;
+}
+
+
+// Sets a flag to indicate what records should be included.
+void SamFile::SetRequiredFlags(int16_t requiredFlags)
+{
+    myRequiredFlags = requiredFlags;
+}
 
 // Sets what part of the SamFile should be read.
 bool SamFile::SetReadSection(int32_t refID)
@@ -838,6 +884,8 @@ void SamFile::init(const char* filename, OpenType mode, SamFileHeader* header)
 {
     myFilePtr = NULL;
     myInterfacePtr = NULL;
+    myExcludedFlags = 0x0000;
+    myRequiredFlags = 0x0000;
     myStatistics = NULL;
     myBamIndex = NULL;
     myRefPtr = NULL;
@@ -1134,6 +1182,21 @@ bool SamFile::readIndexedRecord(SamFileHeader& header,
         {
             // If it does not overlap the region, so go to the next
             // record...set recordFound back to false.
+            recordFound = false;
+        }
+        
+        // Check to see if this record matches the include/exclude flags.
+        uint16_t flag = record.getFlag();
+        if(flag & myExcludedFlags)
+        {
+            // This record has an excluded flag set, 
+            // so continue to the next one.
+            recordFound = false;
+        }
+        if((flag & myRequiredFlags) != myRequiredFlags)
+        {
+            // This record does not have all required flags set, 
+            // so continue to the next one.
             recordFound = false;
         }
     }

@@ -189,6 +189,21 @@ public:
         return(myStatus.getStatusMessage());
     }
 
+    /// Specify which flag settings should cause a record to be excluded.  If
+    /// any of the flags are set the record will be excluded.  A call to
+    /// ReadRecord will continue reading til a record without any of the
+    /// specified flag fields set is found or until the end of the file.
+    /// \param  excludedFlags flags that indicate the record should be skipped.
+    void SetExcludedFlags(int16_t excludedFlags);
+
+    /// Specify which flag settings are required to cause a record to be
+    /// included.  Only if all the flags are set in the record will it be
+    /// returned by ReadRecord.  ReadRecord will continue reading til a
+    /// record with all of the specified fields set is found or until the
+    /// end of the file.
+    /// \param  includeFlag flag required for a record to be returned.
+    void SetRequiredFlags(int16_t requiredFlag);
+
     /// Sets what part of the BAM file should be read.  This version will
     /// set it to only read a specific reference id.  The records for that
     /// reference id will be retrieved on each ReadRecord call.  When all
@@ -335,6 +350,11 @@ protected:
     /// Flag to indicate if a header has been read/written - required before
     /// being able to read/write a record.
     bool myHasHeader;
+
+    ///  Excluded/Required flags for determing which records should be returned
+    /// by ReadRecord.
+    bool myExcludedFlags;
+    bool myRequiredFlags;
 
     SortedType mySortedType;
 

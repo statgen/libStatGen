@@ -49,30 +49,13 @@ public:
 
     Pileup(int window, const FUNC_CLASS& fp = FUNC_CLASS());
 
-    // Perform pileup with a reference.
-    Pileup(const std::string& refSeqFileName,
-           const FUNC_CLASS& fp = FUNC_CLASS());
-
-    // Perform pileup with a reference.
-    Pileup(int window, const std::string& refSeqFileName, 
-           const FUNC_CLASS& fp = FUNC_CLASS());
-
     ~Pileup();
 
-    // Performs a pileup on the specified file.
-    // Returns 0 for success and non-zero for failure.
-    // If excludeFlag is specified, any bit may be set for the
-    // record to be dropped.
-    // Defaulted to exclude:
-    //    * unmapped, 
-    //    * not primary alignment
-    //    * failed platform/vendor quality check
-    //    * PCR or optical duplicate
-    // If includeFlag is specified, every bit must be set for the
-    // record to be included - defaulted to 0 - no bits are required to be set.
-    virtual int processFile(const std::string& fileName, 
-                            uint16_t excludeFlag = 0x0704, 
-                            uint16_t includeFlag = 0);
+    /// Set the regions to be piled-up rather than piling up the entire file.
+    void setRegions(TODO);
+
+    /// Set a previous pileup that can be used to 
+    void setPreviousPileup(TODO);
 
     // This should be overwritten to perform any necessary
     // filtering on the record.
@@ -99,7 +82,6 @@ protected:
     virtual void resetElement(PILEUP_TYPE& element, int position);
     virtual void addElement(PILEUP_TYPE& element, SamRecord& record);
     virtual void analyzeElement(PILEUP_TYPE& element);
-    virtual void analyzeHead();
 
     std::vector<PILEUP_TYPE> myElements;
 
@@ -109,8 +91,6 @@ protected:
     int    pileupWindow;
 
     int myCurrentRefID;
-
-    GenomeSequence* myRefPtr;
 };
 
 
@@ -122,8 +102,7 @@ Pileup<PILEUP_TYPE, FUNC_CLASS>::Pileup(const FUNC_CLASS& fp)
       pileupHead(0),
       pileupTail(-1),
       pileupWindow(1024),
-      myCurrentRefID(-2),
-      myRefPtr(NULL)
+      myCurrentRefID(-2)
 {
     // Not using pointers since this is templated.
     myElements.resize(pileupWindow);
@@ -138,62 +117,16 @@ Pileup<PILEUP_TYPE, FUNC_CLASS>::Pileup(int window, const FUNC_CLASS& fp)
       pileupHead(0),
       pileupTail(-1),
       pileupWindow(window),
-      myCurrentRefID(-2),
-      myRefPtr(NULL)
+      myCurrentRefID(-2)
 {
     // Not using pointers since this is templated.
     myElements.resize(window);
-}
-
-
-template <class PILEUP_TYPE, class FUNC_CLASS>
-Pileup<PILEUP_TYPE, FUNC_CLASS>::Pileup(const std::string& refSeqFileName, const FUNC_CLASS& fp)
-    : myAnalyzeFuncPtr(fp),
-      myElements(),
-      pileupStart(0),
-      pileupHead(0),
-      pileupTail(-1),
-      pileupWindow(1024),
-      myCurrentRefID(-2),
-      myRefPtr(NULL)
-{
-    myRefPtr = new GenomeSequence(refSeqFileName.c_str());
-
-    // Not using pointers since this is templated.
-    myElements.resize(pileupWindow);
-
-    PILEUP_TYPE::setReference(myRefPtr);
-}
-
-
-template <class PILEUP_TYPE, class FUNC_CLASS>
-Pileup<PILEUP_TYPE, FUNC_CLASS>::Pileup(int window, const std::string& refSeqFileName, const FUNC_CLASS& fp)
-    : myAnalyzeFuncPtr(fp),
-      myElements(),
-      pileupStart(0),
-      pileupHead(0),
-      pileupTail(-1),
-      pileupWindow(window),
-      myCurrentRefID(-2),
-      myRefPtr(NULL)
-{
-    myRefPtr = new GenomeSequence(refSeqFileName.c_str());
-
-    // Not using pointers since this is templated.
-    myElements.resize(window);
-
-    PILEUP_TYPE::setReference(myRefPtr);
 }
 
 
 template <class PILEUP_TYPE, class FUNC_CLASS>
 Pileup<PILEUP_TYPE, FUNC_CLASS>::~Pileup()
 {
-    if(myRefPtr != NULL)
-    {
-        delete myRefPtr;
-        myRefPtr = NULL;
-    }
 }
 
 template <class PILEUP_TYPE, class FUNC_CLASS>
@@ -205,11 +138,6 @@ int Pileup<PILEUP_TYPE, FUNC_CLASS>::processFile(const std::string& fileName,
     SamFileHeader header;
     SamRecord record;
     
-    if(myRefPtr != NULL)
-    {
-        samIn.SetReference(myRefPtr);
-    }
-
     if(!samIn.OpenForRead(fileName.c_str()))
     {
         fprintf(stderr, "%s\n", samIn.GetStatusMessage());
@@ -225,26 +153,42 @@ int Pileup<PILEUP_TYPE, FUNC_CLASS>::processFile(const std::string& fileName,
     // The file needs to be sorted by coordinate.
     samIn.setSortedValidation(SamFile::COORDINATE);
 
+    samIn.SetExcludedFlags(excludeFlag);
+    samIn.SetRequiredFlags(includeFlag);
+
+    return(processFile(samIn));
+}
+
+
+template <class PILEUP_TYPE, class FUNC_CLASS>
+int Pileup<PILEUP_TYPE, FUNC_CLASS>::processFile(SamFile& samIn)
+{
     // Iterate over all records
-    while (samIn.ReadRecord(header, record))
+    SamRecord* record = getRecord();
+    if(record == NULL)
     {
-        uint16_t flag = record.getFlag();
-        if(flag & excludeFlag)
+        // TODO error - failed to get a record - or maybe this should
+        // throw an exception...
+    }
+
+    while(samIn.ReadRecord(header, record))
+    {
+        if(processAlignment(record))
         {
-            // This record has an excluded flag set, 
-            // so continue to the next one.
-            continue;
+            // Process Alignment consumed (stored) the record, so
+            // need to get a new one.
+            record = getRecord();
+            if(record == NULL)
+            {
+                // TODO error - failed to get a record.
+            }
         }
-        if((flag & includeFlag) != includeFlag)
-        {
-            // This record does not have all required flags set, 
-            // so continue to the next one.
-            continue;
-        }
-        processAlignment(record);
     }
 
     flushPileup();
+
+    // TODO - check for previous pileup.
+    myPrevPileup.writeStored();
 
     int returnValue = 0;
     if(samIn.GetStatus() != SamStatus::NO_MORE_RECS)
@@ -253,12 +197,15 @@ int Pileup<PILEUP_TYPE, FUNC_CLASS>::processFile(const std::string& fileName,
         fprintf(stderr, "%s\n", samIn.GetStatusMessage());
         returnValue = samIn.GetStatus();
     }
+
+    // TODO how do we want to handle clearing of positions.
+
     return(returnValue);  
 }
 
 
 template <class PILEUP_TYPE, class FUNC_CLASS>
-void Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignment(SamRecord& record)
+bool Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignment(SamRecord& record)
 {
     int refPosition = record.get0BasedPosition();
     int refID = record.getReferenceID();
@@ -267,13 +214,37 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignment(SamRecord& record)
     // since the file is sorted, we are done with those positions.
     flushPileup(refID, refPosition);
     
-    // Loop through for each reference position covered by the record.
-    // It is up to the PILEUP_TYPE to handle insertions/deletions, etc
-    // that are related with the given reference position.
-    for(; refPosition <= record.get0BasedAlignmentEnd(); ++refPosition)
+    if(myRegions == NULL)
     {
-        addAlignmentPosition(refPosition, record);
+        for(; refPosition <= record.get0BasedAlignmentEnd(); ++refPosition)
+        {
+            recordStored |= addAlignmentPosition(refPosition, record);
+        }
     }
+    else
+    {
+        // search for first location in region.positions that is >= the start
+        // position of the record
+        while (region.positions.at(region.currentPosition)-1 < refPosition)
+        {
+            // Increment the current position because all future records are
+            // beyond this position.
+            ++(region.currentPosition);
+        }
+        
+        // For each position til the end of the positions or end of the
+        // alignment, add this record.
+        bool recordStored = false;
+        for (unsigned int k = region.currentPosition; 
+             ((k < region.positions.size()) &&
+              (region.positions.at(k)-1 <= record.get0BasedAlignmentEnd()));
+             ++k)
+        {
+            recordStored |= 
+                addAlignmentPosition(region.positions.at(k)-1, record);
+        }
+    }
+    return(recordStored);
 }
 
 
@@ -294,7 +265,7 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::flushPileup()
 
 // Always need the reference position.
 template <class PILEUP_TYPE, class FUNC_CLASS>
-void Pileup<PILEUP_TYPE, FUNC_CLASS>::addAlignmentPosition(int refPosition,
+bool Pileup<PILEUP_TYPE, FUNC_CLASS>::addAlignmentPosition(int refPosition,
                                                            SamRecord& record)
 {
     int offset = pileupPosition(refPosition);
@@ -306,10 +277,12 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::addAlignmentPosition(int refPosition,
                   << "; recStartPos = " << record.get1BasedPosition()
                   << "; pileupStart = " << pileupStart
                   << "; pileupHead = " << pileupHead
-                  << "; pileupTail = " << pileupTail;
+                  << "; pileupTail = " << pileupTail
+                  << "; Dropping the record\n";
+        return(false);
     }
 
-    addElement(myElements[offset], record);
+    return(addElement(myElements[offset], record));
 }
 
 
@@ -341,7 +314,12 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::flushPileup(int position)
     // pileupHead has not been set.
     while((pileupHead < position) && (pileupHead <= pileupTail))
     {
-        analyzeHead();
+        if(myPrevPileup != NULL)
+        {
+            // Write any previous pileup outputs.
+            myPrevPileup->writeStoredUpToPos(pileupHead + 1);
+        }
+        analyzeElement(pileupHead - pileupStart);
 
         pileupHead++;
         
@@ -398,10 +376,10 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::resetElement(PILEUP_TYPE& element,
 
 
 template <class PILEUP_TYPE, class FUNC_CLASS>
-void Pileup<PILEUP_TYPE, FUNC_CLASS>::addElement(PILEUP_TYPE& element,
+bool Pileup<PILEUP_TYPE, FUNC_CLASS>::addElement(PILEUP_TYPE& element,
                                                  SamRecord& record)
 {
-    element.addEntry(record);
+    return(element.addEntry(record));
 }
 
 
@@ -409,13 +387,6 @@ template <class PILEUP_TYPE, class FUNC_CLASS>
 void Pileup<PILEUP_TYPE, FUNC_CLASS>::analyzeElement(PILEUP_TYPE& element)
 {
     myAnalyzeFuncPtr(element);
-}
-
-
-template <class PILEUP_TYPE, class FUNC_CLASS>
-void Pileup<PILEUP_TYPE, FUNC_CLASS>::analyzeHead()
-{
-    myAnalyzeFuncPtr(myElements[pileupHead - pileupStart]);
 }
 
 
