@@ -1542,6 +1542,13 @@ bool SamRecord::getFields(bamRecordStruct& recStruct, String& readName,
 }
 
 
+// Returns the reference pointer.
+GenomeSequence* SamRecord::getReference()
+{
+    return(myRefPtr);
+}
+
+
 bool SamRecord::isIntegerType(char vtype) const
 {
     if((vtype == 'c') || (vtype == 'C') ||

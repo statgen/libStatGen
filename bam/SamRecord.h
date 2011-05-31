@@ -463,6 +463,11 @@ public:
                    String& cigar, String& sequence, String& quality,
                    SequenceTranslation translation);
 
+    /// Returns a pointer to the genome sequence object associated with this
+    /// record if it was set (NULL if it was not set).
+    /// \return pointer to the GenomeSequence object or NULL if there isn't one.
+    GenomeSequence* getReference();
+
     //@}
 
     /// Returns whether or not the specified vtype is an integer type.
