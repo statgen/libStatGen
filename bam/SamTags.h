@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 #define __SAM_TAGS_H__
 
 #include <stdint.h>
-
+#include <stdexcept>
+#include "SamRecord.h"
 
 class SamTags
 {
@@ -27,12 +28,21 @@ public:
     /// Constants for parsing a tags.
     static const char* BQ_TAG;
     static const char BQ_TAG_TYPE;
+    static const char* MD_TAG;
+    static const char MD_TAG_TYPE;
     static const char* ORIG_POS_TAG;
     static const char ORIG_POS_TAG_TYPE;
     static const char* ORIG_CIGAR_TAG;
     static const char ORIG_CIGAR_TAG_TYPE;
     static const char* ORIG_QUAL_TAG;
     static const char ORIG_QUAL_TAG_TYPE;
+
+    /// Create the MD tag for the specified input record and the genome.
+    static void createMDTag(String& outputMDtag, SamRecord& inputRec, GenomeSequence& genome);
+    /// Check to see if the MD tag in the record is accurate.
+    static bool isMDTagCorrect(SamRecord& inputRec, GenomeSequence& genome);
+    // Update/Add the MD tag in the inputRec.
+    static bool updateMDTag(SamRecord& inputRec, GenomeSequence& genome);
 
 private:
     SamTags();
