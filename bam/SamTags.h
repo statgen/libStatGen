@@ -38,7 +38,9 @@ public:
     static const char ORIG_QUAL_TAG_TYPE;
 
     /// Create the MD tag for the specified input record and the genome.
-    static void createMDTag(String& outputMDtag, SamRecord& inputRec, GenomeSequence& genome);
+    /// \return returns true if an MD tag was created, false if one could not
+    /// be created.
+    static bool createMDTag(String& outputMDtag, SamRecord& inputRec, GenomeSequence& genome);
     /// Check to see if the MD tag in the record is accurate.
     static bool isMDTagCorrect(SamRecord& inputRec, GenomeSequence& genome);
     // Update/Add the MD tag in the inputRec.

@@ -31,7 +31,7 @@ const char SamTags::ORIG_QUAL_TAG_TYPE = 'Z';
 
 
 // Create the MD tag for the specified input record and the genome.
-void SamTags::createMDTag(String& outputMDtag, SamRecord& inputRec, 
+bool SamTags::createMDTag(String& outputMDtag, SamRecord& inputRec, 
                           GenomeSequence& genome)
 {
     outputMDtag.Clear();
@@ -40,14 +40,19 @@ void SamTags::createMDTag(String& outputMDtag, SamRecord& inputRec,
     if(cigarInfo == NULL)
     {
         throw(std::runtime_error("Cannot createMDTag - failed to get the cigar"));
-        return;
+        return(false);
     }
     int32_t queryIndex = Cigar::INDEX_NA;
 
     // get where this read starts on the reference.
     uint32_t startOfReadOnRefIndex = 
-        genome.getGenomePosition(inputRec.getReferenceName()) + 
-        inputRec.get0BasedPosition();
+        genome.getGenomePosition(inputRec.getReferenceName());
+    if(startOfReadOnRefIndex == (uint32_t)INVALID_CHROMOSOME_INDEX)
+    {
+        // Failed to find the reference for this chromosome, so return false.
+        return(false);
+    }
+    startOfReadOnRefIndex += inputRec.get0BasedPosition();
 
     // Track the number of consecutive matches.
     int32_t matchCount = 0;
@@ -108,18 +113,24 @@ void SamTags::createMDTag(String& outputMDtag, SamRecord& inputRec,
             }
             // Add the deleted base.
             outputMDtag += refBase;
+            currentDeletion = true;
         }
     }
 
     // output the match count at the end.
     outputMDtag += matchCount;
+    return(true);
 }
 
 // Check to see if the MD tag in the record is accurate.
 bool SamTags::isMDTagCorrect(SamRecord& inputRec, GenomeSequence& genome)
 {
     String calcMDtag;
-    createMDTag(calcMDtag, inputRec, genome);
+    if(!createMDTag(calcMDtag, inputRec, genome))
+    {
+        // Could not generate the MD tag, so just return that it is incorrect.
+        return(false);
+    }
     
     String* origMDtag = inputRec.getStringTag(MD_TAG);
     

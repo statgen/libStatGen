@@ -19,6 +19,7 @@
 
 #include "SamValidation.h"
 #include "CigarRoller.h"
+#include "SamTags.h"
 
 const char* SamValidationError::enumSeverityString[] = {
     "WARNING", "ERROR"};
@@ -31,7 +32,8 @@ const char* SamValidationError::enumTypeString[] = {
     "INVALID_MAPQ",
     "INVALID_CIGAR",
     "INVALID_MRNM",
-    "INVALID_QUAL"
+    "INVALID_QUAL",
+    "INVALID_TAG"
 };
 
 const char* SamValidationError::getTypeString(Type type)
@@ -220,6 +222,8 @@ bool SamValidator::isValid(SamFileHeader& samHeader, SamRecord& samRecord,
     status &= isValidCigar(samRecord, validationErrors);
     
     status &= isValidQuality(samRecord, validationErrors);
+
+    status &= isValidTags(samRecord, validationErrors);
 
     return(status);
 }
@@ -661,3 +665,43 @@ bool SamValidator::isValidQuality(const char* quality,
     return(status);
 }
 
+
+bool SamValidator::isValidTags(SamRecord& samRecord,
+                               SamValidationErrors& validationErrors)
+{
+    bool status = true;
+
+    GenomeSequence* reference = samRecord.getReference();
+    // If the reference is not null, check the MD tag.
+    if(reference != NULL)
+    {
+        String* recordMD = samRecord.getStringTag(SamTags::MD_TAG);
+        if(recordMD != NULL)
+        {
+            // The record has an MD tag so check to see if it is correct.
+            if(!SamTags::isMDTagCorrect(samRecord, *reference))
+            {
+                // Invalid MD tags.
+                String correctMD;
+                if(!SamTags::createMDTag(correctMD, samRecord, *reference))
+                {
+                    // Failed to get the MD tag, so indicate that it is unknown.
+                    correctMD = "UNKNOWN";
+                }
+                String message = "Incorrect MD Tag, ";
+                message += *recordMD;
+                message += ", should be ";
+                message += correctMD;
+                message += ".";
+                
+                validationErrors.addError(SamValidationError::INVALID_TAG,
+                                          SamValidationError::WARNING, 
+                                          message.c_str());
+                
+                status = false;
+            }
+        }
+    }
+
+    return(status);
+}

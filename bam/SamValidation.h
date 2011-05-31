@@ -38,7 +38,8 @@ public:
             INVALID_MAPQ,
             INVALID_CIGAR,
             INVALID_MRNM,
-            INVALID_QUAL
+            INVALID_QUAL,
+            INVALID_TAG
         };
 
     static const char* getTypeString(Type type);
@@ -182,7 +183,8 @@ public:
     bool static isValidQuality(const char* quality,
                                int seqLength,
                                SamValidationErrors& validationErrors);
-    static bool isValidTag();
+    static bool isValidTags(SamRecord& samRecord,
+                            SamValidationErrors& validationErrors);
     static bool isValidVtype();
     static bool isValidValue();
 };
