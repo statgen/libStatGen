@@ -15,4 +15,8 @@ diff expected/updateTagFromBam.sam results/updateTagFromBam.sam && \
 diff expected/updateTagFromSam.sam results/updateTagFromSam.sam && \
 diff expected/updateTag.bam results/updateTagFromBam.bam && \
 diff expected/updateTag.bam results/updateTagFromSam.bam && \
-diff expected/samTest.log results/samTest.log
+diff expected/samTest.log results/samTest.log && \
+diff expected/addedTagToSam.bam results/addedTagToSam.bam && \
+diff expected/addedTagToSam.sam results/addedTagToSam.sam && \
+diff expected/addedTagToBam.sam results/addedTagToBam.sam && \
+diff expected/addedTagToBam.bam results/addedTagToBam.bam

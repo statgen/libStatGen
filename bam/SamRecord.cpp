@@ -485,8 +485,6 @@ bool SamRecord::addIntTag(const char* tag, int32_t value)
         }
     }
 
-    index = integers.Length();
-
     // Ints come in as int.  But it can be represented in fewer bits.
     // So determine a more specific type that is in line with the
     // types for BAM files.
@@ -536,30 +534,81 @@ bool SamRecord::addIntTag(const char* tag, int32_t value)
             tagBufferSize += 7;
         }
     }
-    integers.Push(value);
-    intType.push_back(bamvtype);
+
+    // Check to see if the tag is already there.
+    key = MAKEKEY(tag[0], tag[1], bamvtype);
+    unsigned int hashIndex = extras.Find(key);
+    if(hashIndex != LH_NOTFOUND)
+    {
+        // Tag was already found.
+        index = extras[hashIndex];
+
+        // First check to see if the value changed.
+        if((integers[index] == value) && (intType[index] == bamvtype))
+        {
+            // The value has not changed, so do nothing.
+            return(true);
+        }
+        else
+        {
+            // Not the same value, so adjust the settings.
+            // Subtract the size of the previous tag from tagBufferSize to get
+            // the adjusted size.
+            switch(intType[index])
+            {
+                case 'c':
+                case 'C':
+                    tagBufferSize -= 4;
+                    break;
+                case 's':
+                case 'S':
+                    tagBufferSize -= 5;
+                    break;
+                case 'i':
+                case 'I':
+                    tagBufferSize -= 7;
+                    break;
+                default:
+                myStatus.setStatus(SamStatus::INVALID, 
+                                   "unknown tag inttype type found.\n");
+                return(false);              
+            }
+            
+            // Update the integer value and type.
+            integers[index] = value;
+            intType[index] = bamvtype;
+        }
+    }
+    else
+    {
+        // Tag is not already there, so add it.
+        index = integers.Length();
+        
+        integers.Push(value);
+        intType.push_back(bamvtype);
+
+        extras.Add(key, index);
+    }
 
     // The buffer tags are now out of sync.
     myNeedToSetTagsInBuffer = true;
     myIsTagsBufferValid = false;
     myIsBufferSynced = false;
-    
-    key = MAKEKEY(tag[0], tag[1], bamvtype);
-    extras.Add(key, index);
     myTagBufferSize += tagBufferSize;
 
     return(true);
 }
 
 
-// Add the specified tag to the record.
-// Returns true if the tag was successfully added, false otherwise.
+// Add the specified tag to the record, replacing it if it is already there and
+// is different from the previous value.
+// Returns true if the tag was successfully added (or was already there), false otherwise.
 bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
 {
     if(vtype == 'i')
     {
         // integer type.  Call addIntTag to handle it.
-        int intVal = atoi((const char *)valuePtr);
+        int intVal = atoi(valuePtr);
         return(addIntTag(tag, intVal));
     }
 
@@ -568,7 +617,6 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
     bool status = true; // default to successful.
     int key = 0;
     int index = 0;
-    char bamvtype;
 
     int tagBufferSize = 0;
 
@@ -582,34 +630,105 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
         }
     }
 
-    switch (vtype)
+    // First check to see if the tag is already there.
+    key = MAKEKEY(tag[0], tag[1], vtype);
+    unsigned int hashIndex = extras.Find(key);
+    if(hashIndex != LH_NOTFOUND)
     {
-        case 'A' :
-            index = integers.Length();
-            bamvtype = vtype;
-            integers.Push((const int)*(valuePtr));
-            intType.push_back(vtype);
-            tagBufferSize += 4;
-            break;
-        case 'Z' :
-            index = strings.Length();
-            bamvtype = vtype;
-            strings.Push((const char *)valuePtr);
-            tagBufferSize += 4 + strings.Last().Length();
-            break;
-        case 'f' :
-            index = doubles.Length();
-            bamvtype = vtype;
-            doubles.Push(atof((const char *)valuePtr));
-            tagBufferSize += 7;
-            break;
-        default :
-            fprintf(stderr,
-                    "samFile::ReadSAM() - Unknown custom field of type %c\n",
-                    vtype);
-            myStatus.setStatus(SamStatus::FAIL_PARSE, 
-                               "Unknown custom field in a tag");
-            status = false;
+        // The key was found in the hash, so get the lookup index.
+        index = extras[hashIndex];
+
+        // Adjust the currently pointed to value to the new setting.
+        switch (vtype)
+        {
+            case 'A' :
+                // First check to see if the value changed.
+                if(integers[index] == (const int)*(valuePtr))
+                {
+                    // The value has not changed, so do nothing.
+                    return(true);
+                }
+                else
+                {
+                    // Tag buffer size doesn't change between different 'A' entries.
+                    integers[index] = (const int)*(valuePtr);
+                    intType[index] = vtype;
+                }
+                break;
+            case 'Z' :
+                // First check to see if the value changed.
+                if(strings[index] == valuePtr)
+                {
+                    // The value has not changed, so do nothing.
+                    return(true);
+                }
+                else
+                {
+                    // Adjust the tagBufferSize by removing the size of the old string.
+                    tagBufferSize -= strings[index].Length();
+                    strings[index] = valuePtr;
+                    // Adjust the tagBufferSize by adding the size of the new string.
+                    tagBufferSize += strings[index].Length();
+                }
+                break;
+            case 'f' :
+                // First check to see if the value changed.
+                if(doubles[index] == atof(valuePtr))
+                {
+                    // The value has not changed, so do nothing.
+                    return(true);
+                }
+                else
+                {
+                    // Tag buffer size doesn't change between different 'f' entries.
+                    doubles[index] = atof(valuePtr);
+                }
+                break;
+            default :
+                fprintf(stderr,
+                        "samFile::ReadSAM() - Unknown custom field of type %c\n",
+                        vtype);
+                myStatus.setStatus(SamStatus::FAIL_PARSE, 
+                                   "Unknown custom field in a tag");
+                status = false;
+                break;
+        }
+    }
+    else
+    {
+        // The key was found not found in the hash, so add it.
+        switch (vtype)
+        {
+            case 'A' :
+                index = integers.Length();
+                integers.Push((const int)*(valuePtr));
+                intType.push_back(vtype);
+                tagBufferSize += 4;
+                break;
+            case 'Z' :
+                index = strings.Length();
+                strings.Push(valuePtr);
+                tagBufferSize += 4 + strings.Last().Length();
+                break;
+            case 'f' :
+                index = doubles.Length();
+                doubles.Push(atof(valuePtr));
+                tagBufferSize += 7;
+                break;
+            default :
+                fprintf(stderr,
+                        "samFile::ReadSAM() - Unknown custom field of type %c\n",
+                        vtype);
+                myStatus.setStatus(SamStatus::FAIL_PARSE, 
+                                   "Unknown custom field in a tag");
+                status = false;
+                break;
+        }
+        if(status)
+        {
+            // If successful, add the key to extras.
+            extras.Add(key, index);
+        }
     }
 
     // Only add the tag if it has so far been successfully processed.
@@ -619,9 +738,6 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
         myNeedToSetTagsInBuffer = true;
         myIsTagsBufferValid = false;
         myIsBufferSynced = false;
-
-        key = MAKEKEY(tag[0], tag[1], bamvtype);
-        extras.Add(key, index);
         myTagBufferSize += tagBufferSize;
     }
     return(status);

@@ -107,8 +107,10 @@ void testAddHeaderAndTagToFile(const char* inputName, const char* outputName)
     assert(inSam.ReadRecord(samHeader, samRecord));
     //   validateRead1(samRecord);
     // Add two tags.
-    assert(samRecord.addTag("RG", 'Z', "myID"));
-    assert(samRecord.addTag("RR", 'Z', "myID"));
+    assert(samRecord.addIntTag("XA", 123));
+    assert(samRecord.addIntTag("XA", 456));
+    assert(samRecord.addTag("RR", 'Z', "myID1"));
+    assert(samRecord.addTag("RR", 'Z', "myID2"));
 
     // Write as Sam.
     assert(outSam.WriteRecord(samHeader, samRecord));

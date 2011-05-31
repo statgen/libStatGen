@@ -218,17 +218,20 @@ public:
 
     /// Add the specified integer tag to the record.  Internal processing
     /// handles switching between SAM/BAM formats when read/written and 
-    /// determining the type for BAM format.
+    /// determining the type for BAM format.  If the tag is already there
+    /// this code will replace it if the specified value is different.
     /// \param tag two character tag to be added to the SAM/BAM record.
     /// \param value value for the specified tag.
     /// \return true if the tag was successfully added, false otherwise.
     bool addIntTag(const char* tag, int32_t value);
 
     /// Add the specified tag to the record.  Internal processing handles 
-    /// switching between SAM/BAM formats when read/written.
+    /// switching between SAM/BAM formats when read/written.  If the tag
+    /// is already there this code will replace it if the specified value
+    /// is different.
     /// \param tag two character tag to be added to the SAM/BAM record.
     /// \param vtype vtype of the specified value - either SAM/BAM vtypes.
-    /// \param value value for the specified tag.
+    /// \param value value as a string for the specified tag.
     /// \return true if the tag was successfully added, false otherwise.
     bool addTag(const char* tag, char vtype, const char* value);
 
