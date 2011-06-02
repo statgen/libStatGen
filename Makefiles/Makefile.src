@@ -43,10 +43,13 @@ ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 # make everything
 param : $(PROG)
 
-
 # dependencies for executables
 $(PROG) : $(BIN_DIR_SRC) $(LIBRARY) $(OBJECTS)
 	$(CXX) $(CFLAGS) -o $(PROG) $(OBJECTS) $(LIBRARY) -lm -lz -lssl
+
+# Build the statgen lib if necessary
+$(STAT_GEN_LIB) : 
+	$(MAKE) -C $(@D) OPTFLAG="$(OPTFLAG_OPT)" --no-print-directory
 
 $(BIN_DIR_SRC) : 
 	mkdir -p $(BIN_DIR_SRC)
