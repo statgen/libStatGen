@@ -17,6 +17,7 @@
 
 #include "ReadFiles.h"
 #include "Validate.h"
+#include "SamTags.h"
 #include <assert.h>
 
 void testReadSam()
@@ -107,8 +108,10 @@ void testAddHeaderAndTagToFile(const char* inputName, const char* outputName)
     assert(inSam.ReadRecord(samHeader, samRecord));
     //   validateRead1(samRecord);
     // Add two tags.
-    assert(samRecord.addTag("RG", 'Z', "myID"));
-    assert(samRecord.addTag("RR", 'Z', "myID"));
+    assert(samRecord.addIntTag("XA", 123));
+    assert(samRecord.addIntTag("XA", 456));
+    assert(samRecord.addTag("RR", 'Z', "myID1"));
+    assert(samRecord.addTag("RR", 'Z', "myID2"));
 
     // Write as Sam.
     assert(outSam.WriteRecord(samHeader, samRecord));
@@ -119,6 +122,16 @@ void testAddHeaderAndTagToFile(const char* inputName, const char* outputName)
     // if they are bigger than the original.
     assert(inSam.ReadRecord(samHeader, samRecord));
     assert(inSam.ReadRecord(samHeader, samRecord));
+
+    //  Check the MD tag, which requires the reference.
+    GenomeSequence reference("testFiles/chr1_partial.fa");
+    assert(SamTags::isMDTagCorrect(samRecord, reference) == false);
+    String newMDTag;
+    SamTags::createMDTag(newMDTag, samRecord, reference);
+    assert(newMDTag == "2T1N0");
+    assert(SamTags::updateMDTag(samRecord, reference));
+    // Write as Sam.
+    assert(outSam.WriteRecord(samHeader, samRecord));
 }
 
 
