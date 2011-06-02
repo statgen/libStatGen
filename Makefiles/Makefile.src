@@ -20,7 +20,7 @@ MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.common
 
 LIBRARY = $(USER_LIBS) $(REQ_LIBS$(VARIABLE_EXT))
-ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR)/%,$(COMPILE_ANY_CHANGE:=.o))
+ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR_PARAM)/%,$(COMPILE_ANY_CHANGE:=.o))
 
 RELEASE_FILE?=$(DIR_NAME).$(VERSION).tgz
 
