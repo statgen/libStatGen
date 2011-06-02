@@ -27,8 +27,8 @@ else ifeq ($(BUILD), profile)
 VARIABLE_EXT=_PROFILE
 endif
 
-OBJECTS=$(patsubst %,$(OBJDIR$(VARIABLE_EXT))/%,$(TOOLOBJ))
-OBJDIR=$(OBJDIR$(VARIABLE_EXT))
+OBJDIR_PARAM=$(OBJDIR$(VARIABLE_EXT))
+OBJECTS=$(patsubst %,$(OBJDIR_PARAM)/%,$(TOOLOBJ))
 STAT_GEN_LIB=$(STAT_GEN_LIB$(VARIABLE_EXT))
 
 SUBDIR=$(SUBDIR$(VARIABLE_EXT))
@@ -68,17 +68,17 @@ help :
 #######
 # Objects
 # The objects are dependent on the object directory.
-$(OBJECTS): | $(OBJDIR)
+$(OBJECTS): | $(OBJDIR_PARAM)
 
 # Create the object directory
-$(OBJDIR):
+$(OBJDIR_PARAM):
 	mkdir -p $@
 
 # Compile the source
-$(OBJDIR)/%.o : %.c
+$(OBJDIR_PARAM)/%.o : %.c
 	$(CC) $(CFLAGS) -o $@ -c $*.c 
 
-$(OBJDIR)/%.o : %.cpp 
+$(OBJDIR_PARAM)/%.o : %.cpp 
 	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
 
 #########
@@ -92,7 +92,7 @@ test: all
 #########
 # clean
 clean : specific_clean
-	-rm -f $(OBJDIR)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~ 
+	-rm -f $(OBJDIR_OPT)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~ 
 	@if test -d $(TEST_DIR); \
         then \
 	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
@@ -120,11 +120,11 @@ cleandepend:
 
 depend:
 	touch $(MAKE_DEPENDS)
-	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
+	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR_PARAM\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
 
 
 ifeq ($(wildcard $(MAKE_DEPENDS)),)
-$(OBJECTS) : $(HEADERS)
+$(OBJECTS) : $(TOOLHDR)
 else
 include $(MAKE_DEPENDS)
 endif
