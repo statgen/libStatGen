@@ -1,10 +1,10 @@
 #include <cassert>
 #include "Chromosome.h"
 
-Chromosome::Chromosome(GenomeSequence* gs, uint chromosomeIndex)
+Chromosome::Chromosome(GenomeSequence* gs, unsigned int chromosomeIndex)
 {
     assert(gs);
-    assert(chromosomeIndex < (uint)gs->getChromosomeCount());
+    assert(chromosomeIndex < (unsigned int)gs->getChromosomeCount());
 
     this->gs = gs;
     this->chromosomeIndex = chromosomeIndex;
@@ -24,7 +24,7 @@ Chromosome::Chromosome(GenomeSequence* gs, const char* chromosomeName)
     this->chromosomeSize = gs->getChromosomeSize((int)chromosomeIndex);
 }
 
-Chromosome::Chromosome(const char* genomseSequenceFileName, uint chromosomeIndex, bool isColorSpace) 
+Chromosome::Chromosome(const char* genomseSequenceFileName, unsigned int chromosomeIndex, bool isColorSpace) 
 {
     std::string s(genomseSequenceFileName);
     if (this->gs) delete gs;
@@ -37,7 +37,7 @@ Chromosome::Chromosome(const char* genomseSequenceFileName, uint chromosomeIndex
     this->chromosomeSize = gs->getChromosomeSize((int)chromosomeIndex);
 }
 
-Chromosome::Chromosome(const std::string& genomseSequenceFileName, uint chromosomeIndex, bool isColorSpace) 
+Chromosome::Chromosome(const std::string& genomseSequenceFileName, unsigned int  chromosomeIndex, bool isColorSpace) 
 {
     if (this->gs) delete gs;
     gs = new GenomeSequence;
