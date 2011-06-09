@@ -262,7 +262,7 @@ bool SamValidator::isValidQname(const char* qname, uint8_t readNameLen,
         message += ").";
 
         validationErrors.addError(SamValidationError::INVALID_QNAME,
-                                  SamValidationError::ERROR, 
+                                  SamValidationError::SAM_ERROR, 
                                   message.c_str());
         status = false;
     }
@@ -277,7 +277,7 @@ bool SamValidator::isValidQname(const char* qname, uint8_t readNameLen,
         message += ".  Length with the terminating null must be between 2 & 255.";
       
         validationErrors.addError(SamValidationError::INVALID_QNAME,
-                                  SamValidationError::WARNING, 
+                                  SamValidationError::SAM_WARNING, 
                                   message.c_str());
         status = false;
     }
@@ -296,7 +296,7 @@ bool SamValidator::isValidQname(const char* qname, uint8_t readNameLen,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_QNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -306,7 +306,7 @@ bool SamValidator::isValidQname(const char* qname, uint8_t readNameLen,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_QNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -316,7 +316,7 @@ bool SamValidator::isValidQname(const char* qname, uint8_t readNameLen,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_QNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -326,7 +326,7 @@ bool SamValidator::isValidQname(const char* qname, uint8_t readNameLen,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_QNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -365,7 +365,7 @@ bool SamValidator::isValidRname(SamFileHeader& samHeader,
         message += rname;
         message += ", was not found in a SAM Header SQ record";
         validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                  SamValidationError::WARNING,
+                                  SamValidationError::SAM_WARNING,
                                   message.c_str());
     }
     status &= isValidRname(rname, validationErrors);
@@ -390,7 +390,7 @@ bool SamValidator::isValidRname(const char* rname,
     if(rnameLen == 0)
     {
         validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                  SamValidationError::WARNING, 
+                                  SamValidationError::SAM_WARNING, 
                                   "Reference Sequence Name (RNAME) cannot have 0 length.");
         status = false;
     }
@@ -409,7 +409,7 @@ bool SamValidator::isValidRname(const char* rname,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -419,7 +419,7 @@ bool SamValidator::isValidRname(const char* rname,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -429,7 +429,7 @@ bool SamValidator::isValidRname(const char* rname,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -439,7 +439,7 @@ bool SamValidator::isValidRname(const char* rname,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -449,7 +449,7 @@ bool SamValidator::isValidRname(const char* rname,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -459,7 +459,7 @@ bool SamValidator::isValidRname(const char* rname,
                 message += i;
                 message += ".";
                 validationErrors.addError(SamValidationError::INVALID_RNAME,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 status = false;
                 break;
@@ -492,7 +492,7 @@ bool SamValidator::isValidRefID(int32_t refID,
         message += ".";
 
         validationErrors.addError(SamValidationError::INVALID_REF_ID,
-                                  SamValidationError::WARNING, 
+                                  SamValidationError::SAM_WARNING, 
                                   message.c_str());
         status = false;
     }
@@ -516,7 +516,7 @@ bool SamValidator::isValid1BasedPos(int32_t pos,
         message += ") must be between 0 and (2^29)-1.";
 
         validationErrors.addError(SamValidationError::INVALID_POS,
-                                  SamValidationError::WARNING, 
+                                  SamValidationError::SAM_WARNING, 
                                   message.c_str());
         status = false;
     }
@@ -574,7 +574,7 @@ bool SamValidator::isValidCigar(const char* cigar,
     if(cigarLen == 0)
     {
         validationErrors.addError(SamValidationError::INVALID_CIGAR,
-                                  SamValidationError::WARNING,
+                                  SamValidationError::SAM_WARNING,
                                   "Cigar must not be blank.");
         status = false;
     }
@@ -599,7 +599,7 @@ bool SamValidator::isValidCigar(const char* cigar,
             message += seqLen;
             message += ").";
             validationErrors.addError(SamValidationError::INVALID_CIGAR,
-                                      SamValidationError::WARNING, 
+                                      SamValidationError::SAM_WARNING, 
                                       message.c_str());
             status = false;
         }
@@ -657,7 +657,7 @@ bool SamValidator::isValidQuality(const char* quality,
             message += ").";
             
             validationErrors.addError(SamValidationError::INVALID_QUAL,
-                                      SamValidationError::WARNING, 
+                                      SamValidationError::SAM_WARNING, 
                                       message.c_str());
         status = false;
         }
@@ -695,7 +695,7 @@ bool SamValidator::isValidTags(SamRecord& samRecord,
                 message += ".";
                 
                 validationErrors.addError(SamValidationError::INVALID_TAG,
-                                          SamValidationError::WARNING, 
+                                          SamValidationError::SAM_WARNING, 
                                           message.c_str());
                 
                 status = false;

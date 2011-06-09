@@ -26,8 +26,13 @@ class SamValidationError
 public:
     // Warning is used if it is just an invalid value.
     // Error is used if parsing could not succeed.
-    enum Severity {WARNING, ERROR};
-
+    enum Severity
+        {
+            //
+            SAM_WARNING, 
+            SAM_ERROR
+        };
+    
     enum Type
         {
             // 
