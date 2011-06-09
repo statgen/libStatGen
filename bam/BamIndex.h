@@ -175,7 +175,7 @@ private:
             }
             n_bin = 0; 
             n_intv = 0;
-            minChunkOffset = -1;
+            minChunkOffset = UNSET_MIN_CHUNK_OFFSET;
             maxChunkOffset = 0;
             n_mapped = UNKNOWN_MAP_INFO;
             n_unmapped = UNKNOWN_MAP_INFO;
@@ -188,6 +188,7 @@ private:
         uint64_t maxChunkOffset;
         int32_t n_mapped; // Number of mapped reads.
         int32_t n_unmapped; // Number of unmapped reads.
+        static const uint32_t UNSET_MIN_CHUNK_OFFSET = 0xFFFFFFFF;
     };
 
     // Add the bins associated with the specified region to the passed in list.
