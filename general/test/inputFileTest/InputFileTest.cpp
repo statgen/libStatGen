@@ -143,16 +143,16 @@ void IFILE_Test::test_readFromFile(const char* extension)
    }
    else
    {
-      assert(myFileTypePtr->eof() == true);
-      assert(ifeof() == true);
+      assert(myFileTypePtr->eof() != 0);
+      assert(ifeof() != 0);
    }
 
    // Try to read one more time, making sure it doesn't read anything.
     numBytesRead = readFromFile(myTestBuffer, MAX_TEST_BUFFER_SIZE);
     assert(numBytesRead == 0);
    // Should be at eof
-   assert(myFileTypePtr->eof() == true);
-   assert(ifeof() == true);
+   assert(myFileTypePtr->eof() != 0);
+   assert(ifeof() != 0);
 
    ifclose();
 
@@ -203,7 +203,7 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
    ++totalBytesPreviouslyRead;
    // Not at eof
    assert(ifeof() == false);
-   
+
    // bgzf files use a specialized return value for iftell that
    // is not just straight file offset.
    if((strcmp(extension, "bam") == 0) || (strcmp(extension, "glf") == 0))
@@ -232,14 +232,14 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
    }
    else
    {
-      assert(myFileTypePtr->eof() == true);
-      assert(ifeof() == true);
+      assert(myFileTypePtr->eof() != 0);
+      assert(ifeof() != 0);
    }
    
    numBytesRead = readFromFile(myTestBuffer, 1);
    assert(numBytesRead == 0);
    // Now it registers eof
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // bgzf files use a specialized return value for iftell that
    // is not just straight file offset.
@@ -312,13 +312,13 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
    // increment the count.
    totalBytesPreviouslyRead += numBytesRead;
    // Registers eof.
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // Read past eof.
    numBytesRead = ifread(myTestBuffer, MAX_TEST_BUFFER_SIZE);
    assert(numBytesRead == 0);
    // Eof.
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // bgzf files use a specialized return value for iftell that
    // is not just straight file offset.
@@ -410,8 +410,8 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    }
    else
    {
-      assert(myFileTypePtr->eof() == true);
-      assert(ifeof() == true);
+      assert(myFileTypePtr->eof() != 0);
+      assert(ifeof() != 0);
    }
 
    // Try reading at end of file twice.
@@ -420,7 +420,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(myTestBuffer, MAX_TEST_BUFFER_SIZE);
@@ -428,7 +428,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
 
    // RESET
@@ -498,7 +498,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(myTestBuffer, MAX_TEST_BUFFER_SIZE);
@@ -506,7 +506,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
     // RESET
    ifrewind();
@@ -558,7 +558,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(myTestBuffer, MAX_TEST_BUFFER_SIZE);
@@ -566,7 +566,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
     // RESET
    ifrewind();
@@ -635,7 +635,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(myTestBuffer, MAX_TEST_BUFFER_SIZE);
@@ -643,7 +643,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
     // RESET
    ifrewind();
@@ -710,8 +710,8 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    }
    else
    {
-      assert(myFileTypePtr->eof() == true);
-      assert(ifeof() == true);
+      assert(myFileTypePtr->eof() != 0);
+      assert(ifeof() != 0);
    }
 
    // Try reading at end of file twice.
@@ -720,7 +720,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(largeBuffer, largeTestFileSize);
@@ -728,7 +728,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 0);
    assert(myBufferIndex == 0);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
 
    // RESET
@@ -830,7 +830,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // that did not fit in the first read.
    assert(myCurrentBufferSize == 5);
    assert(myBufferIndex == 5);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(largeBuffer, largeTestFileSize);
@@ -838,7 +838,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer
    assert(myCurrentBufferSize == 5);
    assert(myBufferIndex == 5);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
     // RESET
    ifrewind();
@@ -894,7 +894,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should not affect the IFILE buffer
    assert(myCurrentBufferSize == 5);
    assert(myBufferIndex == 5);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(largeBuffer, largeTestFileSize);
@@ -902,7 +902,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should not affect the IFILE buffer
    assert(myCurrentBufferSize == 5);
    assert(myBufferIndex == 5);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
     // RESET
    ifrewind();
@@ -975,7 +975,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should not affect the IFILE buffer
    assert(myCurrentBufferSize == bufferSize);
    assert(myBufferIndex == bufferSize);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
 
    // 2nd read attempt at eof.   
    numBytesRead = ifread(largeBuffer, largeTestFileSize);
@@ -983,7 +983,7 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should not affect the IFILE buffer
    assert(myCurrentBufferSize == bufferSize);
    assert(myBufferIndex == bufferSize);
-   assert(ifeof() == true);
+   assert(ifeof() != 0);
    
     // RESET
    ifrewind();
@@ -1066,7 +1066,7 @@ void IFILE_Test::openFile(const char* extension)
 {
    std::string filename = "data/InputFileTest.";
    filename += extension;
-   assert(InputFile::openFile(filename.c_str(), "rt", InputFile::DEFAULT) == true);
+   assert(InputFile::openFile(filename.c_str(), "rb", InputFile::DEFAULT) == true);
 }
 
 // Open a file for testing.
@@ -1074,7 +1074,7 @@ void IFILE_Test::openLargeFile(const char* extension)
 {
    std::string filename = "data/InputFileTestLarge.";
    filename += extension;
-   assert(InputFile::openFile(filename.data(), "rt", InputFile::DEFAULT) == true);
+   assert(InputFile::openFile(filename.data(), "rb", InputFile::DEFAULT) == true);
 }
 
 
@@ -1082,7 +1082,7 @@ void IFILE_Test::openNoExistFile(const char* extension)
 {
    std::string filename = "data/noExist.";
    filename += extension;
-   assert(InputFile::openFile(filename.data(), "rt", InputFile::DEFAULT) == false);
+   assert(InputFile::openFile(filename.data(), "rb", InputFile::DEFAULT) == false);
 }
 
 
@@ -1091,7 +1091,7 @@ void testWrite()
     std::string filenameNoExt = "results/InputFileTest.";
     std::string filename = filenameNoExt + "glf";
     
-    IFILE filePtr = ifopen(filename.c_str(), "wt");
+    IFILE filePtr = ifopen(filename.c_str(), "wb");
     assert(filePtr != NULL);
     
     assert(ifwrite(filePtr, 
@@ -1103,7 +1103,7 @@ void testWrite()
 
     filename = "results/uncompressedFile.glf";
     
-    filePtr = ifopen(filename.c_str(), "wt", InputFile::UNCOMPRESSED);
+    filePtr = ifopen(filename.c_str(), "wb", InputFile::UNCOMPRESSED);
     assert(filePtr != NULL);
     
     assert(ifwrite(filePtr,
@@ -1115,7 +1115,7 @@ void testWrite()
 
     filename = "results/bgzfFile.glf";
     
-    filePtr = ifopen(filename.c_str(), "wt", InputFile::BGZF);
+    filePtr = ifopen(filename.c_str(), "wb", InputFile::BGZF);
     assert(filePtr != NULL);
     
     assert(ifwrite(filePtr,
@@ -1127,7 +1127,7 @@ void testWrite()
 
     filename = "results/gzipFile.glf";
     
-    filePtr = ifopen(filename.c_str(), "wt", InputFile::GZIP);
+    filePtr = ifopen(filename.c_str(), "wb", InputFile::GZIP);
     assert(filePtr != NULL);
     
     assert(ifwrite(filePtr,
@@ -1139,7 +1139,7 @@ void testWrite()
 
     filename = "results/defaultFile.glf";
     
-    filePtr = ifopen(filename.c_str(), "wt");
+    filePtr = ifopen(filename.c_str(), "wb");
     assert(filePtr != NULL);
     
     assert(ifwrite(filePtr,
@@ -1151,7 +1151,7 @@ void testWrite()
 
     filename = "results/defaultFile.gz";
     
-    filePtr = ifopen(filename.c_str(), "wt");
+    filePtr = ifopen(filename.c_str(), "wb");
     assert(filePtr != NULL);
     
     assert(ifwrite(filePtr,
