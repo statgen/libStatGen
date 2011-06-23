@@ -27,14 +27,20 @@ SamQuerySeqWithRefIter::SamQuerySeqWithRefIter(SamRecord& record,
     : myRecord(record),
       myRefSequence(refSequence),
       myCigar(NULL),
-      myStartOfReadOnRefIndex(0),
+      myStartOfReadOnRefIndex(INVALID_GENOME_INDEX),
       myQueryIndex(0),
       myForward(forward)
 {
-    myCigar = myRecord.getCigarInfo();   
+    myCigar = myRecord.getCigarInfo();
     myStartOfReadOnRefIndex = 
-        myRefSequence.getGenomePosition(myRecord.getReferenceName()) +
-        myRecord.get0BasedPosition();
+        refSequence.getGenomePosition(myRecord.getReferenceName());
+    
+    if(myStartOfReadOnRefIndex != INVALID_GENOME_INDEX)
+    {
+        // This reference name was found in the reference file, so 
+        // add the start position.
+        myStartOfReadOnRefIndex += myRecord.get0BasedPosition();
+    }
 
     if(!forward)
     {
@@ -61,11 +67,17 @@ bool SamQuerySeqWithRefIter::reset(bool forward)
     // Get where the position of where this read starts as mapped to the 
     // reference.
     myStartOfReadOnRefIndex = 
-        myRefSequence.getGenomePosition(myRecord.getReferenceName()) +
-        myRecord.get0BasedPosition();
+        myRefSequence.getGenomePosition(myRecord.getReferenceName());
+    
+    if(myStartOfReadOnRefIndex != INVALID_GENOME_INDEX)
+    {
+        // This reference name was found in the reference file, so 
+        // add the start position.
+        myStartOfReadOnRefIndex += myRecord.get0BasedPosition();
+    }
 
     myForward = forward;
-
+    
     if(myForward)
     {
         myQueryIndex = 0;
@@ -104,6 +116,16 @@ bool SamQuerySeqWithRefIter::getNextMatchMismatch(SamSingleBaseMatchInfo& matchM
         throw(std::runtime_error("Cannot determine matches/mismatches since failed to retrieve the cigar"));
         return(false);
     }
+
+    // If myStartOfReadOnRefIndex is the default (unset) value, then
+    // the reference was not found, so return false, no matches/mismatches.
+    if(myStartOfReadOnRefIndex == INVALID_GENOME_INDEX)
+    {
+        // This reference name was not found in the reference file, so just
+        // return no matches/mismatches.
+        return(false);
+    }
+
 
     // Repull the read length from the record to check just in case the
     // record has changed length.
@@ -231,8 +253,16 @@ void SamQuerySeqWithRef::seqWithEquals(const char* currentSeq,
     int32_t queryIndex = 0;
 
     uint32_t startOfReadOnRefIndex = 
-        refSequence.getGenomePosition(referenceName) + seq0BasedPos;
-
+        refSequence.getGenomePosition(referenceName);
+    
+    if(startOfReadOnRefIndex == INVALID_GENOME_INDEX)
+    {
+        // This reference name was not found in the reference file, so just
+        // return.
+        return;
+    }
+    startOfReadOnRefIndex += seq0BasedPos;
+    
     // Loop until the entire sequence has been updated.
     while(queryIndex < seqLength)
     {
@@ -276,8 +306,16 @@ void SamQuerySeqWithRef::seqWithoutEquals(const char* currentSeq,
     int32_t queryIndex = 0;
 
     uint32_t startOfReadOnRefIndex = 
-        refSequence.getGenomePosition(referenceName) + seq0BasedPos;
-
+        refSequence.getGenomePosition(referenceName);
+    
+    if(startOfReadOnRefIndex == INVALID_GENOME_INDEX)
+    {
+        // This reference name was not found in the reference file, so just
+        // return.
+        return;
+    }
+    startOfReadOnRefIndex += seq0BasedPos;
+    
     // Loop until the entire sequence has been updated.
     while(queryIndex < seqLength)
     {

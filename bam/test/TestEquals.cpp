@@ -16,6 +16,7 @@
  */
 
 #include "TestEquals.h"
+#include "SamQuerySeqWithRefHelper.h"
 #include <assert.h>
 
 
@@ -34,19 +35,19 @@ const char* EqualsTest::READ_NAMES[] =
      "07:=XX=", "08:=XXX", "09:X===", "10:X==X", "11:X=X=", "12:X=XX",
      "13:XX==", "14:XX=X", "15:XXX=", "16:XXXX", "Read:GGCCTA;Ref:CCTA",
      "Read:CCTA;Ref:CCTA", "Read:CCGTxxxC;Ref:CCxTAACC", 
-     "Read:CCxxAC;Ref:CCTAACC"};
+     "Read:CCxxAC;Ref:CCTAACC", "chromNotInRef", "chromNotInRef1"};
 
 const char* EqualsTest::READ_SEQS_BASES[] = 
     {"CCTA", "CCTT", "CCAA", "CCAT", "CTTA", "CTTT", "CTAA", "CTAT", "TCTA", "TCTT", "TCAA", "TCAT", "TTTA", "TTTT", "TTAA", "TTAT", "GGCCTA",
-     "CCTA", "CCGTC", "CCAC"};
+     "CCTA", "CCGTC", "CCAC", "CCTA", "CC=A"};
 
 const char* EqualsTest::READ_SEQS_EQUALS[] = 
     {"====", "===T", "==A=", "==AT", "=T==", "=T=T", "=TA=", "=TAT", "T===", "T==T", "T=A=", "T=AT", "TT==", "TT=T", "TTA=", "TTAT", "GG====",
-     "====", "==G==", "===="};
+     "====", "==G==", "====", "CCTA", "CC=A"};
 
 const char* EqualsTest::READ_SEQS_MIXED[] = 
     {"C===", "=C=T", "==AA", "==AT", "=TTA", "CT=T", "=TAA", "=TAT", "T=TA", "TC=T", "TCA=", "TCAT", "TT=A", "TT=T", "TTA=", "TTAT", "GGC=T=",
-     "C=T=", "C=GT=", "C=A="};
+     "C=T=", "C=GT=", "C=A=", "CCTA", "CC=A"};
 
 const char* EqualsTest::expectedReferenceName;
 const char* EqualsTest::expectedMateReferenceName;
@@ -172,13 +173,13 @@ void EqualsTest::testEq(FileType inputType)
     expectedQuality = "??I00?";
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateEqRead(samRecord, 16, READ_SEQS_MIXED[16]);
-        assert(outBasesSam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsSam.WriteRecord(samHeader, samRecord));
-        assert(outOrigSam.WriteRecord(samHeader, samRecord));
-        assert(outBasesBam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsBam.WriteRecord(samHeader, samRecord));
-        assert(outOrigBam.WriteRecord(samHeader, samRecord));
-
+    assert(outBasesSam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsSam.WriteRecord(samHeader, samRecord));
+    assert(outOrigSam.WriteRecord(samHeader, samRecord));
+    assert(outBasesBam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsBam.WriteRecord(samHeader, samRecord));
+    assert(outOrigBam.WriteRecord(samHeader, samRecord));
+    
     expectedCigar = "4M4H";
     expectedCigarHex.clear();
     expectedCigarHex.push_back(0x40);
@@ -194,13 +195,13 @@ void EqualsTest::testEq(FileType inputType)
     expectedQuality = "I00?";
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateEqRead(samRecord, 17, READ_SEQS_MIXED[17]);
-        assert(outBasesSam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsSam.WriteRecord(samHeader, samRecord));
-        assert(outOrigSam.WriteRecord(samHeader, samRecord));
-        assert(outBasesBam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsBam.WriteRecord(samHeader, samRecord));
-        assert(outOrigBam.WriteRecord(samHeader, samRecord));
-
+    assert(outBasesSam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsSam.WriteRecord(samHeader, samRecord));
+    assert(outOrigSam.WriteRecord(samHeader, samRecord));
+    assert(outBasesBam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsBam.WriteRecord(samHeader, samRecord));
+    assert(outOrigBam.WriteRecord(samHeader, samRecord));
+    
     expectedCigar = "1M1P1M1I1M3D1M";
     expectedCigarHex.clear();
     expectedCigarHex.push_back(0x10);
@@ -224,12 +225,12 @@ void EqualsTest::testEq(FileType inputType)
     expectedQuality = "I00??";
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateEqRead(samRecord, 18, READ_SEQS_MIXED[18]);
-        assert(outBasesSam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsSam.WriteRecord(samHeader, samRecord));
-        assert(outOrigSam.WriteRecord(samHeader, samRecord));
-        assert(outBasesBam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsBam.WriteRecord(samHeader, samRecord));
-        assert(outOrigBam.WriteRecord(samHeader, samRecord));
+    assert(outBasesSam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsSam.WriteRecord(samHeader, samRecord));
+    assert(outOrigSam.WriteRecord(samHeader, samRecord));
+    assert(outBasesBam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsBam.WriteRecord(samHeader, samRecord));
+    assert(outOrigBam.WriteRecord(samHeader, samRecord));
 
     expectedCigar = "2M2N2M";
     expectedCigarHex.clear();
@@ -250,13 +251,70 @@ void EqualsTest::testEq(FileType inputType)
     expectedQuality = "I00?";
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateEqRead(samRecord, 19, READ_SEQS_MIXED[19]);
-        assert(outBasesSam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsSam.WriteRecord(samHeader, samRecord));
-        assert(outOrigSam.WriteRecord(samHeader, samRecord));
-        assert(outBasesBam.WriteRecord(samHeader, samRecord));
-        assert(outEqualsBam.WriteRecord(samHeader, samRecord));
-        assert(outOrigBam.WriteRecord(samHeader, samRecord));
+    assert(outBasesSam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsSam.WriteRecord(samHeader, samRecord));
+    assert(outOrigSam.WriteRecord(samHeader, samRecord));
+    assert(outBasesBam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsBam.WriteRecord(samHeader, samRecord));
+    assert(outOrigBam.WriteRecord(samHeader, samRecord));
 
+    // Test getNextMatchMismatch.
+    SamSingleBaseMatchInfo matchTest;
+    SamQuerySeqWithRefIter queryIter(samRecord, reference, true);
+    assert(queryIter.getNextMatchMismatch(matchTest) == true);
+    assert(matchTest.getType() == SamSingleBaseMatchInfo::MATCH);
+    assert(matchTest.getQueryIndex() == 0);
+    assert(queryIter.getNextMatchMismatch(matchTest) == true);
+    assert(matchTest.getType() == SamSingleBaseMatchInfo::MATCH);
+    assert(matchTest.getQueryIndex() == 1);
+    assert(queryIter.getNextMatchMismatch(matchTest) == true);
+    assert(matchTest.getType() == SamSingleBaseMatchInfo::MATCH);
+    assert(matchTest.getQueryIndex() == 2);
+    assert(queryIter.getNextMatchMismatch(matchTest) == true);
+    assert(matchTest.getType() == SamSingleBaseMatchInfo::MATCH);
+    assert(matchTest.getQueryIndex() == 3);
+    assert(queryIter.getNextMatchMismatch(matchTest) == false);
+
+    // Check the read that is on a different chormosome not
+    // found in the reference.
+    reset();
+    expectedRecord.myBlockSize = 56;
+    expectedRecord.myReadNameLength = 14;
+    expectedRecord.myReferenceID = 1;
+    expectedReferenceName = "2";
+    expectedRecord.myMateReferenceID = 1;
+    expectedMateReferenceName = "2";
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateEqRead(samRecord, 20, READ_SEQS_MIXED[20]);
+    assert(outBasesSam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsSam.WriteRecord(samHeader, samRecord));
+    assert(outOrigSam.WriteRecord(samHeader, samRecord));
+    assert(outBasesBam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsBam.WriteRecord(samHeader, samRecord));
+    assert(outOrigBam.WriteRecord(samHeader, samRecord));   
+
+    // Check the read that is on a different chormosome and
+    // has '=', but the chromosome is not found in the reference.
+    reset();
+    expectedRecord.myBlockSize = 57;
+    expectedRecord.myReadNameLength = 15;
+    expectedRecord.myReferenceID = 1;
+    expectedReferenceName = "2";
+    expectedRecord.myMateReferenceID = 1;
+    expectedMateReferenceName = "2";
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateEqRead(samRecord, 21, READ_SEQS_MIXED[21]);
+    assert(outBasesSam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsSam.WriteRecord(samHeader, samRecord));
+    assert(outOrigSam.WriteRecord(samHeader, samRecord));
+    assert(outBasesBam.WriteRecord(samHeader, samRecord));
+    assert(outEqualsBam.WriteRecord(samHeader, samRecord));
+    assert(outOrigBam.WriteRecord(samHeader, samRecord));   
+
+    SamQuerySeqWithRefIter queryIter2(samRecord, reference, true);
+    assert(queryIter2.getNextMatchMismatch(matchTest) == false);
 }
 
 
