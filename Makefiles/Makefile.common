@@ -1,5 +1,6 @@
 # This makefile is common for both Makefile.lib and Makefile.src
 TOOLBASE ?= 
+COMPILE_ANY_CHANGE ?= 
 SRCONLY ?= 
 HDRONLY ?= 
 VERSION ?= 0.0.1
@@ -17,85 +18,87 @@ TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
 TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
 TOOLOBJ = $(TOOLSRC:.cpp=.o)
 
-BUILD=opt
-VARIABLE_EXT=_OPT
+# Define the directory structure for opt/debug/profile for objs & bins
+SUBDIR_OPT ?= 
+SUBDIR_DEBUG ?= /debug
+SUBDIR_PROFILE ?= /profile
 
-# override for debug or profile settings
-ifeq ($(BUILD), debug)
-VARIABLE_EXT=_DEBUG
-else ifeq ($(BUILD), profile)
-VARIABLE_EXT=_PROFILE
+#Objs default to the obj directory.
+OBJDIR ?= ../obj
+OBJDIR_OPT ?= $(OBJDIR)$(SUBDIR_OPT)
+OBJDIR_DEBUG ?= $(OBJDIR)$(SUBDIR_DEBUG)
+OBJDIR_PROFILE ?= $(OBJDIR)$(SUBDIR_PROFILE)
+
+#Needed for cleaning up the library - need all three.
+OBJECTS_OPT = $(patsubst %,$(OBJDIR_OPT)/%,$(TOOLOBJ))
+OBJECTS_DEBUG = $(patsubst %,$(OBJDIR_DEBUG)/%,$(TOOLOBJ))
+OBJECTS_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(TOOLOBJ))
+
+# Tests go in the test directory.
+TESTDIR ?= test
+
+ifeq ($(MAKECMDGOALS), debug)
+  VARIABLE_EXT=_DEBUG
+  OPTFLAG = $(OPTFLAG_DEBUG)
+else ifeq ($(MAKECMDGOALS), profile)
+  VARIABLE_EXT=_PROFILE
+  OPTFLAG = $(OPTFLAG_PROFILE)
+else
+  VARIABLE_EXT=_OPT
+  OPTFLAG ?= $(OPTFLAG_OPT)
 endif
 
-OBJDIR_PARAM=$(OBJDIR$(VARIABLE_EXT))
-OBJECTS=$(patsubst %,$(OBJDIR_PARAM)/%,$(TOOLOBJ))
-STAT_GEN_LIB=$(STAT_GEN_LIB$(VARIABLE_EXT))
+OBJECTS=$(OBJECTS$(VARIABLE_EXT))
+ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR$(VARIABLE_EXT))/%,$(COMPILE_ANY_CHANGE:=.o))'
 
-SUBDIR=$(SUBDIR$(VARIABLE_EXT))
+OPTFLAG ?= $(OPTFLAG$(VARIABLE_EXT))
 
+.PHONY: all test clean debug profile specific_clean
 
 # all, build as opt, debug, and profile.
-all :
-	@$(MAKE) OPTFLAG="$(OPTFLAG_OPT)" BUILD=opt --no-print-directory param
-	@$(MAKE) OPTFLAG="$(OPTFLAG_DEBUG)" BUILD=debug --no-print-directory param
-	@$(MAKE) OPTFLAG="$(OPTFLAG_PROFILE)" BUILD=profile --no-print-directory param
-
-opt:
-	@$(MAKE) OPTFLAG="$(OPTFLAG_OPT)" BUILD=opt --no-print-directory param
-
-debug:
-	@$(MAKE) OPTFLAG="$(OPTFLAG_DEBUG)" BUILD=debug --no-print-directory param
-
-profile:
-	@$(MAKE) OPTFLAG="$(OPTFLAG_PROFILE)" BUILD=profile --no-print-directory param
+all: 
+	@$(MAKE) OPTFLAG="$(OPTFLAG)" --no-print-directory opt
+	@$(MAKE) OPTFLAG_DEBUG="$(OPTFLAG_DEBUG)" --no-print-directory debug
+	@$(MAKE) OPTFLAG_PROFILE="$(OPTFLAG_PROFILE)" --no-print-directory profile
 
 #########
 # Help
-help : 
-	@echo "Makefile help"
-	@echo "-------------"
-	@echo "Type...           To..."
-	@echo "make              Compile everything "
-	@echo "make help         Display this help screen"
-	@echo "make all          Compile everything (opt, debug, & profile)"
-	@echo "make opt          Compile optimized"
-	@echo "make debug        Compile for debug"
-	@echo "make profile      Compile for profiling"
-	@echo "make clean        Delete temporary files"
-	@echo "make test         Execute tests (if there are any)"
-	$(ADDITIONAL_HELP)
+include $(MAKEFILES_PATH)Makefile.help
 
 #######
 # Objects
 # The objects are dependent on the object directory.
-$(OBJECTS): | $(OBJDIR_PARAM)
+$(OBJECTS): | $(OBJDIR$(VARIABLE_EXT))
 
 # Create the object directory
-$(OBJDIR_PARAM):
+$(OBJDIR$(VARIABLE_EXT)):
 	mkdir -p $@
 
 # Compile the source
-$(OBJDIR_PARAM)/%.o : %.c
+$(OBJDIR$(VARIABLE_EXT))/%.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $*.c 
 
-$(OBJDIR_PARAM)/%.o : %.cpp 
+$(OBJDIR$(VARIABLE_EXT))/%.o: %.cpp 
 	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+
+$(ALWAYS_COMP_OBJ):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ),$(OBJECTS))
+	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
 
 #########
 # Test
 test: all
-	@if test -d $(TEST_DIR); \
+	@if test -d $(TESTDIR); \
         then \
-	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
+	$(MAKE) -C $(TESTDIR) --no-print-directory $@; \
         fi
 
 #########
 # clean
 clean : specific_clean
 	-rm -f $(OBJDIR_OPT)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~ 
-	@if test -d $(TEST_DIR); \
+	@if test -d $(TESTDIR); \
         then \
-	$(MAKE) -C $(TEST_DIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
+	$(MAKE) -C $(TESTDIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
         fi
 
 .SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
@@ -120,7 +123,7 @@ cleandepend:
 
 depend:
 	touch $(MAKE_DEPENDS)
-	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR_PARAM\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
+	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR$$\(VARIABLE_EXT\)\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
 
 
 ifeq ($(wildcard $(MAKE_DEPENDS)),)

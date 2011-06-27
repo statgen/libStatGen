@@ -8,56 +8,48 @@
 #                        included in TOOLBASE or SRCONLY.  Here they are
 #                        just the base name without the extension.
 #   VERSION - if not 0.0.1
-#   BIN_DIR if it is not bin
+#   BINDIR if it is not ../bin
 #   USER_INCLUDES if any additional directories need to be included to pick up
 #                 header files (example: USER_INCLUDES=-ImyDir1 -ImyDir2)
 #   INSTALLDIR if not /usr/local/bin
 EXE ?=
-COMPILE_ANY_CHANGE ?= 
-BIN_DIR ?= ../bin
+BINDIR ?= ../bin
+TESTDIR ?= ../test
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.common
 
 LIBRARY = $(USER_LIBS) $(REQ_LIBS$(VARIABLE_EXT))
-ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR_PARAM)/%,$(COMPILE_ANY_CHANGE:=.o))
 
 RELEASE_FILE?=$(DIR_NAME).$(VERSION).tgz
 
-BIN_DIR_OPT = $(BIN_DIR)
-BIN_DIR_DEBUG = $(BIN_DIR)$(SUBDIR_DEBUG)
-BIN_DIR_PROFILE = $(BIN_DIR)$(SUBDIR_PROFILE)
-
-BIN_DIR_SRC = $(BIN_DIR$(VARIABLE_EXT))
-
-PROG = $(BIN_DIR_SRC)/$(EXE)
+# Set the bins for each build type
+BINDIR_OPT ?= $(BINDIR)$(SUBDIR_OPT)
+BINDIR_DEBUG ?= $(BINDIR)$(SUBDIR_DEBUG)
+BINDIR_PROFILE ?= $(BINDIR)$(SUBDIR_PROFILE)
 
 ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 	echo "make install INSTALLDIR=directory_for_binaries";\
 	echo "                  Install binaries in directory_for_binaries"
 
+.PHONY: install
 
-.PHONY: all test clean debug profile param install specific_clean
+opt debug profile: $(BINDIR$(VARIABLE_EXT))/$(EXE)
 
-
-# make everything
-param : $(PROG)
-
-# dependencies for executables
-$(PROG) : $(BIN_DIR_SRC) $(LIBRARY) $(OBJECTS)
-	$(CXX) $(CFLAGS) -o $(PROG) $(OBJECTS) $(LIBRARY) -lm -lz -lssl
+$(BINDIR$(VARIABLE_EXT))/$(EXE): $(BINDIR$(VARIABLE_EXT)) $(LIBRARY) $(OBJECTS)
+	$(CXX) $(CFLAGS) -o $@  $(OBJECTS) $(LIBRARY) -lm -lz -lssl
 
 # Build the statgen lib if necessary
-$(STAT_GEN_LIB) : 
-	$(MAKE) -C $(@D) OPTFLAG="$(OPTFLAG_OPT)" --no-print-directory
+$(STAT_GEN_LIB$(VARIABLE_EXT)): 
+	$(MAKE) -C $(@D) OPTFLAG="$(OPTFLAG$(VARIABLE_EXT))" --no-print-directory $(MAKECMDGOALS)
 
-$(BIN_DIR_SRC) : 
-	mkdir -p $(BIN_DIR_SRC)
+$(BINDIR$(VARIABLE_EXT)):
+	mkdir -p $@
 
 specific_clean :
-	-rm $(BIN_DIR_OPT)/$(EXE)
-	-rm -rf $(BIN_DIR_DEBUG)
-	-rm -rf $(BIN_DIR_PROFILE)
+	-rm $(BINDIR_OPT)/$(EXE)
+	-rm -rf $(BINDIR_DEBUG)
+	-rm -rf $(BINDIR_PROFILE)
 
 install : all $(INSTALLDIR)
 	@echo " "
@@ -73,9 +65,6 @@ $(INSTALLDIR) :
 	@echo Creating directory $(INSTALLDIR)
 	@echo " "
 	@mkdir -p $(INSTALLDIR)
-
-$(ALWAYS_COMP_OBJ):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ),$(OBJECTS))
-	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
 
 package : 
 # the touch gets rid of a tar warning

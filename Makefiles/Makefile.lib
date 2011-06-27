@@ -5,15 +5,18 @@
 #   VERSION - if not 0.0.1
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
+
+OBJDIR = obj
 include $(MAKEFILES_PATH)Makefile.common
 
 HEADERS=$(TOOLHDR)
 
 
+
 .PHONY: all test clean debug profile param install specific_clean
 
 # make everything, ensure headers are in the include direcotry.
-param : $(addprefix $(INCLUDE_PATH)/, $(HEADERS)) 
+opt debug profile : $(addprefix $(INCLUDE_PATH)/, $(HEADERS)) 
 
 install: opt
 
@@ -24,12 +27,12 @@ $(INCLUDE_PATH)/%.h: %.h
 
 #########
 # Build the library
-param: $(STAT_GEN_LIB)
+opt debug profile: $(STAT_GEN_LIB$(VARIABLE_EXT))
 
 # To build the library, build the objects
 # Then add them to the library
-$(STAT_GEN_LIB): $(OBJECTS)
-	ar -cr $@ $(OBJECTS)
+$(STAT_GEN_LIB$(VARIABLE_EXT)): $(OBJECTS$(VARIABLE_EXT))
+	ar -cr $@ $(OBJECTS$(VARIABLE_EXT))
 
 specific_clean:
 	-rm -f  $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
