@@ -3,15 +3,11 @@ TOOLBASE ?=
 COMPILE_ANY_CHANGE ?= 
 SRCONLY ?= 
 HDRONLY ?= 
-VERSION ?= 0.0.1
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.include
 
 MAKE_DEPENDS=Makefile.depends
-
-DIR_PARTS := $(subst /, , $(CURDIR))
-DIR_NAME := $(word $(words $(DIR_PARTS)), $(DIR_PARTS))
 
 # Source File Set
 TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
