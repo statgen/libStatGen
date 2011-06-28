@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := opt
+
 # Determine the path to this Makefile
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 MAKEFILES_PATH_TMP := $(patsubst %Makefiles/, %, $(MAKEFILES_PATH))
