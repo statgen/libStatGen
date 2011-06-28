@@ -9,7 +9,7 @@ ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 	echo "                  Install binaries in directory_for_binaries"
 
 
-.PHONY: all test clean debug profile param install specific_clean
+.PHONY: package package2
 
 package : 
 # the touch gets rid of a tar warning

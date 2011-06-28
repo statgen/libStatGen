@@ -33,7 +33,7 @@ OBJECTS=$(patsubst %,$(OBJDIR)/%,$(TOOLOBJ))
 
 
 # make everything
-all : $(EXE)
+all debug: $(EXE)
 
 # dependencies for executables
 $(EXE) : $(LIBRARY) $(OBJECTS)

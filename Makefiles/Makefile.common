@@ -49,13 +49,13 @@ ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR$(VARIABLE_EXT))/%,$(COMPILE_ANY_CHANGE:=
 
 OPTFLAG ?= $(OPTFLAG$(VARIABLE_EXT))
 
-.PHONY: all test clean debug profile specific_clean
+.PHONY: all test clean opt debug profile specific_clean
 
 # all, build as opt, debug, and profile.
 all: 
-	@$(MAKE) OPTFLAG="$(OPTFLAG)" --no-print-directory opt
-	@$(MAKE) OPTFLAG_DEBUG="$(OPTFLAG_DEBUG)" --no-print-directory debug
-	@$(MAKE) OPTFLAG_PROFILE="$(OPTFLAG_PROFILE)" --no-print-directory profile
+	@$(MAKE) --no-print-directory opt
+	@$(MAKE) --no-print-directory debug
+	@$(MAKE) --no-print-directory profile
 
 #########
 # Help
@@ -82,7 +82,7 @@ $(ALWAYS_COMP_OBJ):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ
 
 #########
 # Test
-test: all
+test: debug
 	@if test -d $(TESTDIR); \
         then \
 	$(MAKE) -C $(TESTDIR) --no-print-directory $@; \

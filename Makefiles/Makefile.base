@@ -7,20 +7,15 @@ include $(MAKEFILES_PATH)Makefile.include
 # Build in all subdirectories.
 
 
-.PHONY: $(SUBDIRS) all test clean debug install 
-all: TARGET = all
-opt: TARGET = opt
-debug: TARGET = debug
-profile: TARGET = profile
-test: TARGET = test
-clean: TARGET = clean
-install: TARGET = install
-
-all test opt debug profile: $(SUBDIRS)
+.PHONY: $(SUBDIRS)
 
 include $(MAKEFILES_PATH)Makefile.help
 
-clean: $(SUBDIRS)
-
 $(SUBDIRS): 
-	@$(MAKE) OPTFLAG="$(OPTFLAG)" -C $@ $(TARGET)
+	@$(MAKE) -C $@ $(MAKECMDGOALS)
+
+%: $(SUBDIRS) ;
+
+Makefile.%: ;
+
+Makefile: ;
