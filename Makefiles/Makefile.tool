@@ -9,7 +9,7 @@ ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 	echo "                  Install binaries in directory_for_binaries"
 
 
-.PHONY: package package2
+.PHONY: package wholepackage
 
 package : 
 # the touch gets rid of a tar warning
@@ -17,10 +17,11 @@ package :
 	touch $(RELEASE_FILE)
 	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/,' * --show-transformed-names 
 
-PACKAGE2_MAKE = $(MAKEFILES_PATH)/Makefile.include
+#WHOLEPACKAGE_MAKE = $(MAKEFILES_PATH)/Makefile.base
+#BASE_LIB_PARTS := $(subst /, , $(BASE_LIB_PATH))
+#BASE_LIB_DIRNAME := $(word $(words $(BASE_LIB_PARTS)), $(BASE_LIB_PARTS))
 
-package2 : 
-# the touch gets rid of a tar warning
-#	echo directory name = $(DIR_NAME)
-	touch $(RELEASE_FILE)
-	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/$(DIR_NAME)/,' --transform 's,$(DIR_NAME)/$(BASE_LIB_DIRNAME),$(BASE_LIB_DIRNAME),'  --transform 's,$(DIR_NAME)/$(PACKAGE2_MAKE),$(PACKAGE2_MAKE),' * $(BASE_LIB_PATH) $(PACKAGE2_MAKE) --show-transformed-names
+#wholepackage: 
+## the touch gets rid of a tar warning
+#	touch $(RELEASE_FILE)
+#	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/$(DIR_NAME)/,' --transform 's,$(DIR_NAME)/$(BASE_LIB_DIRNAME),$(BASE_LIB_DIRNAME),'  --transform 's,$(DIR_NAME)/$(WHOLEPACKAGE_MAKE),$(WHOLEPACKAGE_MAKE),' * $(BASE_LIB_PATH) $(WHOLEPACKAGE_MAKE) --show-transformed-names
