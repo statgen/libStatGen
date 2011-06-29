@@ -8,56 +8,62 @@
 #                        included in TOOLBASE or SRCONLY.  Here they are
 #                        just the base name without the extension.
 #   VERSION - if not 0.0.1
-#   BIN_DIR if it is not bin
+#   BINDIR if it is not ../bin
 #   USER_INCLUDES if any additional directories need to be included to pick up
 #                 header files (example: USER_INCLUDES=-ImyDir1 -ImyDir2)
 #   INSTALLDIR if not /usr/local/bin
 EXE ?=
-COMPILE_ANY_CHANGE ?= 
-BIN_DIR ?= bin
+BINDIR ?= ../bin
+TESTDIR ?= ../test
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.common
 
-LIBRARY = $(USER_LIBS) $(REQ_LIBS$(VARIABLE_EXT))
-ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR_PARAM)/%,$(COMPILE_ANY_CHANGE:=.o))
-
 RELEASE_FILE?=$(DIR_NAME).$(VERSION).tgz
 
-BIN_DIR_OPT = $(BIN_DIR)
-BIN_DIR_DEBUG = $(BIN_DIR)$(SUBDIR_DEBUG)
-BIN_DIR_PROFILE = $(BIN_DIR)$(SUBDIR_PROFILE)
+# Set the bins for each build type
+BINDIR_OPT ?= $(BINDIR)$(SUBDIR_OPT)
+BINDIR_DEBUG ?= $(BINDIR)$(SUBDIR_DEBUG)
+BINDIR_PROFILE ?= $(BINDIR)$(SUBDIR_PROFILE)
 
-BIN_DIR_SRC = $(BIN_DIR$(VARIABLE_EXT))
-
-PROG = $(BIN_DIR_SRC)/$(EXE)
+PROG_OPT = $(BINDIR_OPT)/$(EXE)
+PROG_DEBUG = $(BINDIR_DEBUG)/$(EXE)
+PROG_PROFILE = $(BINDIR_PROFILE)/$(EXE)
 
 ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 	echo "make install INSTALLDIR=directory_for_binaries";\
 	echo "                  Install binaries in directory_for_binaries"
 
+.PHONY: install
 
-.PHONY: all test clean debug profile param install specific_clean
+# Build the appropriate program
+opt: $(PROG_OPT)
+debug: $(PROG_DEBUG)
+profile: $(PROG_PROFILE)
 
-
-# make everything
-param : $(PROG)
-
-# dependencies for executables
-$(PROG) : $(BIN_DIR_SRC) $(LIBRARY) $(OBJECTS)
-	$(CXX) $(CFLAGS) -o $(PROG) $(OBJECTS) $(LIBRARY) -lm -lz -lssl
+# Build with the appropriate dependencies
+$(PROG_OPT): $(BINDIR_OPT) $(USER_LIBS) $(REQ_LIBS_OPT) $(OBJECTS_OPT)
+	$(CXX) $(CFLAGS) -o $@  $(OBJECTS_OPT) $(USER_LIBS) $(REQ_LIBS_OPT) -lm -lz -lssl
+$(PROG_DEBUG): $(BINDIR_DEBUG) $(USER_LIBS) $(REQ_LIBS_DEBUG) $(OBJECTS_DEBUG)
+	$(CXX) $(CFLAGS) -o $@  $(OBJECTS_DEBUG) $(USER_LIBS) $(REQ_LIBS_DEBUG) -lm -lz -lssl
+$(PROG_PROFILE): $(BINDIR_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) $(OBJECTS_PROFILE)
+	$(CXX) $(CFLAGS) -o $@  $(OBJECTS_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) -lm -lz -lssl
 
 # Build the statgen lib if necessary
-$(STAT_GEN_LIB) : 
-	$(MAKE) -C $(@D) OPTFLAG="$(OPTFLAG_OPT)" --no-print-directory
+$(STAT_GEN_LIB_OPT):
+	$(MAKE) -C $(@D) --no-print-directory opt
+ $(STAT_GEN_LIB_DEBUG): 
+	$(MAKE) -C $(@D) --no-print-directory debug
+$(STAT_GEN_LIB_PROFILE): 
+	$(MAKE) -C $(@D) --no-print-directory profile
 
-$(BIN_DIR_SRC) : 
-	mkdir -p $(BIN_DIR_SRC)
+$(BINDIR_OPT) $(BINDIR_DEBUG) $(BINDIR_PROFILE):
+	mkdir -p $@
 
 specific_clean :
-	-rm $(BIN_DIR_OPT)/$(EXE)
-	-rm -rf $(BIN_DIR_DEBUG)
-	-rm -rf $(BIN_DIR_PROFILE)
+	-rm $(BINDIR_OPT)/$(EXE)
+	-rm -rf $(BINDIR_DEBUG)
+	-rm -rf $(BINDIR_PROFILE)
 
 install : all $(INSTALLDIR)
 	@echo " "
@@ -74,11 +80,16 @@ $(INSTALLDIR) :
 	@echo " "
 	@mkdir -p $(INSTALLDIR)
 
-$(ALWAYS_COMP_OBJ):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ),$(OBJECTS))
-	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
-
 package : 
 # the touch gets rid of a tar warning
 #	echo directory name = $(DIR_NAME)
 	touch $(RELEASE_FILE)
 	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/,' * --show-transformed-names 
+
+PACKAGE2_MAKE = $(MAKEFILES_PATH)/Makefile.include
+
+package2 : 
+# the touch gets rid of a tar warning
+#	echo directory name = $(DIR_NAME)
+	touch $(RELEASE_FILE)
+	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/$(DIR_NAME)/,' --transform 's,$(DIR_NAME)/$(BASE_LIB_DIRNAME),$(BASE_LIB_DIRNAME),'  --transform 's,$(DIR_NAME)/$(PACKAGE2_MAKE),$(PACKAGE2_MAKE),' * $(BASE_LIB_PATH) $(PACKAGE2_MAKE) --show-transformed-names
