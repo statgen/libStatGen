@@ -19,8 +19,6 @@ TESTDIR ?= ../test
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.common
 
-LIBRARY = $(USER_LIBS) $(REQ_LIBS$(VARIABLE_EXT))
-
 RELEASE_FILE?=$(DIR_NAME).$(VERSION).tgz
 
 # Set the bins for each build type
@@ -28,22 +26,38 @@ BINDIR_OPT ?= $(BINDIR)$(SUBDIR_OPT)
 BINDIR_DEBUG ?= $(BINDIR)$(SUBDIR_DEBUG)
 BINDIR_PROFILE ?= $(BINDIR)$(SUBDIR_PROFILE)
 
+PROG_OPT = $(BINDIR_OPT)/$(EXE)
+PROG_DEBUG = $(BINDIR_DEBUG)/$(EXE)
+PROG_PROFILE = $(BINDIR_PROFILE)/$(EXE)
+
 ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 	echo "make install INSTALLDIR=directory_for_binaries";\
 	echo "                  Install binaries in directory_for_binaries"
 
 .PHONY: install
 
-opt debug profile: $(BINDIR$(VARIABLE_EXT))/$(EXE)
+# Build the appropriate program
+opt: $(PROG_OPT)
+debug: $(PROG_DEBUG)
+profile: $(PROG_PROFILE)
 
-$(BINDIR$(VARIABLE_EXT))/$(EXE): $(BINDIR$(VARIABLE_EXT)) $(LIBRARY) $(OBJECTS)
-	$(CXX) $(CFLAGS) -o $@  $(OBJECTS) $(LIBRARY) -lm -lz -lssl
+# Build with the appropriate dependencies
+$(PROG_OPT): $(BINDIR_OPT) $(USER_LIBS) $(REQ_LIBS_OPT) $(OBJECTS_OPT)
+	$(CXX) $(CFLAGS) -o $@  $(OBJECTS_OPT) $(USER_LIBS) $(REQ_LIBS_OPT) -lm -lz -lssl
+$(PROG_DEBUG): $(BINDIR_DEBUG) $(USER_LIBS) $(REQ_LIBS_DEBUG) $(OBJECTS_DEBUG)
+	$(CXX) $(CFLAGS) -o $@  $(OBJECTS_DEBUG) $(USER_LIBS) $(REQ_LIBS_DEBUG) -lm -lz -lssl
+$(PROG_PROFILE): $(BINDIR_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) $(OBJECTS_PROFILE)
+	$(CXX) $(CFLAGS) -o $@  $(OBJECTS_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) -lm -lz -lssl
 
 # Build the statgen lib if necessary
-$(STAT_GEN_LIB$(VARIABLE_EXT)): 
-	$(MAKE) -C $(@D) OPTFLAG="$(OPTFLAG$(VARIABLE_EXT))" --no-print-directory $(MAKECMDGOALS)
+$(STAT_GEN_LIB_OPT):
+	$(MAKE) -C $(@D) --no-print-directory opt
+ $(STAT_GEN_LIB_DEBUG): 
+	$(MAKE) -C $(@D) --no-print-directory debug
+$(STAT_GEN_LIB_PROFILE): 
+	$(MAKE) -C $(@D) --no-print-directory profile
 
-$(BINDIR$(VARIABLE_EXT)):
+$(BINDIR_OPT) $(BINDIR_DEBUG) $(BINDIR_PROFILE):
 	mkdir -p $@
 
 specific_clean :

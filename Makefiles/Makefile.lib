@@ -27,12 +27,18 @@ $(INCLUDE_PATH)/%.h: %.h
 
 #########
 # Build the library
-opt debug profile: $(STAT_GEN_LIB$(VARIABLE_EXT))
+opt: $(STAT_GEN_LIB_OPT)
+debug: $(STAT_GEN_LIB_DEBUG)
+profile: $(STAT_GEN_LIB_PROFILE)
 
 # To build the library, build the objects
 # Then add them to the library
-$(STAT_GEN_LIB$(VARIABLE_EXT)): $(OBJECTS$(VARIABLE_EXT))
-	ar -cr $@ $(OBJECTS$(VARIABLE_EXT))
+$(STAT_GEN_LIB_OPT): $(OBJECTS_OPT)
+	ar -cr $@ $(OBJECTS_OPT)
+$(STAT_GEN_LIB_DEBUG): $(OBJECTS_DEBUG)
+	ar -cr $@ $(OBJECTS_DEBUG)
+$(STAT_GEN_LIB_PROFILE): $(OBJECTS_PROFILE)
+	ar -cr $@ $(OBJECTS_PROFILE)
 
 specific_clean:
 	-rm -f  $(addprefix $(INCLUDE_PATH)/, $(HEADERS))

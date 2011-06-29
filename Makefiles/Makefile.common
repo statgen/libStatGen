@@ -8,6 +8,8 @@ MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.include
 
 MAKE_DEPENDS=Makefile.depends
+MAKE_DEPENDS=Makefile.depends
+MAKE_DEPENDS=Makefile.depends
 
 # Source File Set
 TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
@@ -33,21 +35,9 @@ OBJECTS_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(TOOLOBJ))
 # Tests go in the test directory.
 TESTDIR ?= test
 
-ifeq ($(MAKECMDGOALS), debug)
-  VARIABLE_EXT=_DEBUG
-  OPTFLAG = $(OPTFLAG_DEBUG)
-else ifeq ($(MAKECMDGOALS), profile)
-  VARIABLE_EXT=_PROFILE
-  OPTFLAG = $(OPTFLAG_PROFILE)
-else
-  VARIABLE_EXT=_OPT
-  OPTFLAG ?= $(OPTFLAG_OPT)
-endif
-
-OBJECTS=$(OBJECTS$(VARIABLE_EXT))
-ALWAYS_COMP_OBJ = $(patsubst %,$(OBJDIR$(VARIABLE_EXT))/%,$(COMPILE_ANY_CHANGE:=.o))'
-
-OPTFLAG ?= $(OPTFLAG$(VARIABLE_EXT))
+ALWAYS_COMP_OBJ_OPT = $(patsubst %,$(OBJDIR_OPT)/%,$(COMPILE_ANY_CHANGE:=.o))'
+ALWAYS_COMP_OBJ_DEBUG = $(patsubst %,$(OBJDIR_DEBUG)/%,$(COMPILE_ANY_CHANGE:=.o))'
+ALWAYS_COMP_OBJ_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(COMPILE_ANY_CHANGE:=.o))'
 
 .PHONY: all test clean opt debug profile specific_clean
 
@@ -57,6 +47,10 @@ all:
 	@$(MAKE) --no-print-directory debug
 	@$(MAKE) --no-print-directory profile
 
+opt: OPTFLAG=$(OPTFLAG_OPT)
+debug: OPTFLAG=$(OPTFLAG_DEBUG)
+profile: OPTFLAG=$(OPTFLAG_PROFILE)
+
 #########
 # Help
 include $(MAKEFILES_PATH)Makefile.help
@@ -64,25 +58,33 @@ include $(MAKEFILES_PATH)Makefile.help
 #######
 # Objects
 # The objects are dependent on the object directory.
-$(OBJECTS): | $(OBJDIR$(VARIABLE_EXT))
+$(OBJECTS_OPT): | $(OBJDIR_OPT)
+$(OBJECTS_DEBUG): | $(OBJDIR_DEBUG)
+$(OBJECTS_PROFILE): | $(OBJDIR_PROFILE)
 
 # Create the object directory
-$(OBJDIR$(VARIABLE_EXT)):
+$(OBJDIR_OPT) $(OBJDIR_DEBUG) $(OBJDIR_PROFILE):
 	mkdir -p $@
 
 # Compile the source
-$(OBJDIR$(VARIABLE_EXT))/%.o: %.c
+$(OBJDIR_OPT)/%.o $(OBJDIR_DEBUG)/%.o $(OBJDIR_PROFILE)/%.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $*.c 
 
-$(OBJDIR$(VARIABLE_EXT))/%.o: %.cpp 
+$(OBJDIR_OPT)/%.o $(OBJDIR_DEBUG)/%.o $(OBJDIR_PROFILE)/%.o: %.cpp 
 	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
 
-$(ALWAYS_COMP_OBJ):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ),$(OBJECTS))
+ifneq ($(COMPILE_ANY_CHANGE),)
+$(ALWAYS_COMP_OBJ_OPT):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ_OPT),$(OBJECTS_OPT))
 	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
+$(ALWAYS_COMP_OBJ_DEBUG):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ_DEBUG),$(OBJECTS_DEBUG))
+	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
+$(ALWAYS_COMP_OBJ_PROFILE):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ_PROFILE),$(OBJECTS_PROFILE))
+	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
+endif
 
 #########
 # Test
-test: debug
+test: all
 	@if test -d $(TESTDIR); \
         then \
 	$(MAKE) -C $(TESTDIR) --no-print-directory $@; \
@@ -94,7 +96,7 @@ clean : specific_clean
 	-rm -f $(OBJDIR_OPT)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~ 
 	@if test -d $(TESTDIR); \
         then \
-	$(MAKE) -C $(TESTDIR) OPTFLAG="$(OPTFLAG)" --no-print-directory $@; \
+	$(MAKE) -C $(TESTDIR) --no-print-directory $@; \
         fi
 
 .SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
@@ -119,11 +121,13 @@ cleandepend:
 
 depend:
 	touch $(MAKE_DEPENDS)
-	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR$$\(VARIABLE_EXT\)\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
+	makedepend -f$(MAKE_DEPENDS) -p$$\(OBJDIR_OPT\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
+	makedepend -f$(MAKE_DEPENDS) -a -p$$\(OBJDIR_DEBUG\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
+	makedepend -f$(MAKE_DEPENDS) -a -p$$\(OBJDIR_PROFILE\)/ -- $(DFLAGS) -- $(TOOLSRC) >/dev/null 2>&1
 
 
 ifeq ($(wildcard $(MAKE_DEPENDS)),)
-$(OBJECTS) : $(TOOLHDR)
+$(OBJECTS_OPT) $(OBJECTS_DEBUG) $(OBJECTS_PROFILE) : $(TOOLHDR)
 else
 include $(MAKE_DEPENDS)
 endif

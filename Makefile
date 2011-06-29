@@ -3,7 +3,7 @@ SUBDIRS=general bam fastq glf samtools
 include Makefiles/Makefile.base
 
 
-clean:
+clean:$(SUBDIRS)
 	rm -f $(STAT_GEN_LIB_OPT)
 	rm -f $(STAT_GEN_LIB_DEBUG)
 	rm -f $(STAT_GEN_LIB_PROFILE)
