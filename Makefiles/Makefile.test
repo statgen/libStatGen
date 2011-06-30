@@ -31,6 +31,7 @@ TOOLOBJ = $(TOOLSRC:.cpp=.o)
 LIBRARY = $(REQ_LIBS_DEBUG)
 OBJECTS=$(patsubst %,$(OBJDIR)/%,$(TOOLOBJ))
 
+.DEFAULT_GOAL := all
 
 # make everything
 all debug: $(EXE)
