@@ -13,15 +13,16 @@ ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 
 package : 
 # the touch gets rid of a tar warning
-#	echo directory name = $(DIR_NAME)
 	touch $(RELEASE_FILE)
 	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/,' * --show-transformed-names 
 
-#WHOLEPACKAGE_MAKE = $(MAKEFILES_PATH)/Makefile.base
-#BASE_LIB_PARTS := $(subst /, , $(BASE_LIB_PATH))
-#BASE_LIB_DIRNAME := $(word $(words $(BASE_LIB_PARTS)), $(BASE_LIB_PARTS))
+BASE_LIB_PARTS := $(subst /, , $(BASE_LIB_PATH))
+BASE_LIB_DIRNAME := $(word $(words $(BASE_LIB_PARTS)), $(BASE_LIB_PARTS))
+WHOLEPACKAGE_MAKE := $(BASE_LIB_DIRNAME)/Makefiles/Makefile.wholepackage
 
-#wholepackage: 
-## the touch gets rid of a tar warning
-#	touch $(RELEASE_FILE)
-#	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/$(DIR_NAME)/,' --transform 's,$(DIR_NAME)/$(BASE_LIB_DIRNAME),$(BASE_LIB_DIRNAME),'  --transform 's,$(DIR_NAME)/$(WHOLEPACKAGE_MAKE),$(WHOLEPACKAGE_MAKE),' * $(BASE_LIB_PATH) $(WHOLEPACKAGE_MAKE) --show-transformed-names
+DIR_ABOVE_LIB :=  $(patsubst %$(BASE_LIB_DIRNAME)/, %, $(BASE_LIB_PATH))
+
+wholepackage: 
+# the touch gets rid of a tar warning
+	touch $(RELEASE_FILE)
+	tar chvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs --exclude-backups -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/,;s,$(WHOLEPACKAGE_MAKE),Makefile,' -C .. $(DIR_NAME) -C $(DIR_NAME) -C $(DIR_ABOVE_LIB) $(BASE_LIB_DIRNAME) --show-transformed-names
