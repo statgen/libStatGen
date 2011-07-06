@@ -1088,22 +1088,9 @@ void IFILE_Test::openNoExistFile(const char* extension)
 
 void testWrite()
 {
-    std::string filenameNoExt = "results/InputFileTest.";
-    std::string filename = filenameNoExt + "glf";
+    std::string filename = "results/uncompressedFile.glf";
     
-    IFILE filePtr = ifopen(filename.c_str(), "wb");
-    assert(filePtr != NULL);
-    
-    assert(ifwrite(filePtr, 
-                   IFILE_Test::TEST_FILE_CONTENTS.c_str(), 
-                   IFILE_Test::TEST_FILE_CONTENTS.length()) 
-           == IFILE_Test::TEST_FILE_CONTENTS.length());
-    
-    assert(ifclose(filePtr) == 0);
-
-    filename = "results/uncompressedFile.glf";
-    
-    filePtr = ifopen(filename.c_str(), "wb", InputFile::UNCOMPRESSED);
+    IFILE filePtr = ifopen(filename.c_str(), "wb", InputFile::UNCOMPRESSED);
     assert(filePtr != NULL);
     
     assert(ifwrite(filePtr,
