@@ -80,7 +80,11 @@
 class Cigar
 {
 public:
-    enum Operation {none, match, mismatch, insert, del, skip, softClip, hardClip, pad};
+    enum Operation {none=0, match, mismatch, insert, del, skip, softClip, hardClip, pad};
+
+    // The maximum value in the operation enum (used for setting up a bitset of
+    // operations.
+    static const int MAX_OP_VALUE = pad;
 
     // Return true if the specified operation is found in the
     // query sequence, false if not.
