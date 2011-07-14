@@ -1,5 +1,5 @@
 EXE = samTest
-TOOLBASE = WriteFiles ValidationTest ReadFiles BamIndexTest ModifyVar Modify SamFileTest Validate TestEquals TestFilter
+TOOLBASE = WriteFiles ValidationTest ReadFiles BamIndexTest ModifyVar Modify SamFileTest Validate TestEquals TestFilter ShiftIndels
 SRCONLY = Main.cpp
 TEST_COMMAND = ./test.sh
 

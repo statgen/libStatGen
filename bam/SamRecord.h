@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -234,6 +234,10 @@ public:
     /// \param value value as a string for the specified tag.
     /// \return true if the tag was successfully added, false otherwise.
     bool addTag(const char* tag, char vtype, const char* value);
+
+    /// Shift the indels (if any) to the left by updating the CIGAR.
+    /// \return true if the cigar was shifted, false if not.
+    bool shiftIndelsLeft();
 
     //@}
 

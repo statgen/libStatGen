@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -346,6 +346,23 @@ uint32_t Cigar::getNumOverlaps(int32_t start, int32_t end,
     }
 
     return(numOverlaps);
+}
+
+
+// Return whether or not the cigar has an indel
+bool Cigar::hasIndel()
+{
+    for(unsigned int i = 0; i < cigarOperations.size(); i++)
+    {
+        if((cigarOperations[i].operation == insert) ||
+           (cigarOperations[i].operation == del))
+        {
+            // Found an indel, so return true.
+            return(true);
+        }
+    }
+    // Went through all the operations, and found no indel, so return false.
+    return(false);
 }
 
 
