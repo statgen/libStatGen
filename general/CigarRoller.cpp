@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -141,6 +141,54 @@ void CigarRoller::Add(const char *cigarString)
             cigarString++;
         }
     }
+}
+
+
+bool CigarRoller::Remove(int index)
+{
+    if((index < 0) || ((unsigned int)index >= cigarOperations.size()))
+    {
+        // can't remove, out of range, return false.
+        return(false);
+    }
+    cigarOperations.erase(cigarOperations.begin() + index);
+    // Modifying the cigar, so the query & reference indexes are out of date,
+    // so clear them.
+    clearQueryAndReferenceIndexes();
+    return(true);
+}
+
+
+bool CigarRoller::IncrementCount(int index, int increment)
+{
+    if((index < 0) || ((unsigned int)index >= cigarOperations.size()))
+    {
+        // can't update, out of range, return false.
+        return(false);
+    }
+    cigarOperations[index].count += increment;
+
+    // Modifying the cigar, so the query & reference indexes are out of date,
+    // so clear them.
+    clearQueryAndReferenceIndexes();
+    return(true);
+}
+
+
+bool CigarRoller::Update(int index, Operation op, int count)
+{
+    if((index < 0) || ((unsigned int)index >= cigarOperations.size()))
+    {
+        // can't update, out of range, return false.
+        return(false);
+    }
+    cigarOperations[index].operation = op;
+    cigarOperations[index].count = count;
+
+    // Modifying the cigar, so the query & reference indexes are out of date,
+    // so clear them.
+    clearQueryAndReferenceIndexes();
+    return(true);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -741,6 +741,162 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
         myTagBufferSize += tagBufferSize;
     }
     return(status);
+}
+
+
+//Shift indels to the left
+bool SamRecord::shiftIndelsLeft()
+{
+    // Check to see whether or not the Cigar has already been
+    // set - this is determined by checking if alignment length
+    // is set since alignment length and the cigar are set
+    // at the same time.
+    if(myAlignmentLength == -1)
+    {
+        // Not been set, so calculate it.
+        parseCigar();
+    }
+    
+    // Track whether or not there was a shift.
+    bool shifted = false;
+
+    // Cigar is set, so now myCigarRoller can be used.
+    // Track where in the read we are.
+    uint32_t currentPos = 0;
+
+    // Since the loop starts at 1 because the first operation can't be shifted,
+    // increment the currentPos past the first operation.
+    if(Cigar::foundInQuery(myCigarRoller[0]))
+    {
+        // This op was found in the read, increment the current position.
+        currentPos += myCigarRoller[0].count;
+    }
+   
+    int numOps = myCigarRoller.size();
+    
+    // Loop through the cigar operations from the 2nd operation since
+    // the first operation is already on the end and can't shift.
+    for(int currentOp = 1; currentOp < numOps; currentOp++)
+    {
+        if(myCigarRoller[currentOp].operation == Cigar::insert)
+        {
+            // For now, only shift a max of 1 operation.
+            int prevOpIndex = currentOp-1;
+            // Track the next op for seeing if it is the same as the
+            // previous for merging reasons.
+            int nextOpIndex = currentOp+1;
+            if(nextOpIndex == numOps)
+            {
+                // There is no next op, so set it equal to the current one.
+                nextOpIndex = currentOp;
+            }
+            // The start of the previous operation, so we know when we hit it
+            // so we don't shift past it.
+            uint32_t prevOpStart = 
+                currentPos - myCigarRoller[prevOpIndex].count;
+
+            // We can only shift if the previous operation
+            if(!Cigar::isMatchOrMismatch(myCigarRoller[prevOpIndex]))
+            {
+                // TODO - shift past pads
+                // An insert is in the read, so increment the position.
+                currentPos += myCigarRoller[currentOp].count;                 
+                // Not a match/mismatch, so can't shift into it.
+                continue;
+            }
+                    
+            // It is a match or mismatch, so check to see if we can
+            // shift into it.
+
+            // The end of the insert is calculated by adding the size
+            // of this insert minus 1 to the start of the insert.
+            uint32_t insertEndPos = 
+                currentPos + myCigarRoller[currentOp].count - 1;
+                
+            // The insert starts at the current position.
+            uint32_t insertStartPos = currentPos;
+                
+            // Loop as long as the position before the insert start
+            // matches the last character in the insert. If they match,
+            // the insert can be shifted one index left because the
+            // implied reference will not change.  If they do not match,
+            // we can't shift because the implied reference would change.
+            // Stop loop when insertStartPos = prevOpStart, because we 
+            // don't want to move past that.
+            while((insertStartPos > prevOpStart) && 
+                  (getSequence(insertEndPos,BASES) == 
+                   getSequence(insertStartPos - 1, BASES)))
+            {
+                // We can shift, so move the insert start & end one left.
+                --insertEndPos;
+                --insertStartPos;
+            }
+
+            // Determine if a shift has occurred.
+            int shiftLen = currentPos - insertStartPos;
+            if(shiftLen > 0)
+            {
+                // Shift occured, so adjust the cigar if the cigar will
+                // not become more operations.
+                // If the next operation is the same as the previous or
+                // if the insert and the previous operation switch positions
+                // then the cigar has the same number of operations.
+                // If the next operation is different, and the shift splits
+                // the previous operation in 2, then the cigar would
+                // become longer, so we do not want to shift.
+                if(myCigarRoller[nextOpIndex].operation == 
+                   myCigarRoller[prevOpIndex].operation)
+                {
+                    // The operations are the same, so merge them by adding
+                    // the length of the shift to the next operation.
+                    myCigarRoller.IncrementCount(nextOpIndex, shiftLen);
+                    myCigarRoller.IncrementCount(prevOpIndex, -shiftLen);
+
+                    // If the previous op length is 0, just remove that
+                    // operation.
+                    if(myCigarRoller[prevOpIndex].count == 0)
+                    {
+                        myCigarRoller.Remove(prevOpIndex);
+                    }
+                    shifted = true;
+                } 
+                else
+                {
+                    // Can only shift if the insert shifts past the
+                    // entire previous operation, otherwise an operation
+                    // would need to be added.
+                    if(insertStartPos == prevOpStart)
+                    { 
+                        // Swap the positions of the insert and the
+                        // previous operation.
+                        myCigarRoller.Update(currentOp,
+                                             myCigarRoller[prevOpIndex].operation,
+                                             myCigarRoller[prevOpIndex].count);
+                        // Size of the previous op is the entire
+                        // shift length.
+                        myCigarRoller.Update(prevOpIndex, 
+                                             Cigar::insert,
+                                             shiftLen);
+                        shifted = true;
+                    }
+                }
+            }
+            // An insert is in the read, so increment the position.
+            currentPos += myCigarRoller[currentOp].count;                 
+        }
+        else if(Cigar::foundInQuery(myCigarRoller[currentOp]))
+        {
+            // This op was found in the read, increment the current position.
+            currentPos += myCigarRoller[currentOp].count;
+        }
+    }
+    if(shifted)
+    {
+        // TODO - setCigar is currently inefficient because later the cigar
+        // roller will be recalculated, but for now it will work.
+        setCigar(myCigarRoller);
+    }
+    return(shifted);
 }
 
 

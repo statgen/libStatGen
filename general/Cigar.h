@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -86,38 +86,6 @@ public:
     // operations.
     static const int MAX_OP_VALUE = pad;
 
-    // Return true if the specified operation is found in the
-    // query sequence, false if not.
-    static bool foundInQuery(Operation op)
-    {
-        switch(op)
-        {
-            case match:
-            case mismatch:
-            case insert:
-            case softClip:
-                return true;
-            default:
-                return false;
-        }
-        return false;
-    }
-    
-    // Return true if the specified operation is a clipping operation,
-    // false if not.
-    static bool isClip(Operation op)
-    {
-        switch(op)
-        {
-            case softClip:
-            case hardClip:
-                return true;
-            default:
-                return false;
-        }
-        return false;
-    }
-    
     ////////////////////////////////////////////////////////////////////////
     //
     // Nested Struct : CigarOperator
@@ -186,7 +154,107 @@ public:
 
     ////////////////////////////////////////////////////////////////////////
     //
-    // Cigar  Class
+    // Cigar  Class statics
+    //
+
+    // Return true if the specified operation is found in the
+    // query sequence, false if not.
+    static bool foundInQuery(Operation op)
+    {
+        switch(op)
+        {
+            case match:
+            case mismatch:
+            case insert:
+            case softClip:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+    
+    // Return true if the specified operation is found in the
+    // query sequence, false if not.
+    static bool foundInQuery(CigarOperator op)
+    {
+        switch(op.operation)
+        {
+            case match:
+            case mismatch:
+            case insert:
+            case softClip:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+    
+    // Return true if the specified operation is a clipping operation,
+    // false if not.
+    static bool isClip(Operation op)
+    {
+        switch(op)
+        {
+            case softClip:
+            case hardClip:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+    // Return true if the specified operation is a clipping operation,
+    // false if not.
+    static bool isClip(CigarOperator op)
+    {
+        switch(op.operation)
+        {
+            case softClip:
+            case hardClip:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+    // Return true if the specified operation is a match/mismatch operation,
+    // false if not.
+    static bool isMatchOrMismatch(Operation op)
+    {
+        switch(op)
+        {
+            case match:
+            case mismatch:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+    
+    // Return true if the specified operation is a match/mismatch operation,
+    // false if not.
+    static bool isMatchOrMismatch(CigarOperator op)
+    {
+        switch(op.operation)
+        {
+            case match:
+            case mismatch:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    //
+    // Cigar  Class non static
     //
     friend std::ostream &operator << (std::ostream &stream, const Cigar& cigar);
 
@@ -313,6 +381,10 @@ public:
     //                 base in the query.
     uint32_t getNumOverlaps(int32_t start, int32_t end, int32_t queryStartPos);
 
+    /// Return whether or not the cigar has indels (insertions or delections)
+    /// \return true if it has an insertion or deletion, false if not.
+    bool hasIndel();
+    
     static const int32_t INDEX_NA;
 
 protected:

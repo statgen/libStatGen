@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -102,6 +102,20 @@ public:
     {
         (*this) += rhs;
     }
+
+    /// Remove the operation at the specified index.
+    /// Returns true if successfully removed, false if not.
+    bool Remove(int index);
+
+    /// Increments the count for the operation at the specified index
+    /// by the specified value, specify a negative value to decrement.
+    /// Returns true if it is successfully incremented, false if not.
+    bool IncrementCount(int index, int increment);
+
+    /// Updates the operation at the specified index to be the specified
+    /// operation and have the specified count.
+    /// Returns true if it is successfully updated, false if not.
+    bool Update(int index, Operation op, int count);
 
     void Set(const char *cigarString);
 

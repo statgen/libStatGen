@@ -19,4 +19,8 @@ diff expected/samTest.log results/samTest.log && \
 diff expected/addedTagToSam.bam results/addedTagToSam.bam && \
 diff expected/addedTagToSam.sam results/addedTagToSam.sam && \
 diff expected/addedTagToBam.sam results/addedTagToBam.sam && \
-diff expected/addedTagToBam.bam results/addedTagToBam.bam
+diff expected/addedTagToBam.bam results/addedTagToBam.bam && \
+diff expected/testShift.sam results/testShift.sam && \
+diff expected/testShift.bam results/testShift.bam && \
+diff expected/testShift.sam results/testShiftFromBam.sam && \
+diff expected/testShift.bam results/testShiftFromSam.bam
