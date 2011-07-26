@@ -145,7 +145,9 @@ public:
     /// \param buffer pointer to memory at least size bytes big to write the
     /// data into.
     /// \param size number of bytes to be read
-    /// \return number of bytes read
+    /// \return number of bytes read, if it is not equal to size,
+    /// there was either an error or the end of the file was reached, use
+    /// ifeof to determine which case it was.
     inline int ifread(void * buffer, unsigned int size)
     {
         // There are 2 cases:
@@ -154,7 +156,7 @@ public:
 
         // Determine the number of available bytes in the buffer.
         unsigned int availableBytes = myCurrentBufferSize - myBufferIndex;
-        unsigned int returnSize = 0;
+        int returnSize = 0;
 
         // Case 1: There are already size available bytes in buffer.
         if (size <= availableBytes)
@@ -175,6 +177,9 @@ public:
                 // Copy the available bytes into the buffer.
                 memcpy(buffer, myFileBuffer+myBufferIndex, availableBytes);
             }
+            // So far availableBytes have been copied into the read buffer.
+            returnSize = availableBytes;
+
             unsigned int remainingSize = size - availableBytes;
 
             // Check if the remaining size is more or less than the
@@ -185,21 +190,49 @@ public:
                 //  a full buffer worth of data anyway.
                 myCurrentBufferSize =
                     readFromFile(myFileBuffer, myAllocatedBufferSize);
-                
-                // Check to see how much was copied.
-                unsigned int copySize = remainingSize;
-                if(copySize > myCurrentBufferSize)
+
+                // Check for an error.
+                if(myCurrentBufferSize <= 0)
                 {
-                    copySize = myCurrentBufferSize;
+                    // No more data was successfully read, so check to see
+                    // if any data was copied to the return buffer at all.
+                    if( returnSize == 0)
+                    {
+                        // No data has been copied at all into the
+                        // return read buffer, so just return the value
+                        // returned from readFromFile.
+                        returnSize = myCurrentBufferSize;
+                        // Otherwise, returnSize is already set to the
+                        // available bytes that was already copied (so no
+                        // else statement is needed).
+                    }
+                    // Set myBufferIndex & myCurrentBufferSize to 0.
+                    myCurrentBufferSize = 0;
+                    myBufferIndex = 0;
                 }
+                else
+                {
+                    // Successfully read more data.
+                    // Check to see how much was copied.
+                    int copySize = remainingSize;
+                    if(copySize > myCurrentBufferSize)
+                    {
+                        // Not the entire requested amount was read
+                        // (either from EOF or there was a partial read due to
+                        // an error), so set the copySize to what was read.
+                        copySize = myCurrentBufferSize;
+                    }
 
-                // Now copy the rest of the bytes into the buffer.
-                memcpy((char*)buffer+availableBytes, myFileBuffer, copySize);
+                    // Now copy the rest of the bytes into the buffer.
+                    memcpy((char*)buffer+availableBytes, 
+                           myFileBuffer, copySize);
 
-                // set the buffer index to the location after what we read.
-                myBufferIndex = copySize;
+                    // set the buffer index to the location after what we are
+                    // returning as read.
+                    myBufferIndex = copySize;
                 
-                returnSize = availableBytes + copySize;
+                    returnSize += copySize;
+                }
             }
             else
             {
@@ -207,7 +240,26 @@ public:
                 // read directly into the output buffer.
                 int readSize = readFromFile((char*)buffer + availableBytes,
                                             remainingSize);
-                returnSize = readSize + availableBytes;
+                if(readSize <= 0)
+                {
+                    // No more data was successfully read, so check to see
+                    // if any data was copied to the return buffer at all.
+                    if(returnSize == 0)
+                    {
+                        // No data has been copied at all into the
+                        // return read buffer, so just return the value
+                        // returned from readFromFile.
+                        returnSize = readSize;
+                        // Otherwise, returnSize is already set to the
+                        // available bytes that was already copied (so no
+                        // else statement is needed).
+                    }
+                }
+                else
+                {
+                    // More data was read, so increment the return count.
+                    returnSize += readSize;
+                }
             }
         }
         return(returnSize);
@@ -332,6 +384,7 @@ public:
             // No myFileTypePtr, so return false - could not seek.
             return false;
         }
+        // TODO - may be able to seek within the buffer if applicable.
         // Reset buffering since a seek is being done.
         myBufferIndex = 0;
         myCurrentBufferSize = 0;
@@ -388,12 +441,12 @@ protected:
 
     // Current index into the buffer.  Used to track where we are in reading the
     // file from the buffer.
-    unsigned int myBufferIndex;
+    int myBufferIndex;
 
     // Current number of entries in the buffer.  Used to ensure that
     // if a read did not fill the buffer, we stop before hitting the
     // end of what was read.
-    unsigned int myCurrentBufferSize;
+    int myCurrentBufferSize;
 
     std::string myFileName;
 };

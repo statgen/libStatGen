@@ -106,6 +106,12 @@ public:
         {
             myEOF = true;
         }
+        else if((bytesRead != (int)size) & (bytesRead >= 0))
+        {
+            // Less then the requested size was read 
+            // and an error was not returned (bgzf_read returns -1 on error).
+            myEOF = true;
+        }
         else
         {
             myEOF = false;
