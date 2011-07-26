@@ -165,9 +165,7 @@ void BamInterface::readRecord(IFILE filePtr, SamFileHeader& header,
 {
     // TODO - need to validate there are @SQ lines in both sam/bam - MAYBE!
 
-    // Reset the record prior to reading a new one.
-    record.resetRecord();
-
+    // SetBufferFromFile will reset the record prior to reading a new one.
     if(record.setBufferFromFile(filePtr, header) != SamStatus::SUCCESS)
     {
         // Failed, so add the error message.
