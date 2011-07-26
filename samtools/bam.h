@@ -1,6 +1,6 @@
 /* The MIT License
 
-   Copyright (c) 2008 Genome Research Ltd (GRL).
+   Copyright (c) 2008-2010 Genome Research Ltd (GRL).
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -33,7 +33,7 @@
 
   BAM library provides I/O and various operations on manipulating files
   in the BAM (Binary Alignment/Mapping) or SAM (Sequence Alignment/Map)
-  format. It now supports importing from or exporting to TAM, sorting,
+  format. It now supports importing from or exporting to SAM, sorting,
   merging, generating pileup, and quickly retrieval of reads overlapped
   with a specified region.
 
