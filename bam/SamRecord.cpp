@@ -198,22 +198,33 @@ SamStatus::Status SamRecord::setBufferFromFile(IFILE filePtr,
     int numBytes = 
         ifread(filePtr, &(myRecordPtr->myBlockSize), sizeof(int32_t));
 
-    if(ifeof(filePtr))
+    // Check to see if the end of the file was hit and no bytes were read.
+    if(ifeof(filePtr) && (numBytes == 0))
     {
-        if(numBytes == 0)
-        {
-            // End of file, nothing was read, no more records.
-            myStatus.setStatus(SamStatus::NO_MORE_RECS,
-                               "No more records left to read.");
-            return(SamStatus::NO_MORE_RECS);
-        }
-        else
+        // End of file, nothing was read, no more records.
+        myStatus.setStatus(SamStatus::NO_MORE_RECS,
+                           "No more records left to read.");
+        return(SamStatus::NO_MORE_RECS);
+    }
+    
+    if(numBytes != sizeof(int32_t))
+    {
+        // Failed to read the entire block size.  Either the end of the file
+        // was reached early or there was an error.
+        if(ifeof(filePtr))
         {
             // Error: end of the file reached prior to reading the rest of the
             // record.
             myStatus.setStatus(SamStatus::FAIL_PARSE, 
                                "EOF reached in the middle of a record.");
             return(SamStatus::FAIL_PARSE);
+        }
+        else
+        {
+            // Error reading.
+            myStatus.setStatus(SamStatus::FAIL_IO, 
+                               "Failed to read the record size.");
+            return(SamStatus::FAIL_IO);
         }
     }
 
