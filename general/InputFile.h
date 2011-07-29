@@ -179,6 +179,8 @@ public:
             }
             // So far availableBytes have been copied into the read buffer.
             returnSize = availableBytes;
+            // Increment myBufferIndex  by what was read.
+            myBufferIndex += availableBytes;
 
             unsigned int remainingSize = size - availableBytes;
 
@@ -240,6 +242,10 @@ public:
                 // read directly into the output buffer.
                 int readSize = readFromFile((char*)buffer + availableBytes,
                                             remainingSize);
+
+                // Already used the buffer, so "clear" it.
+                myCurrentBufferSize = 0;
+                myBufferIndex = 0;
                 if(readSize <= 0)
                 {
                     // No more data was successfully read, so check to see
