@@ -638,13 +638,18 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    totalBytesPreviouslyRead = 0;
 
    ////////////////////////////////////
-   // Test reading entire file at once.
-   numBytesRead = ifread(largeBuffer, DEFAULT_BUFFER_SIZE + 2);
-   assert(numBytesRead == DEFAULT_BUFFER_SIZE +2);
-   numBytesRead = ifread(largeBuffer + DEFAULT_BUFFER_SIZE + 2, 3);
-   assert(numBytesRead == 3);
-//    numBytesRead = ifread(largeBuffer, largeTestFileSize + 4);
-//    assert(numBytesRead == largeTestFileSize);
+   // Test reading part of the file, then more then the buffer size,
+   // then the rest of the file (test buffer handling when read
+   // available and directly into the file, then read more).
+   numBytesRead = ifread(largeBuffer, 2);
+   assert(numBytesRead == 2);
+   numBytesRead = ifread(largeBuffer + 2, DEFAULT_BUFFER_SIZE * 3);
+   assert(numBytesRead == DEFAULT_BUFFER_SIZE + 3);
+   // Should be at the end of the file.
+   assert(myFileTypePtr->eof() == true);
+   assert(ifeof() == true);
+   numBytesRead = ifread(largeBuffer + DEFAULT_BUFFER_SIZE + 3, 2);
+   assert(numBytesRead == 0);
    
    // Validate all the 0s
    for(unsigned int i = 0; i < DEFAULT_BUFFER_SIZE; i++)
@@ -663,8 +668,57 @@ void IFILE_Test::test_ifread_ifgetc(const char* extension)
    // Should affect the IFILE buffer - 0 because read
    // is bigger than the buffer, so just read directly
    // into the largeBuffer.
-   assert(myCurrentBufferSize == 3);
-   assert(myBufferIndex == 3);
+   assert(myCurrentBufferSize == 0);
+   assert(myBufferIndex == 0);
+   
+   assert(myFileTypePtr->eof() == true);
+   assert(ifeof() == true);
+
+   // Try reading at end of file twice.
+   numBytesRead = ifread(largeBuffer, largeTestFileSize);
+   assert(numBytesRead == 0);
+   // Should affect the IFILE buffer
+   assert(myCurrentBufferSize == 0);
+   assert(myBufferIndex == 0);
+   assert(ifeof() == true);
+
+   // 2nd read attempt at eof.   
+   numBytesRead = ifread(largeBuffer, largeTestFileSize);
+   assert(numBytesRead == 0);
+   // Should affect the IFILE buffer
+   assert(myCurrentBufferSize == 0);
+   assert(myBufferIndex == 0);
+   assert(ifeof() == true);
+   
+
+   // RESET
+   ifrewind();
+   totalBytesPreviouslyRead = 0;
+
+   ////////////////////////////////////
+   // Test reading entire file at once.
+   numBytesRead = ifread(largeBuffer, largeTestFileSize + 4);
+   assert(numBytesRead == largeTestFileSize);
+   
+   // Validate all the 0s
+   for(unsigned int i = 0; i < DEFAULT_BUFFER_SIZE; i++)
+   {
+      assert(largeBuffer[i] == '0');
+   }
+   // Now validate the "12345"
+   assert(largeBuffer[DEFAULT_BUFFER_SIZE] == '1');
+   assert(largeBuffer[DEFAULT_BUFFER_SIZE+1] == '2');
+   assert(largeBuffer[DEFAULT_BUFFER_SIZE+2] == '3');
+   assert(largeBuffer[DEFAULT_BUFFER_SIZE+3] == '4');
+   assert(largeBuffer[DEFAULT_BUFFER_SIZE+4] == '5');
+
+   totalBytesPreviouslyRead += numBytesRead;
+  
+   // Should affect the IFILE buffer - 0 because read
+   // is bigger than the buffer, so just read directly
+   // into the largeBuffer.
+   assert(myCurrentBufferSize == 0);
+   assert(myBufferIndex == 0);
    
    assert(myFileTypePtr->eof() == true);
    assert(ifeof() == true);
