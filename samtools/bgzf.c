@@ -668,6 +668,9 @@ void bgzf_set_cache_size(BGZF *fp, int cache_size)
 int bgzf_check_EOF(BGZF *fp)
 {
 	static uint8_t magic[28] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0\033\0\3\0\0\0\0\0\0\0\0\0";
+        // Last 28 bytes of an uncompressed bgzf file which are different
+        // from the last 28 bytes of compressed bgzf files.
+	static uint8_t magic2[28] = "\4\0\0\0\0\0\377\6\0\102\103\2\0\036\0\1\0\0\377\377\0\0\0\0\0\0\0\0";
 	uint8_t buf[28];
 	off_t offset;
 #ifdef _USE_KNETFILE
@@ -681,7 +684,11 @@ int bgzf_check_EOF(BGZF *fp)
 	fread(buf, 1, 28, fp->file);
 	fseeko(fp->file, offset, SEEK_SET);
 #endif
-	return (memcmp(magic, buf, 28) == 0)? 1 : 0;
+	if((memcmp(magic, buf, 28) == 0) || (memcmp(magic2, buf, 28) == 0))
+        {
+            return(1);
+        }
+        return(0);
 }
 
 int64_t bgzf_seek(BGZF* fp, int64_t pos, int where)
