@@ -15,7 +15,6 @@ $(OBJDIR_PARAM)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_PARAM)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
 $(OBJDIR_PARAM)/CigarRoller.o: InputFile.h FileType.h
 $(OBJDIR_PARAM)/Error.o: Error.h
-$(OBJDIR_PARAM)/FastQ.o: FastQ.h
 $(OBJDIR_PARAM)/FileType.o: FileType.h
 $(OBJDIR_PARAM)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
 $(OBJDIR_PARAM)/FortranFormat.o: FileType.h IntArray.h Error.h

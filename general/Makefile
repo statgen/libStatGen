@@ -26,7 +26,6 @@ TOOLBASE=\
 	Cigar \
 	CigarRoller \
 	Error \
-	FastQ \
 	FileType \
 	FortranFormat \
 	GenomeSequence \
