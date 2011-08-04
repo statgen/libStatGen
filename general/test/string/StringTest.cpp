@@ -23,6 +23,7 @@ int main(int argc, char ** argv)
 
     testAsInteger();
 
+    testReadLine();
 }
 
 void testAsInteger()
@@ -75,4 +76,44 @@ void testAsInteger()
     assert(nonIntString.AsInteger() == 0);
     assert(!nonIntString.AsInteger(retValue));
     assert(retValue == 0);
+}
+
+int temp1 = 0;
+
+void testReadLine()
+{
+    IFILE filePtr = ifopen("testFiles/testFile.txt", "rb");
+    assert(filePtr != NULL);
+    
+    String line = "";
+    line.ReadLine(filePtr);
+
+    assert(line == "  Hello, I am a testFile.  ");
+
+    line.Trim();
+    assert(line == "Hello, I am a testFile.");
+
+
+    // Does not compile in current version, but compiles in old verison.
+    // This can be added back in to ensure that it will catch the difference
+    // in return value for ReadLine (now: int; used to be: string&)
+    //    testMethod(line.ReadLine(filePtr));
+    line.ReadLine(filePtr);
+    assert(temp1 == 0);
+    testMethod(line);
+    assert(temp1 == 1);
+
+    //    line.ReadLine(filePtr).Trim();
+    line.ReadLine(filePtr);
+    line.Trim();
+
+    assert(line == "ThirdLine.");
+
+    ifclose(filePtr);
+}
+
+
+void testMethod(String temp)
+{
+    temp1 = 1;
 }

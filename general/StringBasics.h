@@ -48,13 +48,13 @@ public:
     static int  alloc;
     static bool caseSensitive;
 
-    String(int startsize = 0)
+    explicit String(int startsize = 0)
     {
         NewString(startsize);
     }
     String(const char * s);
     String(const String & s);
-    String(char ch, int count = 1);
+    explicit String(char ch, int count = 1);
 
     ~String()
     {

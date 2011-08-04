@@ -18,3 +18,5 @@
 
 
 void testAsInteger();
+void testReadLine();
+void testMethod(String temp);
