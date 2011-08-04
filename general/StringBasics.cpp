@@ -955,31 +955,12 @@ String operator + (unsigned int lhs, const String & rhs)
 
 long String::AsInteger() const
 {
-    long integer = 0;
-    int  base = 10;
-    int  pos = 0;
-    int  sign = 1;
-
-    if (buffer[pos] == '-')
-        sign = -1, pos++;
-
-    if (len > pos + 2 && buffer[pos] == '0' &&
-            (buffer[pos+1] == 'x' || buffer[pos+1] == 'X'))
-        base = 16, pos += 2;
-
-    for (;  pos < len; pos++)
+    long returnValue = 0;
+    if(!AsInteger(returnValue))
     {
-        char digit = (char) toupper(buffer[pos]);
-
-        if (digit >= '0' && digit <= '9')
-            integer = integer * base + digit - '0';
-        else if (digit >= 'A' && digit <= 'F' && base == 16)
-            integer = integer * base + digit - 'A' + 10;
-        else
-            return sign * integer;
+        // This is not an integer, but nothing to do but return a value.
     }
-
-    return sign * integer;
+    return(returnValue);
 }
 
 
@@ -1025,6 +1006,7 @@ bool String::AsInteger(long& intValue) const
         else
         {
             isInt = false;
+            break;
         }
     }
 
