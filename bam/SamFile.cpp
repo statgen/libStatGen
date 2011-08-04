@@ -1130,6 +1130,8 @@ bool SamFile::readIndexedRecord(SamFileHeader& header,
         // within those.
         // If the alignment start is greater than the end of the region,
         // return NO_MORE_RECS.
+        // Since myEndPos is Exclusive 0-based, anything >= myEndPos is outside
+        // of the region.
         if((myEndPos != -1) && (record.get0BasedPosition() >= myEndPos))
         {
             myStatus = SamStatus::NO_MORE_RECS;
