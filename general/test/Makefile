@@ -1,6 +1,8 @@
 
 include ../../Makefiles/Makefile.include
 
+.DEFAULT_GOAL := all
+
 SUBDIRS=inputFileTest cigar
 
 OPTFLAG?=-O0
