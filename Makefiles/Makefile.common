@@ -28,9 +28,9 @@ OBJDIR_DEBUG ?= $(OBJDIR)$(SUBDIR_DEBUG)
 OBJDIR_PROFILE ?= $(OBJDIR)$(SUBDIR_PROFILE)
 
 #Needed for cleaning up the library - need all three.
-OBJECTS_OPT = $(patsubst %,$(OBJDIR_OPT)/%,$(TOOLOBJ))
-OBJECTS_DEBUG = $(patsubst %,$(OBJDIR_DEBUG)/%,$(TOOLOBJ))
-OBJECTS_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(TOOLOBJ))
+OBJECTS_OPT := $(patsubst %,$(OBJDIR_OPT)/%,$(TOOLOBJ))
+OBJECTS_DEBUG := $(patsubst %,$(OBJDIR_DEBUG)/%,$(TOOLOBJ))
+OBJECTS_PROFILE := $(patsubst %,$(OBJDIR_PROFILE)/%,$(TOOLOBJ))
 
 # Tests go in the test directory.
 TESTDIR ?= test
@@ -39,13 +39,13 @@ ALWAYS_COMP_OBJ_OPT = $(patsubst %,$(OBJDIR_OPT)/%,$(COMPILE_ANY_CHANGE:=.o))'
 ALWAYS_COMP_OBJ_DEBUG = $(patsubst %,$(OBJDIR_DEBUG)/%,$(COMPILE_ANY_CHANGE:=.o))'
 ALWAYS_COMP_OBJ_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(COMPILE_ANY_CHANGE:=.o))'
 
+CCOMPILE=$(CC) $(CFLAGS) -o $@ -c $*.c 
+CXXCOMPILE=$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+
 .PHONY: all test clean opt debug profile specific_clean
 
 # all, build as opt, debug, and profile.
-all: 
-	@$(MAKE) --no-print-directory opt
-	@$(MAKE) --no-print-directory debug
-	@$(MAKE) --no-print-directory profile
+all: opt debug profile
 
 opt: OPTFLAG=$(OPTFLAG_OPT)
 debug: OPTFLAG=$(OPTFLAG_DEBUG)
@@ -66,12 +66,23 @@ $(OBJECTS_PROFILE): | $(OBJDIR_PROFILE)
 $(OBJDIR_OPT) $(OBJDIR_DEBUG) $(OBJDIR_PROFILE):
 	mkdir -p $@
 
-# Compile the source
-$(OBJDIR_OPT)/%.o $(OBJDIR_DEBUG)/%.o $(OBJDIR_PROFILE)/%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $*.c 
+# Compile the source 
+# Must keep the 3 types (opt, debug, profile) separate,
+# otherwise on a "make all" makefile will think it has already compiled the
+# target.
+$(OBJDIR_OPT)/%.o: %.c
+	$(CCOMPILE)
+$(OBJDIR_DEBUG)/%.o: %.c
+	$(CCOMPILE)
+$(OBJDIR_PROFILE)/%.o: %.c
+	$(CCOMPILE)
 
-$(OBJDIR_OPT)/%.o $(OBJDIR_DEBUG)/%.o $(OBJDIR_PROFILE)/%.o: %.cpp 
-	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+$(OBJDIR_OPT)/%.o: %.cpp 
+	$(CXXCOMPILE)
+$(OBJDIR_DEBUG)/%.o: %.cpp 
+	$(CXXCOMPILE)
+$(OBJDIR_PROFILE)/%.o: %.cpp 
+	$(CXXCOMPILE)
 
 ifneq ($(COMPILE_ANY_CHANGE),)
 $(ALWAYS_COMP_OBJ_OPT):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ_OPT),$(OBJECTS_OPT))
