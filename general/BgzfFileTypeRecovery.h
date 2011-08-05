@@ -31,14 +31,14 @@ public:
         myEOF = false;
     }
 
-    virtual ~BgzfFileTypeRecovery()
+    ~BgzfFileTypeRecovery()
     {
         bgzfHandle = NULL;
     }
 
     BgzfFileTypeRecovery(const char * filename, const char * mode);
 
-    virtual bool operator == (void * rhs)
+    bool operator == (void * rhs)
     {
         // No two file pointers are the same, so if rhs is not NULL, then
         // the two pointers are different (false).
@@ -47,7 +47,7 @@ public:
         return (bgzfHandle == rhs);
     }
 
-    virtual bool operator != (void * rhs)
+    bool operator != (void * rhs)
     {
         // No two file pointers are the same, so if rhs is not NULL, then
         // the two pointers are different (true).
@@ -57,7 +57,7 @@ public:
     }
 
     // Close the file.
-    virtual inline int close()
+    inline int close()
     {
         int result = bgzf_close(bgzfHandle);
         bgzfHandle = NULL;
@@ -66,21 +66,21 @@ public:
 
 
     // Reset to the beginning of the file.
-    virtual inline void rewind()
+    inline void rewind()
     {
         // Just call rewind to move to the beginning of the file.
         seek(myStartPos, SEEK_SET);
     }
 
     // Check to see if we have reached the EOF.
-    virtual inline int eof()
+    inline int eof()
     {
         //  check the file for eof.
         return myEOF;
     }
 
     // Check to see if the file is open.
-    virtual inline bool isOpen()
+    inline bool isOpen()
     {
         if (bgzfHandle != NULL)
         {
@@ -91,7 +91,7 @@ public:
     }
 
     // Write to the file
-    virtual inline unsigned int write(const void * buffer, unsigned int size)
+    inline unsigned int write(const void * buffer, unsigned int size)
     {
         return bgzf_write(bgzfHandle, buffer, size);
     }
@@ -99,7 +99,7 @@ public:
     // Read into a buffer from the file.  Since the buffer is passed in and
     // this would bypass the fileBuffer used by this class, this method must
     // be protected.
-    virtual inline int read(void * buffer, unsigned int size)
+    inline int read(void * buffer, unsigned int size)
     {
         int bytesRead = bgzf_read(bgzfHandle, buffer, size);
         if ((bytesRead == 0) && (size != 0))
@@ -122,7 +122,7 @@ public:
 
     // Get current position in the file.
     // -1 return value indicates an error.
-    virtual inline int64_t tell()
+    inline int64_t tell()
     {
         if(myUsingBuffer)
         {
@@ -139,7 +139,7 @@ public:
     //   SEEK_CUR - Current position of the file pointer
     //   SEEK_END - End of file
     // Returns true on successful seek and false on a failed seek.
-    virtual inline bool seek(int64_t offset, int origin)
+    inline bool seek(int64_t offset, int origin)
     {
         int64_t returnVal = bgzf_seek(bgzfHandle, offset, origin);
         // Check for failure.
