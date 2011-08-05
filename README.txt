@@ -8,8 +8,9 @@ sudo apt-get install g++ libssl-dev zlib1g-dev
 Building
 --------
 
-To compile, from the top level directory, type: make
-To test (after compiling), from the top level directory, type: make test
+To compile, from the top level directory, type: "make"
+To compile with debug symbols, type: "make debug"
+To test (after compiling), from the top level directory, type: "make test"
 
 Under the main statgen repository, there are: 
 * bam - library code for operating on bam files.
