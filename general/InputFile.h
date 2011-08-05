@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstring>
+#include <stdint.h>
 
 #include "FileType.h"
 
@@ -362,14 +363,14 @@ public:
 
     /// Get current position in the file.
     /// \return current position in the file, -1 indicates an error.
-    inline long int iftell()
+    inline int64_t iftell()
     {
         if (myFileTypePtr == NULL)
         {
             // No myFileTypePtr, so return false - could not seek.
             return -1;
         }
-        long int pos = myFileTypePtr->tell();
+        int64_t pos = myFileTypePtr->tell();
         pos -= (myCurrentBufferSize - myBufferIndex);
         return(pos);
     }
@@ -383,7 +384,7 @@ public:
     ///   SEEK_CUR - Current position of the file pointer
     ///   SEEK_END - End of file
     /// \return true on successful seek and false on a failed seek.
-    inline bool ifseek(long int offset, int origin)
+    inline bool ifseek(int64_t offset, int origin)
     {
         if (myFileTypePtr == NULL)
         {
@@ -574,7 +575,7 @@ inline unsigned int ifwrite(IFILE file, const void * buffer, unsigned int size)
 /// Get current position in the file.
 /// \param file file to perform tell on - IFILE is a pointer to an InputFile object
 /// \return current position in the file, -1 indicates an error.
-inline long int iftell(IFILE file)
+inline int64_t iftell(IFILE file)
 {
     if(file == NULL)
     {
@@ -592,7 +593,7 @@ inline long int iftell(IFILE file)
 ///   SEEK_CUR - Current position of the file pointer
 ///   SEEK_END - End of file
 /// \return true on successful seek and false on a failed seek.
-inline bool ifseek(IFILE file, long int offset, int origin)
+inline bool ifseek(IFILE file, int64_t offset, int origin)
 {
     if(file == NULL)
     {

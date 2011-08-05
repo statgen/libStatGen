@@ -18,6 +18,8 @@
 #ifndef __FILETYPE_H__
 #define __FILETYPE_H__
 
+#include <stdint.h>
+
 class FileType
 {
 public:
@@ -48,7 +50,7 @@ public:
 
     // Get current position in the file.
     // -1 return value indicates an error.
-    virtual long int tell() = 0;
+    virtual int64_t tell() = 0;
 
     // Seek to the specified offset from the origin.
     // origin can be any of the following:
@@ -57,7 +59,7 @@ public:
     //   SEEK_CUR - Current position of the file pointer
     //   SEEK_END - End of file
     // Returns true on successful seek and false on a failed seek.
-    virtual bool seek(long int offset, int origin) = 0;
+    virtual bool seek(int64_t offset, int origin) = 0;
 
     // Set by the InputFile to inform this class if buffering
     // is used.  Maybe used by child clases (bgzf) to disable 

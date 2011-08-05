@@ -114,7 +114,7 @@ public:
 
     // Get current position in the file.
     // -1 return value indicates an error.
-    virtual inline long int tell()
+    virtual inline int64_t tell()
     {
         return ftell(filePtr);
     }
@@ -127,9 +127,9 @@ public:
     //   SEEK_CUR - Current position of the file pointer
     //   SEEK_END - End of file
     // Returns true on successful seek and false on a failed seek.
-    virtual inline bool seek(long int offset, int origin)
+    virtual inline bool seek(int64_t offset, int origin)
     {
-        long int returnVal = fseek(filePtr, offset, origin);
+        int64_t returnVal = fseek(filePtr, offset, origin);
         // Check for success - 0 return value.
         if (returnVal == 0)
         {

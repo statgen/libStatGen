@@ -125,7 +125,7 @@ public:
 
     // Get current position in the file.
     // -1 return value indicates an error.
-    virtual inline long int tell()
+    virtual inline int64_t tell()
     {
         return gztell(gzHandle);
     }
@@ -138,9 +138,9 @@ public:
     //   SEEK_CUR - Current position of the file pointer
     //   SEEK_END - End of file
     // Returns true on successful seek and false on a failed seek.
-    virtual inline bool seek(long int offset, int origin)
+    virtual inline bool seek(int64_t offset, int origin)
     {
-        long int returnVal = gzseek(gzHandle, offset, origin);
+        int64_t returnVal = gzseek(gzHandle, offset, origin);
         // Check for failure.
         if (returnVal == -1)
         {
