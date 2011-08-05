@@ -21,6 +21,7 @@ TOOLBASE=\
 	BaseUtilities \
 	BasicHash \
 	BgzfFileType \
+	BgzfFileTypeRecovery \
 	CharBuffer \
 	Chromosome \
 	Cigar \

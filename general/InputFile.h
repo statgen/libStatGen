@@ -35,6 +35,7 @@
 /// file type (uncompressed, gzip, bgzf) when reading.
 class InputFile
 {
+    bool    myAttemptRecovery;  // use recovery techniques if possible
 public:
 
     /// Compression to use when writing a file & decompression used when
@@ -50,6 +51,7 @@ public:
     /// Default constructor
     InputFile()
     {
+        myAttemptRecovery = false;
         myFileTypePtr = NULL;
         myBufferIndex = 0;
         myCurrentBufferSize = 0;
@@ -403,6 +405,18 @@ public:
     const char* getFileName() const
     {
         return(myFileName.c_str());
+    }
+
+    /// Enable (default) or disable recovery.
+    /// 
+    /// When true, we can attach a myFileTypePtr
+    /// that implements a recovery capable decompressor.
+    /// This requires that the caller be able to catch
+    /// the exception XXX "blah blah blah".
+    ///
+    void setAttemptRecovery(bool flag = false)
+    {
+        myAttemptRecovery = flag;
     }
 
 protected:

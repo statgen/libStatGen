@@ -19,6 +19,7 @@
 #include "StringBasics.h"
 #include "GzipHeader.h"
 #include "BgzfFileType.h"
+#include "BgzfFileTypeRecovery.h"
 #include "GzipFileType.h"
 #include "UncompressedFileType.h"
 
@@ -162,8 +163,17 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
             myFileTypePtr = new GzipFileType(filename, mode);
             break;
         case BGZF:
-            // BGZF compression.
-            myFileTypePtr = new BgzfFileType(filename, mode);
+            //
+            // BGZF compression - recovery is possible, so use
+            // Bgzf recovery reader if asked.
+            //
+            if(myAttemptRecovery) {
+                // NB: this reader will throw exceptions when it recovers
+                // XXX which exception?
+                myFileTypePtr = new BgzfFileTypeRecovery(filename, mode);
+            } else {
+                myFileTypePtr = new BgzfFileType(filename, mode);
+            }
             break;
         case UNCOMPRESSED:
             myFileTypePtr = new UncompressedFileType(filename, mode);
