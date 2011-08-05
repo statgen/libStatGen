@@ -18,119 +18,60 @@
 #ifndef __BGZFFILETYPERECOVERY_H__
 #define __BGZFFILETYPERECOVERY_H__
 
-#include <stdexcept> // stdexcept header file
-#include "bgzf.h"
 #include "FileType.h"
+#include <stdio.h>  // for NULL
+
+class BGZFReader;
 
 class BgzfFileTypeRecovery : public FileType
 {
 public:
     BgzfFileTypeRecovery()
     {
-        bgzfHandle = NULL;
-        myEOF = false;
+        bgzfReader = NULL;
     }
 
     ~BgzfFileTypeRecovery()
     {
-        bgzfHandle = NULL;
+        close();
     }
 
     BgzfFileTypeRecovery(const char * filename, const char * mode);
 
-    bool operator == (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (false).
-        if (rhs != NULL)
-            return false;
-        return (bgzfHandle == rhs);
-    }
+    bool operator == (const BgzfFileTypeRecovery & rhs);
 
-    bool operator != (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (true).
-        if (rhs != NULL)
-            return true;
-        return (bgzfHandle != rhs);
-    }
+    bool operator != (const BgzfFileTypeRecovery & rhs) { return *this != rhs; }
 
     // Close the file.
-    inline int close()
-    {
-        int result = bgzf_close(bgzfHandle);
-        bgzfHandle = NULL;
-        return result;
-    }
-
+    int close();
 
     // Reset to the beginning of the file.
     inline void rewind()
     {
         // Just call rewind to move to the beginning of the file.
-        seek(myStartPos, SEEK_SET);
+        seek(0LL, SEEK_SET);
     }
 
     // Check to see if we have reached the EOF.
-    inline int eof()
-    {
-        //  check the file for eof.
-        return myEOF;
-    }
+    int eof();
 
     // Check to see if the file is open.
-    inline bool isOpen()
+    bool isOpen()
     {
-        if (bgzfHandle != NULL)
-        {
-            // bgzfHandle is not null, so the file is open.
-            return(true);
-        }
-        return(false);
+        return (bgzfReader != NULL);
     }
 
     // Write to the file
-    inline unsigned int write(const void * buffer, unsigned int size)
-    {
-        return bgzf_write(bgzfHandle, buffer, size);
-    }
+    unsigned int write(const void * buffer, unsigned int size);
 
     // Read into a buffer from the file.  Since the buffer is passed in and
     // this would bypass the fileBuffer used by this class, this method must
     // be protected.
-    inline int read(void * buffer, unsigned int size)
-    {
-        int bytesRead = bgzf_read(bgzfHandle, buffer, size);
-        if ((bytesRead == 0) && (size != 0))
-        {
-            myEOF = true;
-        }
-        else if((bytesRead != (int)size) & (bytesRead >= 0))
-        {
-            // Less then the requested size was read 
-            // and an error was not returned (bgzf_read returns -1 on error).
-            myEOF = true;
-        }
-        else
-        {
-            myEOF = false;
-        }
-        return bytesRead;
-    }
-
+    int read(void * buffer, unsigned int size);
 
     // Get current position in the file.
     // -1 return value indicates an error.
-    inline int64_t tell()
-    {
-        if(myUsingBuffer)
-        {
-            throw std::runtime_error("IFILE: CANNOT use buffered reads and tell for BGZF files");
-        }
-        return bgzf_tell(bgzfHandle);
-    }
-
+    int64_t tell();
 
     // Seek to the specified offset from the origin.
     // origin can be any of the following:
@@ -139,38 +80,12 @@ public:
     //   SEEK_CUR - Current position of the file pointer
     //   SEEK_END - End of file
     // Returns true on successful seek and false on a failed seek.
-    inline bool seek(int64_t offset, int origin)
-    {
-        int64_t returnVal = bgzf_seek(bgzfHandle, offset, origin);
-        // Check for failure.
-        if (returnVal == -1)
-        {
-            return false;
-        }
-        // Successful.
-        // Reset EOF, assuming no longer at eof - first read will indicate
-        // eof if it is at the end.
-        myEOF = false;
-        return true;
-    }
-
-    // Set whether or not to require the EOF block at the end of the
-    // file.  True - require the block.  False - do not require the block.
-    static void setRequireEofBlock(bool requireEofBlock);
+    bool seek(int64_t offset, int origin);
 
 protected:
-    // A bgzfFile is used.
-    BGZF* bgzfHandle;
+    // Read via BGZFReader
+    BGZFReader* bgzfReader;
 
-    // Flag indicating EOF since there isn't one on the handle.
-    bool myEOF;
-
-    int64_t myStartPos;
-
-    // Static variable to track whether or not to require the EOF Block
-    // at the end of the file.  If the block is required, but not on the file,
-    // the constructor fails to open the file.
-    static bool ourRequireEofBlock;
 };
 
 #endif

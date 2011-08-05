@@ -15,13 +15,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <string.h>
-
 #include "BgzfFileTypeRecovery.h"
-
-
-
 
 #include <stdio.h>
 #include <stdint.h>
@@ -234,6 +228,8 @@ public:
     ~FileReader();
     FileReader(FILE *stream);
     PeekaheadBuffer::ReturnCode readahead(ssize_t count);
+    FILE *stream() {return m_stream;}
+    bool eof() {return m_stream ? feof(m_stream) : false;}
 };
 
 FileReader::FileReader()
@@ -247,6 +243,8 @@ FileReader::FileReader(FILE *stream) : m_stream(stream)
 
 FileReader::~FileReader()
 {
+    fclose(m_stream);
+    m_stream = NULL;
 }
 
 //
@@ -302,6 +300,10 @@ public:
         // NOTREACHED
         return ok;
     }
+    FILE *stream() {return m_fileReader.stream();}
+
+    bool eof() {return m_fileReader.eof();}
+
 };
 
 PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
@@ -404,57 +406,85 @@ int main(int argc, const char **argv)
 
 
 
-// Default to require the EOF block at the end of the file.
-bool BgzfFileTypeRecovery::ourRequireEofBlock = true;
-
-BgzfFileTypeRecovery::BgzfFileTypeRecovery(const char * filename, const char * mode)
+int BgzfFileTypeRecovery::close()
 {
-    // If the file is for write and is '-', then write to stdout.
-    if(((mode[0] == 'w') || (mode[0] == 'W')) && 
-       (strcmp(filename, "-") == 0))
-    {
-        // Write to stdout.
-        bgzfHandle = bgzf_fdopen(fileno(stdout), mode);
-    }
-    else if(((mode[0] == 'r') || (mode[0] == 'R')) && 
-       (strcmp(filename, "-") == 0))
-    {
-        // read from stdin
-        bgzfHandle = bgzf_fdopen(fileno(stdin), mode);
-    }
-    else
-    {
-        bgzfHandle = bgzf_open(filename, mode);
-    }
-
-    myStartPos = 0;
-    if (bgzfHandle != NULL)
-    {
-        // Check to see if the file is being opened for read, if the eof block
-        // is required, and if it is, if it is there.
-        if ((mode[0] == 'r' || mode[0] == 'R') && ourRequireEofBlock &&
-                (bgzf_check_EOF(bgzfHandle) == 0))
-        {
-            std::cerr << "BGZF EOF marker is missing in " << filename << std::endl;
-            // the block is supposed to be there, but isn't, so close the file.
-            close();
-        }
-        else
-        {
-            // Successfully opened a properly formatted file, so get the start
-            // position.
-            myStartPos = bgzf_tell(bgzfHandle);
-        }
-    }
-
-    myEOF = false;
+    if(bgzfReader) delete bgzfReader;
+    bgzfReader = NULL;
+    return true;
 }
 
 
-// Set whether or not to require the EOF block at the end of the
-// file.  True - require the block.  False - do not require the block.
-void BgzfFileTypeRecovery::setRequireEofBlock(bool requireEofBlock)
+BgzfFileTypeRecovery::BgzfFileTypeRecovery(const char * filename, const char * mode)
 {
-    ourRequireEofBlock = requireEofBlock;
+    if(tolower(mode[0])=='r') {
+        FILE *f = fopen(filename,"r");
+        bgzfReader = new BGZFReader(f);
+    } else {
+        // die for now
+        std::cerr << "Unable to open " << filename << " in mode " << mode << ".\n";
+        close();
+    }
+}
+
+//
+// Why is this ever called?
+//
+bool BgzfFileTypeRecovery::operator == (const BgzfFileTypeRecovery &rhs)
+{
+    // if both are defined
+    if(bgzfReader && this->bgzfReader) {
+        // return true if file descriptor is the same
+        return fileno(bgzfReader->stream()) == fileno(this->bgzfReader->stream());
+    }
+
+    // if both are not defined, they are technically equivalent, IMHO
+    if(bgzfReader == NULL && rhs.bgzfReader == NULL) return true;
+
+    return false;
+
+}
+
+int BgzfFileTypeRecovery::eof()
+{
+    return bgzfReader->eof();
+}
+
+unsigned int BgzfFileTypeRecovery::write(const void * buffer, unsigned int size)
+{
+    // currently unsupported
+    return 0;
+}
+
+int BgzfFileTypeRecovery::read(void * buffer, unsigned int size)
+{
+    PeekaheadBuffer::ReturnCode rc = bgzfReader->read((uint8_t *) buffer, size);
+   //     endOfFile = -1,
+//        reSync = 0,
+//        ok = 1
+    switch(rc) {
+        case PeekaheadBuffer::endOfFile:
+            // set a flag?
+            break;
+        case PeekaheadBuffer::reSync:
+            // throw exception
+            break;
+        case PeekaheadBuffer::ok:
+            // find the peekahead iterator and copy the data from there
+            // 
+            break;
+    }
+    return 0;
+}
+
+int64_t BgzfFileTypeRecovery::tell()
+{
+    // currently unsupported
+    return 0;
+}
+
+bool BgzfFileTypeRecovery::seek(int64_t offset, int origin)
+{
+    // currently unsupported
+    return 0;
 }
 
