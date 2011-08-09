@@ -25,6 +25,7 @@
 #include "TestEquals.h"
 #include "TestFilter.h"
 #include "ShiftIndels.h"
+#include "TestPileup.h"
 
 int main(int argc, char ** argv)
 {
@@ -64,6 +65,8 @@ int main(int argc, char ** argv)
         testFilter();
 
         testShiftIndels();
+
+        testPileup();
    }
     else
     {
