@@ -643,7 +643,8 @@ bool SamFile::SetReadSection(const char* refName)
 
 
 // Sets what part of the BAM file should be read.
-bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end)
+bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end, 
+                             bool overlap)
 {
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
@@ -657,6 +658,7 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end)
     }
 
     myNewSection = true;
+    myOverlapSection = overlap;
     myStartPos = start;
     myEndPos = end;
     myRefID = refID;
@@ -677,7 +679,8 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end)
 
 
 // Sets what part of the BAM file should be read.
-bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end)
+bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
+                             bool overlap)
 {
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
@@ -691,6 +694,7 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end)
     }
 
     myNewSection = true;
+    myOverlapSection = overlap;
     myStartPos = start;
     myEndPos = end;
     if((strcmp(refName, "") == 0) || (strcmp(refName, "*") == 0))
@@ -908,6 +912,7 @@ void SamFile::resetFile()
     myStartPos = -1;
     myEndPos = -1;
     myNewSection = false;
+    myOverlapSection = true;
     myCurrentChunkEnd = 0;
     myChunksToRead.clear();
     if(myBamIndex != NULL)
@@ -1146,6 +1151,24 @@ bool SamFile::readIndexedRecord(SamFileHeader& header,
             // If it does not overlap the region, so go to the next
             // record...set recordFound back to false.
             recordFound = false;
+        }
+
+        if(!myOverlapSection)
+        {
+            // Needs to be fully contained.  Not fully contained if
+            // 1) the record start position is < the region start position.
+            // or
+            // 2) the end position is specified and the record end position
+            //    is greater than or equal to the region end position.
+            //    (equal to since the region is exclusive.
+            if((record.get0BasedPosition() < myStartPos) ||
+               ((myEndPos != -1) && 
+                (record.get0BasedAlignmentEnd() >= myEndPos)))
+            {
+                // This record is not fully contained, so move on to the next
+                // record.
+                recordFound = false;
+            }
         }
     }
 

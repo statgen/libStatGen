@@ -105,6 +105,15 @@ void testIndex(BamIndex& bamIndex)
     assert(inFile.getNumMappedReadsFromIndex("X", samHeader) == 0);
     assert(inFile.getNumUnMappedReadsFromIndex("X", samHeader) == 0);
 
+   // Set the read section saying the reads must be fully enclosed in the section.
+    assert(inFile.SetReadSection("1", 1010, 1011, false));
+    assert(inFile.ReadRecord(samHeader, samRecord) == false);
+
+    assert(inFile.SetReadSection("1", 1011, 1012, false));
+    assert(inFile.ReadRecord(samHeader, samRecord));
+    validateRead2(samRecord);
+    assert(inFile.ReadRecord(samHeader, samRecord) == false);
+
     // Section -1 = Ref *: 2 records (8 & 10 from testSam.sam that is reflected
     // in the validation.
     assert(inFile.SetReadSection(-1));
@@ -214,7 +223,6 @@ void testIndex(BamIndex& bamIndex)
     assert(samRecord.getNumOverlaps(1010, 1011) == 0);
     assert(samRecord.getNumOverlaps(1011, 1012) == 0);
     assert(inFile.ReadRecord(samHeader, samRecord) == false);
-           
 }
 
 
