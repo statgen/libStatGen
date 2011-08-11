@@ -367,6 +367,19 @@ protected:
     SamRecord::SequenceTranslation myWriteTranslation;
     
     std::string myRefName;
+
+private:
+    bool    myAttemptRecovery;
+
+public:
+
+    bool attemptRecoverySync(bool (*checkSignature)(void *data) , int length);
+
+    void setAttemptRecovery(bool flag = false)
+    {
+        myAttemptRecovery = flag;
+    }
+
 };
 
 

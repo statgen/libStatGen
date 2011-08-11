@@ -31,7 +31,8 @@ SamFile::SamFile()
       myBamIndex(NULL),
       myRefPtr(NULL),
       myReadTranslation(SamRecord::NONE),
-      myWriteTranslation(SamRecord::NONE)
+      myWriteTranslation(SamRecord::NONE),
+      myAttemptRecovery(false)
 {
     resetFile();
 }
@@ -121,7 +122,13 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             // Compressed bam - open as bgzf.
             // -.bam is the filename, read compressed bam from stdin
             filename = "-";
-            myFilePtr = ifopen(filename, "rb", InputFile::BGZF);
+
+            myFilePtr = new InputFile;
+            // support recover mode - this switches in a reader
+            // capable of recovering from bad BGZF compression blocks.
+            myFilePtr->setAttemptRecovery(myAttemptRecovery);
+            myFilePtr->openFile(filename, "rb", InputFile::BGZF);
+
             myInterfacePtr = new BamInterface;
 
             // Read the magic string.
@@ -160,14 +167,21 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
     else
     {
         // Not from stdin.  Read the file to determine the type.
-        myFilePtr = ifopen(filename, "rb");
-        
-        if (myFilePtr == NULL)
+
+        myFilePtr = new InputFile;
+
+        // support recovery mode - this conditionally enables a reader
+        // capable of recovering from bad BGZF compression blocks.
+        myFilePtr->setAttemptRecovery(myAttemptRecovery);
+        bool rc = myFilePtr->openFile(filename, "rb", InputFile::DEFAULT);
+
+        if (rc == false)
         {
             std::string errorMessage = "Failed to Open ";
             errorMessage += filename;
             errorMessage += " for reading";
             myStatus.setStatus(SamStatus::FAIL_IO, errorMessage.c_str());
+            delete myFilePtr;
             return(false);
         }
         
@@ -1238,6 +1252,23 @@ bool SamFile::processNewSection(SamFileHeader &header)
     return(true);
 }
 
+//
+// When the caller to SamFile::ReadRecord() catches an
+// exception, it may choose to call this method to resync
+// on the underlying binary stream.
+//
+// Arguments: a callback function that will requires length bytes
+// of data to validate a record header.
+//
+// The expected use case is to re-sync on the next probably valid
+// BAM record, so that we can resume reading even after detecting
+// a corrupted BAM file.
+//
+bool SamFile::attemptRecoverySync(bool (*checkSignature)(void *data) , int length)
+{
+    // non-recovery aware objects will just return false:
+    return myFilePtr->attemptRecoverySync(checkSignature, length);
+}
 
 // Default Constructor.
 SamFileReader::SamFileReader()
