@@ -58,15 +58,23 @@ SamStatus::Status BamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
     for (int i = 0; i < referenceCount; i++)
     {
         int nameLength;
+        int rc;
         // Read the length of the reference name.
-        ifread(filePtr, &nameLength, sizeof(int));
+        rc = ifread(filePtr, &nameLength, sizeof(int));
+        if(rc != sizeof(int)) {
+            return SamStatus::FAIL_IO;
+        }
       
         // Read the name.
         refName.readFromFile(filePtr, nameLength);
 
         // Read the length of the reference sequence.
         int32_t refLen;
-        ifread(filePtr, &refLen, sizeof(int));
+        rc = ifread(filePtr, &refLen, sizeof(int));
+
+        if(rc != sizeof(int)) {
+            return SamStatus::FAIL_IO;
+        }
 
         header.addReferenceInfo(refName.c_str(), refLen);
     }
