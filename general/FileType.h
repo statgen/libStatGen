@@ -67,6 +67,12 @@ public:
     // buffering is handled by the calling class.
     void setBuffered(bool buffered);
 
+    //
+    // When caller catches an exception, it may call this method.
+    // It is implemented only in BgzfFileTypeRecovery.
+    //
+    virtual bool attemptRecoverySync(bool (*checkSignature)(void *data) , int length);
+
 protected:
     // Set by the InputFile to inform this class if buffering
     // is used.  Maybe used by child clases (bgzf) to disable 

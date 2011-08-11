@@ -35,3 +35,16 @@ void FileType::setBuffered(bool buffered)
 {
     myUsingBuffer = buffered;
 }
+
+//
+// one class, BgzfFileTypeRecovery overloads this method because
+// it is able to sync on a new record using the checkSignature
+// callback function.
+//
+// For all other classes, this is a NOP (sync fails).
+//
+bool FileType::attemptRecoverySync(bool (*checkSignature)(void *data) , int length)
+{
+    return false;
+}
+
