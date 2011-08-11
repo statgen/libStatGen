@@ -1266,6 +1266,7 @@ bool SamFile::processNewSection(SamFileHeader &header)
 //
 bool SamFile::attemptRecoverySync(bool (*checkSignature)(void *data) , int length)
 {
+    if(myFilePtr==NULL) return false;
     // non-recovery aware objects will just return false:
     return myFilePtr->attemptRecoverySync(checkSignature, length);
 }
