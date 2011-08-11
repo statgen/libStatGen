@@ -29,6 +29,7 @@ InputFile::InputFile(const char * filename, const char * mode,
                      InputFile::ifileCompression compressionMode)
 {
     // XXX duplicate code
+    myAttemptRecovery = false;
     myFileTypePtr = NULL;
     myBufferIndex = 0;
     myCurrentBufferSize = 0;
