@@ -42,7 +42,8 @@ void SamReferenceInfo::add(const char* referenceSequenceName,
 }
 
 
-int SamReferenceInfo::getReferenceID(const String & referenceName)
+int SamReferenceInfo::getReferenceID(const String & referenceName, 
+                                     bool addID)
 {
     if (referenceName == "*")
         return -1;
@@ -51,6 +52,12 @@ int SamReferenceInfo::getReferenceID(const String & referenceName)
 
     if (id >= 0)
         return myReferenceHash.Integer(id);
+    
+    if(!addID)
+    {
+        // Don't add the id, so return NO_REF_ID
+        return(NO_REF_ID);
+    }
 
     id = myReferenceContigs.Length();
     myReferenceContigs.Push(referenceName);
@@ -61,11 +68,12 @@ int SamReferenceInfo::getReferenceID(const String & referenceName)
 }
 
 
-int SamReferenceInfo::getReferenceID(const char* referenceName)
+int SamReferenceInfo::getReferenceID(const char* referenceName, 
+                                     bool addID)
 {
     String referenceNameString = referenceName;
 
-    return(getReferenceID(referenceNameString));
+    return(getReferenceID(referenceNameString, addID));
 }
 
 

@@ -31,8 +31,12 @@ public:
     void add(const char* referenceSequenceName, 
              int32_t referenceSequenceLength);
 
-    int getReferenceID(const String & referenceName);
-    int getReferenceID(const char* referenceName);
+    // Get the reference ID for the specified name.
+    // If addID is set to true, a reference id will be created for the
+    // referenceName if one does not already exist.  If addID is set to
+    // false (default), it will return NO_REF_ID.
+    int getReferenceID(const String & referenceName, bool addID = false);
+    int getReferenceID(const char* referenceName, bool addID = false);
     const String & getReferenceLabel(int id) const;
 
     // Get the number of entries contained here.
@@ -50,6 +54,8 @@ public:
     void clear();
 
     SamReferenceInfo & operator = (const SamReferenceInfo & rhs);
+
+    static const int NO_REF_ID = -3;
 
 private:
     // Reference Name information

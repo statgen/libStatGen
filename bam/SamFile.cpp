@@ -756,7 +756,7 @@ int32_t SamFile::getNumUnMappedReadsFromIndex(int32_t refID)
 
 
 // Get the number of mapped reads in the specified reference id.  
-// Returns -1 for out of range refIDs.
+// Returns -1 for out of range references.
 int32_t SamFile::getNumMappedReadsFromIndex(const char* refName,
                                             SamFileHeader& header)
 {
@@ -1123,7 +1123,7 @@ bool SamFile::readIndexedRecord(SamFileHeader& header,
         // reference/position.
         if(record.getReferenceID() != myRefID)
         {
-            // Incorrect reference ID, return failure.
+            // Incorrect reference ID, return no more records.
             myStatus = SamStatus::NO_MORE_RECS;
             return(false);
         }
@@ -1245,6 +1245,13 @@ bool SamFile::processNewSection(SamFileHeader &header)
         myRefID = header.getReferenceID(myRefName.c_str());
         // Clear the myRefName length so this code is only executed once.
         myRefName.clear();
+
+        // Check to see if a reference id was found.
+        if(myRefID == SamReferenceInfo::NO_REF_ID)
+        {
+            myStatus = SamStatus::NO_MORE_RECS;
+            return(false);
+        }
     }
 
     // Get the chunks associated with this reference region.
@@ -1255,8 +1262,14 @@ bool SamFile::processNewSection(SamFileHeader &header)
     }
     else
     {
+        String errorMsg = "Failed to get the specified region, refID = ";
+        errorMsg += myRefID;
+        errorMsg += "; startPos = ";
+        errorMsg += myStartPos;
+        errorMsg += "; endPos = ";
+        errorMsg += myEndPos;
         myStatus.setStatus(SamStatus::FAIL_PARSE, 
-                           "Failed to get the specified region.");
+                           errorMsg);
     }
     return(true);
 }

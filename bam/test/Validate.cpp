@@ -1929,7 +1929,8 @@ void validateHeaderFields(SamFileHeader& samHeader)
     String refIDString = "22";
     assert(samHeader.getReferenceID(refIDString) == 21);
     assert(samHeader.getReferenceID(refIDString.c_str()) == 21);
-    assert(samHeader.getReferenceID("Z") == 23);
+    assert(samHeader.getReferenceID("Z") == SamReferenceInfo::NO_REF_ID);
+    assert(samHeader.getReferenceID("Z", true) == 23);
     assert(samHeader.getReferenceID("*") == -1);
     refIDString = "*";
     assert(samHeader.getReferenceID(refIDString) == -1);

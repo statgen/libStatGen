@@ -305,7 +305,8 @@ bool SamRecord::setReferenceName(SamFileHeader& header,
     myStatus = SamStatus::SUCCESS;
 
     myReferenceName = referenceName;
-    myRecordPtr->myReferenceID = header.getReferenceID(referenceName);
+    // If the reference ID does not already exist, add it (pass true)
+    myRecordPtr->myReferenceID = header.getReferenceID(referenceName, true);
 
     return true;
 }
@@ -389,8 +390,9 @@ bool SamRecord::setMateReferenceName(SamFileHeader& header,
     }
 
     // Set the Mate Reference ID.
+    // If the reference ID does not already exist, add it (pass true)
     myRecordPtr->myMateReferenceID = 
-        header.getReferenceID(myMateReferenceName);
+        header.getReferenceID(myMateReferenceName, true);
 
     return true;
 }
