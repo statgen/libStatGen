@@ -38,9 +38,12 @@ public:
 
     BgzfFileTypeRecovery(const char * filename, const char * mode);
 
-    bool operator == (const BgzfFileTypeRecovery & rhs);
+    // these methods should not be used.  They are
+    // misleading because the rhs could be anything,
+    // (specifically not a BgzfFileTypeRecover object).
+    bool operator == (void * rhs);
 
-    bool operator != (const BgzfFileTypeRecovery & rhs) { return *this != rhs; }
+    bool operator != (void * rhs);
 
     // Close the file.
     int close();
@@ -81,6 +84,8 @@ public:
     //   SEEK_END - End of file
     // Returns true on successful seek and false on a failed seek.
     bool seek(int64_t offset, int origin);
+
+    bool attemptRecoverySync(bool (*checkSignature)(void *data) , int length);
 
 protected:
     // Read via BGZFReader

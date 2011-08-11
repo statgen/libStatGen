@@ -30,10 +30,13 @@
 
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #pragma pack(push)
 #pragma pack(1)
+
+#define debug false
 
 class GzipHeader {
 private:
@@ -262,7 +265,26 @@ PeekaheadBuffer::ReturnCode FileReader::readahead(ssize_t count)
             if(ferror(m_stream)) {
                 return reSync;
             }
+            // ain't getting no more data...
+            return endOfFile;
         }
+#if 0
+        fprintf(stderr, "\n\n");
+        int possible = -1;
+        for(int i=0;i<bytesRead;i+=16) {
+            fprintf(stderr,"%08x: ", i);
+            for(int j=0;j<16;j++) {
+                if(buffer[i+j]==31 && buffer[i+j+1]==139) {
+                    possible = i+j;
+                }
+                fprintf(stderr,"%02x ", buffer[i+j]);
+            }
+            fprintf(stderr, "\n");
+        }
+        if(possible>0) {
+            fprintf(stderr,"possible signature at %08x\n", possible);
+        }
+#endif
         insert(end(), &buffer[0], &buffer[0] + bytesRead);
     }
     return ok;
@@ -284,21 +306,22 @@ public:
         // my internal data is now bad, so we'll scan ahead seeing
         // if we can find a good header
         clear();
-        while(1) {
+        PeekaheadBuffer::ReturnCode rc;
+        while((rc = m_fileReader.readahead(sizeof(BGZFHeader)))==ok ) {
             BGZFHeader *header;
-            PeekaheadBuffer::ReturnCode rc = m_fileReader.readahead(sizeof(header));
             if(rc==endOfFile) return rc;
             // a rc==reSync is ok provided readahead still ensures that header is present
-            header = (BGZFHeader *) &(*m_fileReader.begin());
+            void *src = &(*(m_fileReader.begin())) + m_fileReader.startPosition();
+            header = (BGZFHeader *) src;
             if(header->sane()) {
-                return ok;
+                if(debug) std::cerr << "BGZFReader::sync returning reSync\n";
+                return reSync;  // tell caller they need to sync up
             }
             // consume a byte, then see if we're at a valid block header
             uint8_t throwAwayBuffer;
             rc = m_fileReader.read(&throwAwayBuffer, 1);
         }
-        // NOTREACHED
-        return ok;
+        return rc;
     }
     FILE *stream() {return m_fileReader.stream();}
 
@@ -314,6 +337,9 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
     uint8_t gzipBuffer[64*1024];
 
     while(dataRemaining() < count) {
+        static int loopCount = 0;
+
+        if(debug) std::cerr << "BGZFReader::readahead loopcount = " << loopCount++ << "\n";
 
         // here we actually read data:
         //  read what should be the header
@@ -332,19 +358,31 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
         if(!header.sane()) {
             // sync does not consume the next good header, it simply syncs()
             // the data stream to the next believed good BGZF header:
-            sync();
+            if(debug) std::cerr << "BGZFReader::readahead found corrupt BGZF header - now calling sync()\n";
+            rc = sync();
             //
             // even though we can now decompress, we need to tell the caller
             // what is up before they call for more data (caller needs to
             // sync its own record stream):
+            return rc;
+        }
+
+        // Read the remainder of the block.
+        // BSIZE is size of the entire block - 1, so compensate.
+        rc = m_fileReader.read((uint8_t *) &gzipBuffer, header.BSIZE() + 1 - sizeof(header));
+
+        if(rc == reSync) {
+            if(debug) std::cerr << "BGZFReader::readahead got incomplete BGZF read - now calling sync()\n";
+            sync();
             return reSync;
         }
 
-        rc = m_fileReader.read((uint8_t *) &gzipBuffer, header.BSIZE() - sizeof(header));
-
-        if(rc == reSync) {
-            sync();
-            return reSync;
+        //
+        // we read a header, but our attempt to read more data ended early,
+        // so best to just return EOF
+        //
+        if(rc == endOfFile) {
+            return rc;
         }
 
         z_stream zs;
@@ -360,12 +398,13 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
                 inflate(&zs, Z_FINISH) == Z_STREAM_END &&
                 inflateEnd(&zs) == Z_OK) {
             // do something with zs.total_out
-            std::cout << "hey, got data!  zs.total_out == " << zs.total_out << "\n";
+            if(debug) std::cout << "hey, got data!  zs.total_out == " << zs.total_out << "\n";
 
             // append the newly decompressed data
             insert(end(), &inflateBuffer[0], &inflateBuffer[0] + zs.total_out);
         } else {
             // zlib inflate failure - CRC errors, who knows...
+            if(debug) std::cerr << "BGZFReader::readahead - inflate failed (bad data), calling sync()\n";
             sync();
             return reSync;
         }
@@ -421,7 +460,7 @@ BgzfFileTypeRecovery::BgzfFileTypeRecovery(const char * filename, const char * m
         bgzfReader = new BGZFReader(f);
     } else {
         // die for now
-        std::cerr << "Unable to open " << filename << " in mode " << mode << ".\n";
+        if(debug) std::cerr << "Unable to open " << filename << " in mode " << mode << ".\n";
         close();
     }
 }
@@ -429,19 +468,16 @@ BgzfFileTypeRecovery::BgzfFileTypeRecovery(const char * filename, const char * m
 //
 // Why is this ever called?
 //
-bool BgzfFileTypeRecovery::operator == (const BgzfFileTypeRecovery &rhs)
+bool BgzfFileTypeRecovery::operator == (void * rhs)
 {
-    // if both are defined
-    if(bgzfReader && this->bgzfReader) {
-        // return true if file descriptor is the same
-        return fileno(bgzfReader->stream()) == fileno(this->bgzfReader->stream());
-    }
-
-    // if both are not defined, they are technically equivalent, IMHO
-    if(bgzfReader == NULL && rhs.bgzfReader == NULL) return true;
-
+    throw std::logic_error("BgzfFileTypeRecovery::operator == is dangerous - do not use");
     return false;
+}
 
+bool BgzfFileTypeRecovery::operator != (void * rhs)
+{
+    throw std::logic_error("BgzfFileTypeRecovery::operator != is dangerous - do not use");
+    return false;
 }
 
 int BgzfFileTypeRecovery::eof()
@@ -457,6 +493,11 @@ unsigned int BgzfFileTypeRecovery::write(const void * buffer, unsigned int size)
 
 int BgzfFileTypeRecovery::read(void * buffer, unsigned int size)
 {
+
+    if(bgzfReader == NULL) {
+        return 0;
+    }
+
     PeekaheadBuffer::ReturnCode rc = bgzfReader->read((uint8_t *) buffer, size);
    //     endOfFile = -1,
 //        reSync = 0,
@@ -464,15 +505,20 @@ int BgzfFileTypeRecovery::read(void * buffer, unsigned int size)
     switch(rc) {
         case PeekaheadBuffer::endOfFile:
             // set a flag?
-            break;
+            return 0;
         case PeekaheadBuffer::reSync:
-            // throw exception
-            break;
+            // we could encode more info in the exception message here:
+            if(debug) std::cerr << "throwing BGZF sync exception\n";
+            throw std::runtime_error("BGZF stream resync");
         case PeekaheadBuffer::ok:
-            // find the peekahead iterator and copy the data from there
-            // 
-            break;
+            //
+            // in bgzfReader, we always are ensured we
+            // get the full amount of the read, otherwise
+            // an error is thrown.
+            //
+            return size;
     }
+    // NOTREACHED
     return 0;
 }
 
@@ -486,5 +532,33 @@ bool BgzfFileTypeRecovery::seek(int64_t offset, int origin)
 {
     // currently unsupported
     return 0;
+}
+
+
+bool BgzfFileTypeRecovery::attemptRecoverySync(bool (*checkSignature)(void *data) , int length)
+{
+    //
+    // creep along a byte at a time, checking for signature.
+    //
+    // possibly slow.  should only need to scan ahead < 64K bytes
+    // or so, however, so should recover in "reasonable" time.
+    //
+    while( bgzfReader->readahead(length) == PeekaheadBuffer::ok) {
+        char ch;
+        void *src = &(*(bgzfReader->begin())) + bgzfReader->startPosition();
+
+        //
+        // readahead ensures we have 'length' bytes of
+        // data to check that is valid in the buffer.
+        //
+        if((*checkSignature)(src)) return true;
+        PeekaheadBuffer::ReturnCode rc  = bgzfReader->read((uint8_t *) &ch, 1);
+        if(rc!=PeekaheadBuffer::ok) return false;
+        // we consumed a byte, so go back to top of loop,
+        // resume filling buffer (if need be) and re-check
+    }
+
+
+    return false;
 }
 
