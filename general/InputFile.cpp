@@ -28,6 +28,7 @@
 InputFile::InputFile(const char * filename, const char * mode,
                      InputFile::ifileCompression compressionMode)
 {
+    // XXX duplicate code
     myFileTypePtr = NULL;
     myBufferIndex = 0;
     myCurrentBufferSize = 0;
@@ -46,6 +47,15 @@ InputFile::InputFile(const char * filename, const char * mode,
 bool InputFile::openFile(const char * filename, const char * mode,
                          InputFile::ifileCompression compressionMode)
 {
+    //
+    // if recovering, we don't want to issue big readaheads, since
+    // that interferes with the decompression - we only want to 
+    // decompress one at a time, and handle the exceptions immediately
+    // rather than at some indeterminate point in time.
+    //
+    if(myAttemptRecovery) {
+        bufferReads(1);
+    }
     // If a file is for write, just open a new file.
     if (mode[0] == 'w' || mode[0] == 'W')
     {
@@ -109,7 +119,13 @@ bool InputFile::openFile(const char * filename, const char * mode,
                     {
                         // This file has BGZF Compression, so set the file
                         // pointer.
-                        myFileTypePtr = new BgzfFileType(filename, mode);
+                        if(myAttemptRecovery) {
+                            // NB: this reader will throw std::runtime_error when it recovers
+                            myFileTypePtr = new BgzfFileTypeRecovery(filename, mode);
+                        } else {
+                            // use the standard bgzf reader (samtools)
+                            myFileTypePtr = new BgzfFileType(filename, mode);
+                        }
                     }
                     else
                     {
@@ -167,9 +183,8 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
             // BGZF compression - recovery is possible, so use
             // Bgzf recovery reader if asked.
             //
-            if(myAttemptRecovery) {
-                // NB: this reader will throw exceptions when it recovers
-                // XXX which exception?
+            if(myAttemptRecovery && index(mode,'r') ) {
+                // NB: this reader will throw std::runtime_error when it recovers
                 myFileTypePtr = new BgzfFileTypeRecovery(filename, mode);
             } else {
                 myFileTypePtr = new BgzfFileType(filename, mode);

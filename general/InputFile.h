@@ -419,12 +419,18 @@ public:
         myAttemptRecovery = flag;
     }
 
-protected:
+    bool attemptRecoverySync(bool (*checkSignature)(void *data) , int length)
+    {
+        if(myFileTypePtr==NULL) return false; 
+        return myFileTypePtr->attemptRecoverySync(checkSignature, length);
+    }
+
     // Open a file. Called by the constructor.
     // Returns true if the file was successfully opened, false otherwise.
     bool openFile(const char * filename, const char * mode,
                   InputFile::ifileCompression compressionMode);
 
+protected:
     // Read into a buffer from the file.  Since the buffer is passed in and
     // this would bypass the myFileBuffer used by this class, this method must
     // be protected.
