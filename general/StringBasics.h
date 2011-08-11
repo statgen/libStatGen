@@ -312,6 +312,7 @@ public:
 
     long   AsInteger() const;
     bool   AsInteger(long& intValue) const;
+    bool   AsInteger(int& intValue) const;
     double AsDouble() const
     {
         return (double) *this;
