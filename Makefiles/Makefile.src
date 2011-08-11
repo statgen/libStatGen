@@ -61,7 +61,7 @@ $(BINDIR_OPT) $(BINDIR_DEBUG) $(BINDIR_PROFILE):
 	mkdir -p $@
 
 specific_clean :
-	-rm $(BINDIR_OPT)/$(EXE)
+	-rm -f $(BINDIR_OPT)/$(EXE)
 	-rm -rf $(BINDIR_DEBUG)
 	-rm -rf $(BINDIR_PROFILE)
 
