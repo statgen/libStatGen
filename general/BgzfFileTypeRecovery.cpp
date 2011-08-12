@@ -93,7 +93,7 @@ public:
     uint16_t BSIZE() {return m_BSIZE;}
     bool sane() {
         return GzipHeader::sane() && 
-            (m_SI1=='B' && m_SI2=='C' && m_SLEN==2);
+            (m_SI1=='B' && m_SI2=='C' && m_SLEN==2 && m_BSIZE > sizeof(GzipHeader));
     }
 };
 
