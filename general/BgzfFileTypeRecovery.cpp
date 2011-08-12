@@ -325,7 +325,7 @@ public:
     }
     FILE *stream() {return m_fileReader.stream();}
 
-    bool eof() {return m_fileReader.eof();}
+    bool eof() {return dataRemaining()==0 && m_fileReader.eof();}
 
 };
 
