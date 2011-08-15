@@ -333,6 +333,8 @@ bool BamIndex::getChunksForRegion(int32_t refID, int32_t start, int32_t end,
     if((refID < 0) || (refID >= n_ref))
     {
         // The specified refID is out of range, return false.
+        std::cerr << "Warning, requesting refID is out of range, so "
+                  << "no values will be returned.\n";
         return(false);
     }
 
@@ -394,6 +396,8 @@ bool BamIndex::getChunksForRegion(int32_t refID, int32_t start, int32_t end,
             if(!chunkList.insert(bin->chunks[chunkIndex]))
             {
                 // Failed to add to the map, return false.
+                std::cerr << "Warning, Failed to add a chunk, so "
+                          << "no values will be returned.\n";
                 return(false);
             }
         }

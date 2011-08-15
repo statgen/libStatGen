@@ -1016,6 +1016,58 @@ bool String::AsInteger(long& intValue) const
 }
 
 
+// Check that the string is an integer when converting it.
+// If the entire string is an integer, return true, if not, return false.
+bool String::AsInteger(int& intValue) const
+{
+    int integer = 0;
+    int  base = 10;
+    int  pos = 0;
+    int  sign = 1;
+    bool isInt = true;
+
+    if (buffer[pos] == '-')
+    {
+        sign = -1, pos++;
+    }
+
+    if ((len > pos + 2) && (buffer[pos] == '0') &&
+            ((buffer[pos+1] == 'x') || (buffer[pos+1] == 'X')))
+    {
+        base = 16, pos += 2;
+    }
+
+    // If this is no value for this integer, return false.
+    if (pos == len)
+    {
+        return(false);
+    }
+
+    for (;  pos < len; pos++)
+    {
+        char digit = (char) toupper(buffer[pos]);
+
+        if (digit >= '0' && digit <= '9')
+        {
+            integer = integer * base + digit - '0';
+        }
+        else if (digit >= 'A' && digit <= 'F' && base == 16)
+        {
+            integer = integer * base + digit - 'A' + 10;
+        }
+        else
+        {
+            isInt = false;
+            break;
+        }
+    }
+
+    intValue = sign*integer;
+
+    return(isInt);
+}
+
+
 String & String::Invert()
 {
     for (int i = 0, j = len - 1; i < j; i++, j--)

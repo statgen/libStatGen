@@ -50,8 +50,12 @@ public:
     // Return true if successfully set (even if set to "")
     bool getHeaderString(std::string& header) const;
 
-    int   getReferenceID(const String & referenceName);
-    int   getReferenceID(const char* referenceName);
+    // Get the reference ID for the specified name.
+    // If addID is set to true, a reference id will be created for the
+    // referenceName if one does not already exist.  If addID is set to
+    // false (default), it will return SamReferenceInfo::NO_REF_ID.
+    int   getReferenceID(const String & referenceName, bool addID = false);
+    int   getReferenceID(const char* referenceName, bool addID = false);
     const String & getReferenceLabel(int id) const;
 
     // Get the Reference Information

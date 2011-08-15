@@ -657,7 +657,8 @@ bool SamFile::SetReadSection(const char* refName)
 
 
 // Sets what part of the BAM file should be read.
-bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end)
+bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end, 
+                             bool overlap)
 {
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
@@ -671,6 +672,7 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end)
     }
 
     myNewSection = true;
+    myOverlapSection = overlap;
     myStartPos = start;
     myEndPos = end;
     myRefID = refID;
@@ -691,7 +693,8 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end)
 
 
 // Sets what part of the BAM file should be read.
-bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end)
+bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
+                             bool overlap)
 {
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
@@ -705,6 +708,7 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end)
     }
 
     myNewSection = true;
+    myOverlapSection = overlap;
     myStartPos = start;
     myEndPos = end;
     if((strcmp(refName, "") == 0) || (strcmp(refName, "*") == 0))
@@ -766,7 +770,7 @@ int32_t SamFile::getNumUnMappedReadsFromIndex(int32_t refID)
 
 
 // Get the number of mapped reads in the specified reference id.  
-// Returns -1 for out of range refIDs.
+// Returns -1 for out of range references.
 int32_t SamFile::getNumMappedReadsFromIndex(const char* refName,
                                             SamFileHeader& header)
 {
@@ -922,6 +926,7 @@ void SamFile::resetFile()
     myStartPos = -1;
     myEndPos = -1;
     myNewSection = false;
+    myOverlapSection = true;
     myCurrentChunkEnd = 0;
     myChunksToRead.clear();
     if(myBamIndex != NULL)
@@ -1132,7 +1137,7 @@ bool SamFile::readIndexedRecord(SamFileHeader& header,
         // reference/position.
         if(record.getReferenceID() != myRefID)
         {
-            // Incorrect reference ID, return failure.
+            // Incorrect reference ID, return no more records.
             myStatus = SamStatus::NO_MORE_RECS;
             return(false);
         }
@@ -1160,6 +1165,24 @@ bool SamFile::readIndexedRecord(SamFileHeader& header,
             // If it does not overlap the region, so go to the next
             // record...set recordFound back to false.
             recordFound = false;
+        }
+
+        if(!myOverlapSection)
+        {
+            // Needs to be fully contained.  Not fully contained if
+            // 1) the record start position is < the region start position.
+            // or
+            // 2) the end position is specified and the record end position
+            //    is greater than or equal to the region end position.
+            //    (equal to since the region is exclusive.
+            if((record.get0BasedPosition() < myStartPos) ||
+               ((myEndPos != -1) && 
+                (record.get0BasedAlignmentEnd() >= myEndPos)))
+            {
+                // This record is not fully contained, so move on to the next
+                // record.
+                recordFound = false;
+            }
         }
     }
 
@@ -1236,6 +1259,13 @@ bool SamFile::processNewSection(SamFileHeader &header)
         myRefID = header.getReferenceID(myRefName.c_str());
         // Clear the myRefName length so this code is only executed once.
         myRefName.clear();
+
+        // Check to see if a reference id was found.
+        if(myRefID == SamReferenceInfo::NO_REF_ID)
+        {
+            myStatus = SamStatus::NO_MORE_RECS;
+            return(false);
+        }
     }
 
     // Get the chunks associated with this reference region.
@@ -1246,8 +1276,14 @@ bool SamFile::processNewSection(SamFileHeader &header)
     }
     else
     {
+        String errorMsg = "Failed to get the specified region, refID = ";
+        errorMsg += myRefID;
+        errorMsg += "; startPos = ";
+        errorMsg += myStartPos;
+        errorMsg += "; endPos = ";
+        errorMsg += myEndPos;
         myStatus.setStatus(SamStatus::FAIL_PARSE, 
-                           "Failed to get the specified region.");
+                           errorMsg);
     }
     return(true);
 }

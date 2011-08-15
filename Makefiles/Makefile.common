@@ -3,6 +3,8 @@ TOOLBASE ?=
 COMPILE_ANY_CHANGE ?= 
 SRCONLY ?= 
 HDRONLY ?= 
+USER_REMOVES ?=
+# USER_REMOVES are additional things that should be removed by clean.
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.include
@@ -104,6 +106,7 @@ test: all
 #########
 # clean
 clean : specific_clean
+	$(USER_REMOVES)
 	-rm -f $(OBJDIR_OPT)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~ 
 	@if test -d $(TESTDIR); \
         then \

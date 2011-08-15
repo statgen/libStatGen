@@ -132,15 +132,15 @@ bool SamFileHeader::getHeaderString(std::string& header) const
 }
 
 
-int SamFileHeader::getReferenceID(const String & referenceName)
+int SamFileHeader::getReferenceID(const String & referenceName, bool addID)
 {
-    return(myReferenceInfo.getReferenceID(referenceName));
+    return(myReferenceInfo.getReferenceID(referenceName, addID));
 }
 
 
-int SamFileHeader::getReferenceID(const char* referenceName)
+int SamFileHeader::getReferenceID(const char* referenceName, bool addID)
 {
-    return(myReferenceInfo.getReferenceID(referenceName));
+    return(myReferenceInfo.getReferenceID(referenceName, addID));
 }
 
 

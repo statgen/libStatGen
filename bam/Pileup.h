@@ -18,6 +18,9 @@
 #ifndef __PILEUP_H__
 #define __PILEUP_H__
 
+#include <stdexcept>
+#include "SamFile.h"
+
 template <class PILEUP_TYPE>
 class defaultPileup
 {
@@ -364,10 +367,24 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::flushPileup(int position)
 template <class PILEUP_TYPE, class FUNC_CLASS>
 int Pileup<PILEUP_TYPE, FUNC_CLASS>::pileupPosition(int position)
 {
+    // Check to see if this is the first position (pileupTail == -1)
+    if(pileupTail == -1)
+    {
+        pileupStart = pileupHead = position;
+    }
+
+
     if((position < pileupHead) || (position > (pileupHead + pileupWindow)))
     {
-        return -1;
-        error("Pileup Buffer Overflow");
+        String errorMessage =
+            "Overflow on the pileup buffer: specifiedPosition = ";
+        errorMessage += position;
+        errorMessage += ", pileup buffer start position: ";
+        errorMessage += pileupHead;
+        errorMessage += ", pileup buffer end position: ";
+        errorMessage += pileupHead + pileupWindow;
+
+        throw std::runtime_error(errorMessage.c_str());
     }    
 
     int offset = position - pileupStart;

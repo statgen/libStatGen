@@ -224,8 +224,10 @@ public:
     /// \param  refID the reference ID of the records to read from the file.
     /// \param  start inclusive 0-based start position of records that should be read for this refID.
     /// \param  end exclusive 0-based end position of records that should be read for this refID.
+    /// \param overlap When true (default), return reads that just overlap the region.  When false, only return reads that fall completely within the region
     /// \return true = success; false = failure.   
-    bool SetReadSection(int32_t refID, int32_t start, int32_t end);
+    bool SetReadSection(int32_t refID, int32_t start, int32_t end, 
+                        bool overlap = true);
 
     /// Sets what part of the BAM file should be read.  This version will
     /// set it to only read a specific reference name and start/end position.
@@ -238,8 +240,10 @@ public:
     /// \param  refName the reference name of the records to read from the file.
     /// \param  start inclusive 0-based start position of records that should be read for this refID.
     /// \param  end exclusive 0-based end position of records that should be read for this refID.
+    /// \param overlap When true (default), return reads that just overlap the region.  When false, only return reads that fall completely within the region
     /// \return true = success; false = failure.   
-    bool SetReadSection(const char* refName, int32_t start, int32_t end);
+    bool SetReadSection(const char* refName, int32_t start, int32_t end, 
+                        bool overlap = true);
 
     /// Get the number of mapped reads in the specified reference id.  
     /// Returns -1 for out of range refIDs.
@@ -355,6 +359,9 @@ protected:
     /// Values for reading Sorted BAM files via the index.
     bool myIsBamOpenForRead;
     bool myNewSection;
+    // whether to return reads that overlap (true) the section or
+    // are fully enclosed (false) in the section.
+    bool myOverlapSection;
     int32_t myRefID;
     int32_t myStartPos;
     int32_t myEndPos;
