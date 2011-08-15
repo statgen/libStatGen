@@ -42,7 +42,7 @@ CharBuffer::~CharBuffer()
     reset();
     if(myBuffer != NULL)
     {
-        delete myBuffer;
+        free(myBuffer);
         myBuffer = NULL;
     }
 }
