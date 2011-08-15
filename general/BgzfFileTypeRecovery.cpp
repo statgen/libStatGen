@@ -333,8 +333,8 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
 {
     BGZFHeader header;
     // size of inflateBuffer can be determined from ISIZE, I think
-    uint8_t inflateBuffer[4*1024*1024];
-    uint8_t gzipBuffer[64*1024];
+    uint8_t inflateBuffer[64*1024];
+    uint8_t gzipBuffer[64*1024+1];
 
     while(dataRemaining() < count) {
         static int loopCount = 0;
@@ -385,6 +385,12 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
             return rc;
         }
 
+        PeekaheadBuffer::ReturnCode bgzf_rc = ok;
+        // zs.opaque is set when zalloc is NULL
+        //
+        // NB: zlib inflateInit2() has valgrind errors
+        // in versions <1.2.4 - those can be ignored.
+        //
         z_stream zs;
         zs.zalloc = NULL;
         zs.zfree = NULL;
@@ -394,20 +400,40 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
         zs.avail_out = sizeof(inflateBuffer);
 
         // -15 --> raw inflate - don't look for gzip or zlib header
-        if(     inflateInit2(&zs, -15) == Z_OK &&
-                inflate(&zs, Z_FINISH) == Z_STREAM_END &&
-                inflateEnd(&zs) == Z_OK) {
-            // do something with zs.total_out
-            if(debug) std::cout << "hey, got data!  zs.total_out == " << zs.total_out << "\n";
-
-            // append the newly decompressed data
-            insert(end(), &inflateBuffer[0], &inflateBuffer[0] + zs.total_out);
-        } else {
-            // zlib inflate failure - CRC errors, who knows...
-            if(debug) std::cerr << "BGZFReader::readahead - inflate failed (bad data), calling sync()\n";
-            sync();
-            return reSync;
+        // This can be optimized - inflateInit2 does a malloc of
+        // approximately 10K (sizeof(inflate_state))
+        if(inflateInit2(&zs, -15) != Z_OK) {
+            bgzf_rc = reSync;
+            if(debug) std::cerr << "BGZFReader::readahead - inflateInit2 failed (out of memory?)\n";
+            // XXX fatal?
         }
+        if(bgzf_rc==ok && inflate(&zs, Z_FINISH) != Z_STREAM_END) {
+            bgzf_rc = reSync;
+            if(debug) std::cerr << "BGZFReader::readahead - inflate failed (bad data), calling sync()\n";
+        }
+
+        if(bgzf_rc == ok) {
+            if(inflateEnd(&zs) == Z_OK) {
+                // do something with zs.total_out
+                if(debug) std::cout << "hey, got data!  zs.total_out == " << zs.total_out << "\n";
+
+                // append the newly decompressed data
+                insert(end(), &inflateBuffer[0], &inflateBuffer[0] + zs.total_out);
+            } else {
+                // seems exceptionall unlikely, but check this error case too
+                bgzf_rc = reSync;
+                if(debug) std::cerr << "BGZFReader::readahead - inflateInit2 failed (out of memory?)\n";
+                // XXX fatal?
+            }
+        }
+
+        if(bgzf_rc != ok) {
+            inflateEnd(&zs);
+            sync();
+            return bgzf_rc;
+        }
+
+        // may need to get more data - loop back till all is complete
     }
 
     return ok;
