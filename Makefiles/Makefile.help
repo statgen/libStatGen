@@ -2,7 +2,7 @@ help :
 	@echo "Makefile help"
 	@echo "-------------"
 	@echo "Type...           To..."
-	@echo "make              Compile everything "
+	@echo "make              Compile opt "
 	@echo "make help         Display this help screen"
 	@echo "make all          Compile everything (opt, debug, & profile)"
 	@echo "make opt          Compile optimized"
