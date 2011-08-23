@@ -35,52 +35,66 @@
 #include "Generic.h"
 #include "StringBasics.h"
 
-//
-// Docs from Sam1.pdf:
-//
-// Clipped alignment. In Smith-Waterman alignment, a sequence may not be aligned from the first residue to the last one.
-// Subsequences at the ends may be clipped off. We introduce operation ʻSʼ to describe (softly) clipped alignment. Here is
-// an example. Suppose the clipped alignment is:
-// REF:  AGCTAGCATCGTGTCGCCCGTCTAGCATACGCATGATCGACTGTCAGCTAGTCAGACTAGTCGATCGATGTG
-// READ:        gggGTGTAACC-GACTAGgggg
-// where on the read sequence, bases in uppercase are matches and bases in lowercase are clipped off. The CIGAR for
-// this alignment is: 3S8M1D6M4S.
-//
-//
-// If the mapping position of the query is not available, RNAME and
-// CIGAR are set as “*”
-//
-// A CIGAR string is comprised of a series of operation lengths plus the operations. The conventional CIGAR format allows
-// for three types of operations: M for match or mismatch, I for insertion and D for deletion. The extended CIGAR format
-// further allows four more operations, as is shown in the following table, to describe clipping, padding and splicing:
-//
-// op   Description
-// --   -----------
-// M    Match or mismatch
-// I    Insertion to the reference
-// D    Deletion from the reference
-// N    Skipped region from the reference
-// S    Soft clip on the read (clipped sequence present in <seq>)
-// H    Hard clip on the read (clipped sequence NOT present in <seq>)
-// P    Padding (silent deletion from the padded reference sequence)
-//
-//
+/// This class represents the CIGAR without any methods to set the cigar
+/// (see CigarRoller for that).
+
+///
+/// Docs from Sam1.pdf:
+///
+/// Clipped alignment. In Smith-Waterman alignment, a sequence may not be aligned from the first residue to the last one.
+/// Subsequences at the ends may be clipped off. We introduce operation ʻSʼ to describe (softly) clipped alignment. Here is
+/// an example. Suppose the clipped alignment is:
+/// REF:  AGCTAGCATCGTGTCGCCCGTCTAGCATACGCATGATCGACTGTCAGCTAGTCAGACTAGTCGATCGATGTG
+/// READ:        gggGTGTAACC-GACTAGgggg
+/// where on the read sequence, bases in uppercase are matches and bases in lowercase are clipped off. The CIGAR for
+/// this alignment is: 3S8M1D6M4S.
+///
+///
+/// If the mapping position of the query is not available, RNAME and
+/// CIGAR are set as “*”
+///
+/// A CIGAR string is comprised of a series of operation lengths plus the operations. The conventional CIGAR format allows
+/// for three types of operations: M for match or mismatch, I for insertion and D for deletion. The extended CIGAR format
+/// further allows four more operations, as is shown in the following table, to describe clipping, padding and splicing:
+///
+/// op   Description
+/// --   -----------
+/// M    Match or mismatch
+/// I    Insertion to the reference
+/// D    Deletion from the reference
+/// N    Skipped region from the reference
+/// S    Soft clip on the read (clipped sequence present in <seq>)
+/// H    Hard clip on the read (clipped sequence NOT present in <seq>)
+/// P    Padding (silent deletion from the padded reference sequence)
+///
+
 
 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// This class represents the CIGAR.  It contains methods for converting
-// to strings and extracting information from the cigar on how a read
-// maps to the reference.
-//
-// It only contains read only methods.  There are no ways to set
-// values.  To set a value, a child class must be used.
-//
+///
+/// This class represents the CIGAR.  It contains methods for converting
+/// to strings and extracting information from the cigar on how a read
+/// maps to the reference.
+///
+/// It only contains read only methods.  There are no ways to set
+/// values.  To set a value, a child class must be used.
+///
 class Cigar
 {
 public:
-    enum Operation {none=0, match, mismatch, insert, del, skip, softClip, hardClip, pad};
+    /// Enum for the cigar operations.
+    enum Operation {
+        none=0, ///< no operation has been set.
+        match, ///< match/mismatch operation.  Associated with CIGAR Operation "M"
+        mismatch, ///< mismatch operation.  Associated with CIGAR Operation "M"
+        insert,  ///< insertion to the reference (the query sequence contains bases that have no corresponding base in the reference).  Associated with CIGAR Operation "I"
+        del,  ///< deletion from the reference (the reference contains bases that have no corresponding base in the query sequence).  Associated with CIGAR Operation "D"
+        skip,  ///< skipped region from the reference (the reference contains bases that have no corresponding base in the query sequence).  Associated with CIGAR Operation "N"
+        softClip,  ///< Soft clip on the read (clipped sequence present in the query sequence, but not in reference).  Associated with CIGAR Operation "S"
+        hardClip,  ///< Hard clip on the read (clipped sequence not present in the query sequence or reference).  Associated with CIGAR Operation "H"
+        pad ///< Padding (not in reference or query).  Associated with CIGAR Operation "P"
+    };
 
     // The maximum value in the operation enum (used for setting up a bitset of
     // operations.
@@ -99,13 +113,17 @@ public:
             count = 0;
         }
 
-        CigarOperator(Operation operation, uint32_t count): operation(operation), count(count) {};
+        /// Set the cigar operator with the specified operation and
+        /// count length.
+        CigarOperator(Operation operation, uint32_t count)
+            : operation(operation), count(count) {};
 
         Operation operation;
 
         uint32_t count;
 
-        // Get the character associated with this operation.
+        /// Get the character code (M, I, D, N, S, H, or P) associated with
+        /// this operation.
         char getChar() const
         {
             switch (operation)
@@ -131,11 +149,7 @@ public:
             return '?'; // actually it is an error to get here
         }
 
-        //
-        // Compare only on the operator.
-        //
-        // Match and mismatch are considered the same for CIGAR strings.
-        //
+        /// Compare only on the operator, true if they are the same, false if not.  Match and mismatch are considered the same for CIGAR strings.
         bool operator == (const CigarOperator &rhs) const
         {
             if (operation==rhs.operation)
@@ -145,6 +159,7 @@ public:
             return false;
         }
 
+        /// Compare only on the operator, false if they are the same, true if not.  Match and mismatch are considered the same for CIGAR strings.
         bool operator != (const CigarOperator &rhs) const
         {
             return !((*this) == rhs) ;
@@ -157,8 +172,8 @@ public:
     // Cigar  Class statics
     //
 
-    // Return true if the specified operation is found in the
-    // query sequence, false if not.
+    /// Return true if the specified operation is found in the
+    /// query sequence, false if not.
     static bool foundInQuery(Operation op)
     {
         switch(op)
@@ -174,8 +189,8 @@ public:
         return false;
     }
     
-    // Return true if the specified operation is found in the
-    // query sequence, false if not.
+    /// Return true if the specified operation is found in the
+    /// query sequence, false if not.
     static bool foundInQuery(CigarOperator op)
     {
         switch(op.operation)
@@ -191,8 +206,8 @@ public:
         return false;
     }
     
-    // Return true if the specified operation is a clipping operation,
-    // false if not.
+    /// Return true if the specified operation is a clipping operation,
+    /// false if not.
     static bool isClip(Operation op)
     {
         switch(op)
@@ -206,8 +221,8 @@ public:
         return false;
     }
 
-    // Return true if the specified operation is a clipping operation,
-    // false if not.
+    /// Return true if the specified operation is a clipping operation,
+    /// false if not.
     static bool isClip(CigarOperator op)
     {
         switch(op.operation)
@@ -221,8 +236,8 @@ public:
         return false;
     }
 
-    // Return true if the specified operation is a match/mismatch operation,
-    // false if not.
+    /// Return true if the specified operation is a match/mismatch operation,
+    /// false if not.
     static bool isMatchOrMismatch(Operation op)
     {
         switch(op)
@@ -236,8 +251,8 @@ public:
         return false;
     }
     
-    // Return true if the specified operation is a match/mismatch operation,
-    // false if not.
+    /// Return true if the specified operation is a match/mismatch operation,
+    /// false if not.
     static bool isMatchOrMismatch(CigarOperator op)
     {
         switch(op.operation)
@@ -258,48 +273,51 @@ public:
     //
     friend std::ostream &operator << (std::ostream &stream, const Cigar& cigar);
 
+    /// Default constructor initializes as a CIGAR with no operations.
     Cigar()
     {
         clearQueryAndReferenceIndexes();
     }
 
-    //
-    // Set the passed in string to the string reprentation of the Cigar
-    // operations in this object.
-    //
+
+    /// Set the passed in String to the string reprentation of the Cigar
+    /// operations in this object.
     void getCigarString(String& cigarString) const;
+
+    /// Set the passed in std::string to the string reprentation of the Cigar
+    /// operations in this object.
     void getCigarString(std::string& cigarString) const;
 
-    /// obtain a non-run length encoded string of operations
-    ///
-    /// The returned string is actually also a valid CIGAR string,
-    /// but it does not have any digits in it - only the characters
-    /// themselves.  In theory this makes it easier to parse some
-    /// reads.
-    ///
-    /// /return s the string to populate
+    /// Sets the specified string to a valid CIGAR string of characters that
+    /// represent the cigar with no digits (a CIGAR of "3M" would return "MMM").
+    /// The returned string is actually also a valid CIGAR string.
+    /// In theory this makes it easier to parse some reads.
+    /// \return s the string to populate
     void getExpandedString(std::string &s) const;
 
+    /// Return the Cigar Operation at the specified index (starting at 0).
     const CigarOperator & operator [](int i) const
     {
         return cigarOperations[i];
     }
 
+    /// Return the Cigar Operation at the specified index (starting at 0).
     const CigarOperator & getOperator(int i) const
     {
         return cigarOperations[i];
     }
 
+    /// Return true if the 2 Cigars are the same
+    /// (the same operations of the same sizes).
     bool operator == (Cigar &rhs) const;
 
-    //
-    // get the number of cigar operations
-    //
+    /// Return the number of cigar operations
     int size()  const
     {
         return cigarOperations.size();
     }
 
+    /// Write this object as a string to cout.
     void Dump() const
     {
         String cigarString;
@@ -307,7 +325,7 @@ public:
         std::cout << cigarString ;
     }
 
-    /// return the length of the read that corresponds to
+    /// Return the length of the read that corresponds to
     /// the current CIGAR string.
     ///
     /// For validation, we should expect that a sequence
@@ -323,11 +341,11 @@ public:
     /// bases, two extra bases, and then 3 more match/mistmatch
     /// bases.  The total in this example is 8 bases.
     ///
-    /// /return returns the expected read length
+    /// \return returns the expected read length
     int getExpectedQueryBaseCount() const;
 
-    /// return the number of bases in the reference that
-    /// this read "spans"
+    /// Return the number of bases in the reference that
+    /// this CIGAR "spans".
     ///
     /// When doing range checking, we occassionally need to know
     /// how many total bases the CIGAR string represents as compared
@@ -339,7 +357,7 @@ public:
     /// reference, and 3 more bases that match the reference, so it
     /// spans 6 bases in the reference.
     ///
-    /// /return how many bases in the reference are spanned
+    /// \return how many bases in the reference are spanned
     /// by the given CIGAR string
     ///
     int getExpectedReferenceBaseCount() const;
@@ -350,41 +368,44 @@ public:
     /// Return the number of clips that are at the end of the cigar.
     int getNumEndClips() const;
 
-    // Return the reference offset associated with the specified
-    // query index based on this cigar.
+    /// Return the reference offset associated with the specified
+    /// query index or INDEX_NA based on this cigar.
     int32_t getRefOffset(int32_t queryIndex);
 
-    // Return the query index associated with the specified
-    // reference offset based on this cigar.
+    /// Return the query index associated with the specified
+    /// reference offset or INDEX_NA based on this cigar.
     int32_t getQueryIndex(int32_t refOffset);
 
-    // Return the reference position associated with the specified query
-    // index based on this cigar and the specified queryStartPos which
-    // is the leftmost mapping position of the first matching
-    // base in the query.
+    /// Return the reference position associated with the specified query index
+    /// or INDEX_NA based on this cigar and the specified queryStartPos which
+    /// is the leftmost mapping position of the first matching base in the
+    /// query.
     int32_t getRefPosition(int32_t queryIndex, int32_t queryStartPos);
 
-    // Return the query index associated with the specified reference position
-    // when the query starts at the specified reference position based on
-    // this cigar.
+    /// Return the query index or INDEX_NA associated with the specified 
+    /// reference offset when the query starts at the specified reference
+    /// position.
     int32_t getQueryIndex(int32_t refPosition, int32_t queryStartPos);
 
-    // Return the number of bases that overlap the reference and the
-    // read associated with this cigar that falls within the specified region.
-    // start : inclusive 0-based start position (reference position) of the
-    //         region to check for overlaps in.
-    //         (-1 indicates to start at the beginning of the reference.)
-    // end   : exclusive 0-based end position (reference position) of the
-    //          region to check for overlaps in.
-    //         (-1 indicates to go to the end of the reference.)
-    // queryStartPos : 0-based leftmost mapping position of the first matching
-    //                 base in the query.
+    /// Return the number of bases that overlap the reference and the
+    /// read associated with this cigar that falls within the specified region.
+    /// \param start : inclusive 0-based start position (reference position) of
+    ///         the region to check for overlaps in
+    ///         (-1 indicates to start at the beginning of the reference.)
+    /// \param end  : exclusive 0-based end position (reference position) of the
+    ///          region to check for overlaps in
+    ///         (-1 indicates to go to the end of the reference.)
+    /// \param queryStartPos : 0-based leftmost mapping position of the first 
+    ///                 matcihng base in the query.
     uint32_t getNumOverlaps(int32_t start, int32_t end, int32_t queryStartPos);
 
     /// Return whether or not the cigar has indels (insertions or delections)
     /// \return true if it has an insertion or deletion, false if not.
     bool hasIndel();
-    
+
+    /// Value associated with an index that is not applicable/does not exist,
+    /// used for converting between query and reference indexes/offsets when
+    /// an associated index/offset does not exist.
     static const int32_t INDEX_NA;
 
 protected:
@@ -411,12 +432,14 @@ private:
     std::vector<int32_t> refToQuery;
 };
 
+/// Writes the specified cigar operation to the specified stream as <count><char> (3M).
 inline std::ostream &operator << (std::ostream &stream, const Cigar::CigarOperator& o)
 {
     stream << o.count << o.getChar();
     return stream;
 }
 
+/// Writes all of the cigar operations contained in the cigar to the passed in stream.
 inline std::ostream &operator << (std::ostream &stream, const Cigar& cigar)
 {
     stream << cigar.cigarOperations;

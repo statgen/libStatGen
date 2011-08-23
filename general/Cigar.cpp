@@ -90,23 +90,8 @@ bool Cigar::operator == (Cigar &rhs) const
 }
 
 
-/// return the length of the read that corresponds to
-/// the current CIGAR string.
-///
-/// For validation, we should expect that a sequence
-/// read in a SAM file will be the same length as the
-/// value returned by this method.
-///
-/// Example: 3M2D3M describes a read with three bases
-/// matching the reference, then skips 2 bases, then has
-/// three more bases that match the reference (match/mismatch).
-/// In this case, the read length is expected to be 6.
-///
-/// Example: 3M2I3M describes a read with 3 match/mismatch
-/// bases, two extra bases, and then 3 more match/mistmatch
-/// bases.  The total in this example is 8 bases.
-///
-/// /return returns the expected read length
+// return the length of the read that corresponds to
+// the current CIGAR string.
 int Cigar::getExpectedQueryBaseCount() const
 {
     int matchCount = 0;
@@ -130,22 +115,8 @@ int Cigar::getExpectedQueryBaseCount() const
 }
 
 
-/// return the number of bases in the reference that
-/// this read "spans"
-///
-/// When doing range checking, we occassionally need to know
-/// how many total bases the CIGAR string represents as compared
-/// to the reference.
-///
-/// Examples: 3M2D3M describes a read that overlays 8 bases in
-/// the reference.  3M2I3M describes a read with 3 bases that
-/// match the reference, two additional bases that aren't in the
-/// reference, and 3 more bases that match the reference, so it
-/// spans 6 bases in the reference.
-///
-/// /return how many bases in the reference are spanned
-/// by the given CIGAR string
-///
+// return the number of bases in the reference that
+// this read "spans"
 int Cigar::getExpectedReferenceBaseCount() const
 {
     int matchCount = 0;
@@ -169,7 +140,7 @@ int Cigar::getExpectedReferenceBaseCount() const
 }
 
 
-/// Return the number of clips that are at the beginning of the cigar.
+// Return the number of clips that are at the beginning of the cigar.
 int Cigar::getNumBeginClips() const
 {
     int numBeginClips = 0;
@@ -191,7 +162,7 @@ int Cigar::getNumBeginClips() const
 }
 
 
-/// Return the number of clips that are at the end of the cigar.
+// Return the number of clips that are at the end of the cigar.
 int Cigar::getNumEndClips() const
 {
     int numEndClips = 0;
