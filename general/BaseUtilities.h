@@ -21,25 +21,27 @@
 #include <stdint.h>
 
 
-// This class contains static utilities for performing
-// basic operations on bases.
+/// This class contains static utilities for performing
+/// basic operations on bases.
 class BaseUtilities
 {
 public:
-    // Returns whether or not the specified bases is
-    // an indicator for ambiguity 
-    // Returns true if base = 'n' or 'N' or '.'
+    /// Returns whether or not the specified bases is
+    /// an indicator for ambiguity.
+    /// \return true if base = 'n' or 'N' or '.'
     static bool isAmbiguous(char base);
 
-    // Returns whether or not two bases are equal.
-    // If one of the bases is '=', the bases are consided
-    // to be equal.  This is a case insensitive check.
+    /// Returns whether or not two bases are equal (case insensitive),
+    /// if one of the bases is '=', the bases are consided
+    /// to be equal.
     static bool areEqual(char base1, char base2);
 
-    // Get phred base quality from the specified ascii quality.
+    /// Get phred base quality from the specified ascii quality.
     static uint8_t getPhredBaseQuality(char charQuality);
 
+    /// Character used when the quality is unknown.
     static const char UNKNOWN_QUALITY_CHAR = ' ';
+    /// Int value used when the quality is unknown.
     static const uint8_t UNKNOWN_QUALITY_INT = 0xFF;
 };
 

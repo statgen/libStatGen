@@ -263,6 +263,9 @@ private:
     std::ostream            *_progressStream;
     bool                    _colorSpace;
 
+    // Whether or not to overwrite an existing file when creating a umfa file (via create).
+    bool                    _createOverwrite;
+
     std::string             _baseFilename;   // for later use by WordIndex create and open
     std::string             _referenceFilename;
     std::string             _fastaFilename;
@@ -333,6 +336,9 @@ public:
     void setProgressStream(std::ostream &progressStream) {_progressStream = &progressStream;}
     void setColorSpace(bool colorSpace) {_colorSpace = colorSpace; }
     void setSearchCommonFileSuffix(bool searchCommonFileSuffix) {_searchCommonFileSuffix = searchCommonFileSuffix;}
+
+    // Set whether or not to overwrite a umfa file when calling create.
+    void setCreateOverwrite(bool createOverwrite) {_createOverwrite = createOverwrite;}
 
     bool loadFastaData(const char *filename);
 

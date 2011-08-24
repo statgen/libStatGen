@@ -38,35 +38,35 @@
 /// This class represents the CIGAR without any methods to set the cigar
 /// (see CigarRoller for that).
 
-///
-/// Docs from Sam1.pdf:
-///
-/// Clipped alignment. In Smith-Waterman alignment, a sequence may not be aligned from the first residue to the last one.
-/// Subsequences at the ends may be clipped off. We introduce operation ʻSʼ to describe (softly) clipped alignment. Here is
-/// an example. Suppose the clipped alignment is:
-/// REF:  AGCTAGCATCGTGTCGCCCGTCTAGCATACGCATGATCGACTGTCAGCTAGTCAGACTAGTCGATCGATGTG
-/// READ:        gggGTGTAACC-GACTAGgggg
-/// where on the read sequence, bases in uppercase are matches and bases in lowercase are clipped off. The CIGAR for
-/// this alignment is: 3S8M1D6M4S.
-///
-///
-/// If the mapping position of the query is not available, RNAME and
-/// CIGAR are set as “*”
-///
-/// A CIGAR string is comprised of a series of operation lengths plus the operations. The conventional CIGAR format allows
-/// for three types of operations: M for match or mismatch, I for insertion and D for deletion. The extended CIGAR format
-/// further allows four more operations, as is shown in the following table, to describe clipping, padding and splicing:
-///
-/// op   Description
-/// --   -----------
-/// M    Match or mismatch
-/// I    Insertion to the reference
-/// D    Deletion from the reference
-/// N    Skipped region from the reference
-/// S    Soft clip on the read (clipped sequence present in <seq>)
-/// H    Hard clip on the read (clipped sequence NOT present in <seq>)
-/// P    Padding (silent deletion from the padded reference sequence)
-///
+//
+// Docs from Sam1.pdf:
+//
+// Clipped alignment. In Smith-Waterman alignment, a sequence may not be aligned from the first residue to the last one.
+// Subsequences at the ends may be clipped off. We introduce operation ʻSʼ to describe (softly) clipped alignment. Here is
+// an example. Suppose the clipped alignment is:
+// REF:  AGCTAGCATCGTGTCGCCCGTCTAGCATACGCATGATCGACTGTCAGCTAGTCAGACTAGTCGATCGATGTG
+// READ:        gggGTGTAACC-GACTAGgggg
+// where on the read sequence, bases in uppercase are matches and bases in lowercase are clipped off. The CIGAR for
+// this alignment is: 3S8M1D6M4S.
+//
+//
+// If the mapping position of the query is not available, RNAME and
+// CIGAR are set as “*”
+//
+// A CIGAR string is comprised of a series of operation lengths plus the operations. The conventional CIGAR format allows
+// for three types of operations: M for match or mismatch, I for insertion and D for deletion. The extended CIGAR format
+// further allows four more operations, as is shown in the following table, to describe clipping, padding and splicing:
+//
+// op   Description
+// --   -----------
+// M    Match or mismatch
+// I    Insertion to the reference
+// D    Deletion from the reference
+// N    Skipped region from the reference
+// S    Soft clip on the read (clipped sequence present in <seq>)
+// H    Hard clip on the read (clipped sequence NOT present in <seq>)
+// P    Padding (silent deletion from the padded reference sequence)
+//
 
 
 

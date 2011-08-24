@@ -211,6 +211,7 @@ void GenomeSequence::constructorClear()
     _debugFlag = 0;
     _progressStream = NULL;
     _colorSpace = false;
+    _createOverwrite = false;
 }
 
 void GenomeSequence::setup(const char *referenceFilename)
@@ -485,7 +486,7 @@ bool GenomeSequence::create()
         _umfaFilename = _baseFilename + "-bs.umfa";
     }
 
-    if (access(_umfaFilename.c_str(), R_OK) == 0)
+    if (!_createOverwrite && access(_umfaFilename.c_str(), R_OK) == 0)
     {
         std::cerr << "Output file '" << _umfaFilename << "' exists or is not writable - please remove." << std::endl;
         return true;

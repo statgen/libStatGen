@@ -20,35 +20,63 @@
 
 #include "StringBasics.h"
 
+/// Map between characters and the associated base type.
 class BaseAsciiMap
 {
 public:
+    /// Value associated with 'A' in the ascii to base map.
     static const int baseAIndex = 000;
+    /// Value associated with 'T' in the ascii to base map.
     static const int baseTIndex = 001;
+    /// Value associated with 'C' in the ascii to base map.
     static const int baseCIndex = 002;
+    /// Value associated with 'G' in the ascii to base map.
     static const int baseGIndex = 003;
-    static const int baseNIndex = 004; // baseN --> bad read
-    static const int baseXIndex = 005; // baseX --> unknown (bad data)
-    //
-    // two arrays for converting back and forth between base pair character
+    /// Value associated with 'N' in the ascii to base map (bad read).
+    static const int baseNIndex = 004;
+    /// Value associated with any non-base character in the ascii to base
+    /// map (unknown, bad data).
+    static const int baseXIndex = 005;
+
+    // Two arrays for converting back and forth between base pair character
     // value (ASCII) to a base integer in the range 0..3.  Note there is actually
     // a value 4 and 5, for 'N' (indelible) and 'M' (unknown to me).
     //
+    /// Convert from int representation to the base.
     static const char int2base[];
+    /// Convert from int representation to colorspace representation.
     static const char int2colorSpace[];
     static unsigned char base2complement[];
 
-    enum SPACE_TYPE {UNKNOWN, BASE_SPACE, COLOR_SPACE};
+    /// The type of space (color or base) to use in the mapping.
+    enum SPACE_TYPE {
+        /// Base decision on the first raw seq character/type has yet 
+        /// to be determined.
+        UNKNOWN,
+        BASE_SPACE, ///< Bases only (A,C,G,T,N).
+        COLOR_SPACE ///< Color space only (0,1,2,3,.).
+    };
 
+    /// Map ASCII values to a 2 (or 3) bit encoding for the base pair value for
+    /// both base and color space.
+    /// 'A'/'a'/'0' -> 0; 'C'/'c'/'1' -> 1; 'G'/'g'/'2' -> 2; 'T'/'t'/'3' -> 3;
+    /// 'N'/'n'/'4' -> 4; anything else -> 5.
     static unsigned char baseColor2int[256+1];   // base space read (ATCG)
+    /// Map ASCII values to a 2 (or 3) bit encoding for the base pair value for
+    /// just base space (ACTGNactgn).
+    /// 'A'/'a' -> 0;  'C'/'c' -> 1;  'G'/'g' -> 2;  'T'/'t' -> 3;
+    /// 'N'/'n' -> 4; anything else -> 5.
     static unsigned char base2int[256+1];        // base space read (ATCG)
+    /// Map ASCII values to a 2 (or 3) bit encoding for the base pair value for
+    /// just color space (0123).
+    /// '0' -> 0; '1' -> 1; '2' -> 2; '3' -> 3; '4' -> 4; anything else -> 5.
     static unsigned char color2int[256+1];       // base space read (ATCG)
 
 public:
     BaseAsciiMap();
     ~BaseAsciiMap();
 
-    // Set the base type based on the passed in option.
+    /// Set the base type based on the passed in option.
     inline void setBaseMapType(SPACE_TYPE spaceType)
     {
         resetPrimerCount();
@@ -70,7 +98,7 @@ public:
         }
     };
 
-    // Returns the baseIndex value for the character passed in.
+    /// Returns the baseIndex value for the character passed in.
     inline int getBaseIndex(const char& letter)
     {
         if (myBase2IntMapPtr == NULL)
@@ -110,6 +138,7 @@ public:
         return myBase2IntMapPtr[(int)letter];
     }
 
+    /// Return the space type that is currently set.
     inline SPACE_TYPE getSpaceType()
     {
         if (myBase2IntMapPtr == base2int)
@@ -126,15 +155,20 @@ public:
         }
     }
 
+    /// Set the number of primer bases expected before the actual
+    /// base/color space type occurs for the rest of the entries.
     void setNumPrimerBases(int numPrimerBases)
     {
         myNumPrimerBases = numPrimerBases;
     }
 
+    /// Reset the number of primers to 0.
     void resetPrimerCount()
     {
         myPrimerCount = 0;
     };
+
+    /// Reset the base mapping type to UNKNOWN.
     void resetBaseMapType()
     {
         myBase2IntMapPtr = NULL;

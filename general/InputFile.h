@@ -33,6 +33,12 @@
 
 /// Class for easily reading/writing files without having to worry about
 /// file type (uncompressed, gzip, bgzf) when reading.
+/// It hides the low level file operations/structure from the user, allowing
+/// them to generically open and operate on a file using the same
+/// interface without knowing the file format (standard uncompressed,
+/// gzip, or bgzf).  For writing, the user must specify the file type.
+/// There is a typedef IFILE which is InputFile* and setup to mimic FILE
+/// including global methods that take IFILE as a parameter.
 class InputFile
 {
     bool    myAttemptRecovery;  // use recovery techniques if possible
@@ -483,12 +489,13 @@ protected:
 typedef InputFile* IFILE;
 
 
-/// Open a file.
-/// \param filename file to open
+/// Open a file with the specified name and mode, using a filename of "-" to 
+/// indicate stdin/stdout.
+/// \param filename file to open ("-" meands stdin/stdout)
 /// \param mode same format as fopen: "r" for read & "w" for write.
 /// \param compressionMode set the type of file to open for writing or
-/// for reading from stdin (when reading files, the compression type is 
-/// determined by reading the file).
+/// for reading from stdin (when reading files not from stdin, the compression
+/// type is determined by reading the file).
 /// \return IFILE - pointer to the InputFile object that has been opened.
 inline IFILE ifopen(const char * filename, const char * mode,
                     InputFile::ifileCompression compressionMode = InputFile::DEFAULT)
@@ -522,7 +529,7 @@ inline int ifclose(IFILE file)
     return(result);
 }
 
-/// Read size bytes from the file into the buffer.
+/// Read up to size bytes from the file into the buffer.
 /// \param file file to be read - IFILE is a pointer to an InputFile object
 /// \param buffer pointer to memory at least size bytes big to write the
 /// data into.
@@ -553,7 +560,7 @@ inline int ifgetc(IFILE file)
     return(file->ifgetc());
 }
 
-/// Reset to the beginning of the file.
+/// Reset to the beginning of the file (cannot be done for stdin/stdout).
 /// \param file file to be rewound - IFILE is a pointer to an InputFile object
 inline void ifrewind(IFILE file)
 {
@@ -564,7 +571,7 @@ inline void ifrewind(IFILE file)
     file->ifrewind();
 }
 
-/// Check to see if we have reached the EOF.
+/// Check to see if we have reached the EOF (returns 0 if not EOF).
 /// \param file file to be checked - IFILE is a pointer to an InputFile object
 /// \return 0 if not EOF, any other value means EOF.
 inline int ifeof(IFILE file)
@@ -577,7 +584,7 @@ inline int ifeof(IFILE file)
     return(file->ifeof());
 }
 
-/// Write the specified buffer into the file.
+/// Write the specified number of bytes from the specified buffer into the file.
 /// \param file file to write to - IFILE is a pointer to an InputFile object
 /// \param buffer buffer containing size bytes to write to the file.
 /// \param size number of bytes to write
@@ -592,7 +599,7 @@ inline unsigned int ifwrite(IFILE file, const void * buffer, unsigned int size)
     return(file->ifwrite(buffer, size));
 }
 
-/// Get current position in the file.
+/// Get current position in the file.  Can be fed back into ifseek.
 /// \param file file to perform tell on - IFILE is a pointer to an InputFile object
 /// \return current position in the file, -1 indicates an error.
 inline int64_t iftell(IFILE file)
@@ -604,7 +611,8 @@ inline int64_t iftell(IFILE file)
     return (file->iftell());
 }
 
-/// Seek to the specified offset from the origin.
+/// Seek to the specified position (result from an iftell), but cannot
+/// be done for stdin/stdout.
 /// \param file file to perform seek on - IFILE is a pointer to an InputFile object
 /// \param offset offset into the file to move to (must be from a tell call)
 /// \param origin can be any of the following:

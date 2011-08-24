@@ -18,7 +18,8 @@
 #include "BaseAsciiMap.h"
 
 //
-// Map ASCII values to a 2 (or 3) bit encoding for the base pair value
+// Map ASCII values to a 2 (or 3) bit encoding for the base pair value for
+// both base and color space.
 //  class 0 -> 'A' (Adenine - 0x41 and 0x61)
 //  class 1 -> 'C' (Cytosine - 0x43 and 0x63)
 //  class 2 -> 'G' (Guanine - 0x47 and 0x67)
@@ -52,7 +53,8 @@ unsigned char BaseAsciiMap::baseColor2int[256+1] =
     "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xF0-0xFF
     ;
 
-// Only allow ACTGNactgn
+// Map ASCII values to a 2 (or 3) bit encoding for the base pair value for
+// just base space (ACTGNactgn).
 unsigned char BaseAsciiMap::base2int[256+1] =
     "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x00-0x0F
     "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x10-0x1F
@@ -73,7 +75,8 @@ unsigned char BaseAsciiMap::base2int[256+1] =
     "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xF0-0xFF
     ;
 
-// Only allow 0123.
+// Map ASCII values to a 2 (or 3) bit encoding for the base pair value for
+// just color space (0123).
 unsigned char BaseAsciiMap::color2int[256+1] =
     "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x00-0x0F
     "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x10-0x1F
@@ -104,15 +107,13 @@ const char BaseAsciiMap::int2base[] = "ACGTNMXXXXXXXXXX";
 //
 const char BaseAsciiMap::int2colorSpace[] = "0123NXXXXXXXXXXX";
 
-//
-// This table maps 5' base space to the 3' complement base space
-// values, as well as 5' color space values to the corresponding
-// 3' complement color space values.
-//
-// In both cases, invalids are mapped to 'N', which isn't accurate
-// for ABI SOLiD, but internally it shouldn't matter (on output it
-// will).
-//
+/// This table maps 5' base space to the 3' complement base space
+/// values, as well as 5' color space values to the corresponding
+/// 3' complement color space values.
+///
+/// In both cases, invalids are mapped to 'N', which isn't accurate
+/// for ABI SOLiD, but internally it shouldn't matter (on output it
+/// will).
 unsigned char BaseAsciiMap::base2complement[256+1 /* for NUL char */] =
     "NNNNNNNNNNNNNNNN"  // 0x00-0x0F
     "NNNNNNNNNNNNNNNN"  // 0x10-0x1F
