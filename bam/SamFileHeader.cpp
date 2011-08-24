@@ -164,6 +164,30 @@ void SamFileHeader::addReferenceInfo(const char* referenceSequenceName,
     myReferenceInfo.add(referenceSequenceName, referenceSequenceLength);
 }
 
+
+// Populate the reference info from the SQ fields.
+void SamFileHeader::generateReferenceInfo()
+{
+    // Loop through the SQ fields.
+    uint32_t sqIndex = 0;
+    SamHeaderRecord* hdrRec = getNextHeaderRecord(sqIndex, SamHeaderRecord::SQ);
+    while(hdrRec != NULL)
+    {
+        // Set the reference info based on this SQ record.
+        String refName = hdrRec->getTagValue("SN");
+        String refLen = hdrRec->getTagValue("LN");
+        long refLenInt = 0;
+        if(refLen.AsInteger(refLenInt))
+        {
+            // Successfully converted the reference to an integer
+            // so add the reference information.
+            myReferenceInfo.add(refName, refLen);
+        }
+        hdrRec = getNextHeaderRecord(sqIndex, SamHeaderRecord::SQ);
+    }
+}
+
+
 // Add a header line that has an const char* value.
 bool SamFileHeader::addHeaderLine(const char* type, const char* tag, 
                                   const char* value)
@@ -192,6 +216,18 @@ bool SamFileHeader::addHeaderLine(const char* headerLine)
     }
     // Failed to parse the header line, return false.
     return(false);
+}
+
+
+// Add a comment.
+bool SamFileHeader::addComment(const char* comment)
+{
+    if((comment != NULL) && (strcmp(comment, EMPTY_RETURN.c_str()) != 0))
+    {
+        // Valid comment, so add it.
+        myComments.push_back(comment);
+    }
+    return(true);
 }
 
 
@@ -901,41 +937,6 @@ const char* SamFileHeader::getNextComment()
 void SamFileHeader::resetCommentIter()
 {
     myCurrentCommentIndex = 0;
-}
-
-
-// Add a comment.
-bool SamFileHeader::addComment(const char* comment)
-{
-    if((comment != NULL) && (strcmp(comment, EMPTY_RETURN.c_str()) != 0))
-    {
-        // Valid comment, so add it.
-        myComments.push_back(comment);
-    }
-    return(true);
-}
-
-
-// Populate the reference info from the SQ fields.
-void SamFileHeader::generateReferenceInfo()
-{
-    // Loop through the SQ fields.
-    uint32_t sqIndex = 0;
-    SamHeaderRecord* hdrRec = getNextHeaderRecord(sqIndex, SamHeaderRecord::SQ);
-    while(hdrRec != NULL)
-    {
-        // Set the reference info based on this SQ record.
-        String refName = hdrRec->getTagValue("SN");
-        String refLen = hdrRec->getTagValue("LN");
-        long refLenInt = 0;
-        if(refLen.AsInteger(refLenInt))
-        {
-            // Successfully converted the reference to an integer
-            // so add the reference information.
-            myReferenceInfo.add(refName, refLen);
-        }
-        hdrRec = getNextHeaderRecord(sqIndex, SamHeaderRecord::SQ);
-    }
 }
 
 

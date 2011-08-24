@@ -27,6 +27,11 @@
 #include "SamStatistics.h"
 
 /// Allows the user to easily read/write a SAM/BAM file.
+/// The SamFile class contains additional functionality that allows a user
+/// to read specific sections of sorted & indexed BAM files.  In order to
+/// take advantage of this capability, the index file must be read prior to
+/// setting the read section.  This logic saves the time of having to read
+/// the entire file and takes advantage of the seeking capability of BGZF.
 class SamFile
 {
 public:
@@ -37,7 +42,7 @@ public:
     };
     
     
-    /// Enum for indicating the type of sort for the file.
+    /// Enum for indicating the type of sort expected in the file.
     enum SortedType {
         UNSORTED = 0, ///< file is not sorted.
         FLAG,         ///< SO flag from the header indicates the sort type.
@@ -45,7 +50,8 @@ public:
         QUERY_NAME    ///< file is sorted by queryname.
     };
     
-    /// Default Constructor.
+    /// Default Constructor, initializes the variables, but does not open
+    /// any files.
     SamFile();
 
     /// Constructor that sets the error handling type.
@@ -53,7 +59,7 @@ public:
     SamFile(ErrorHandler::HandlingType errorHandlingType);
 
     /// Constructor that opens the specified file based on the specified mode
-    /// (READ/WRITE).
+    /// (READ/WRITE), aborts if the file could not be opened.
     /// \param filename name of the file to open.
     /// \param mode mode to use for opening the file.
     SamFile(const char* filename, OpenType mode);
@@ -67,14 +73,16 @@ public:
             ErrorHandler::HandlingType errorHandlingType);
 
     /// Constructor that opens the specified file based on the specified mode
-    /// (READ/WRITE).
+    /// (READ/WRITE) and reads the header, aborts if the file could not be
+    /// opened or the header not read.
     /// \param filename name of the file to open.
     /// \param mode mode to use for opening the file.
     /// \param header to read into or write from
     SamFile(const char* filename, OpenType mode, SamFileHeader* header);
 
     /// Constructor that opens the specified file based on the specified mode
-    /// (READ/WRITE) and handles errors per the specified handleType.
+    /// (READ/WRITE) and reads the header, handling errors per the specified
+    /// handleType.
     /// \param filename name of the file to open.
     /// \param mode mode to use for opening the file.
     /// \param errorHandlingType how to handle errors.
@@ -83,15 +91,19 @@ public:
             ErrorHandler::HandlingType errorHandlingType,
             SamFileHeader* header);
 
+    /// Destructor
     virtual ~SamFile();
    
-    /// Open a sam/bam file for reading with the specified filename.
+    /// Open a sam/bam file for reading with the specified filename,
+    /// determing the type of file and SAM/BAM  by reading the file
+    /// (if not stdin).
     /// \param  filename the sam/bam file to open for reading.
     /// \param header to read into or write from (optional)
     /// \return true = success; false = failure.
     bool OpenForRead(const char * filename, SamFileHeader* header = NULL);
 
-    /// Open a sam/bam file for writing with the specified filename.
+    /// Open a sam/bam file for writing with the specified filename,
+    /// determining SAM/BAM from the extension (.bam = BAM).
     /// \param  filename the sam/bam file to open for writing.
     /// \param header to read into or write from (optional)
     /// \return true = success; false = failure.
@@ -119,7 +131,7 @@ public:
 
     /// Set the type of sequence translation to use when reading
     /// the sequence.  Passed down to the SamRecord when it is read.  
-    // The default type (if this method is never called) is
+    /// The default type (if this method is never called) is
     /// NONE (the sequence is left as-is).
     /// \param translation type of sequence translation to use.
     void SetReadSequenceTranslation(SamRecord::SequenceTranslation translation);
@@ -153,11 +165,24 @@ public:
     bool WriteHeader(SamFileHeader& header);
 
     /// Reads the next record from the file & stores it in the passed in record.
-    /// \return true  = record was successfully set.
-    ///                false = record was not successfully set.
+    ///
+    /// If it is an indexed BAM file and SetReadSection was called, 
+    /// only alignments in the section specified by SetReadSection are read.
+    /// If they all have already been read, this method returns false.
+    ///
+    /// Validates that the record is sorted according to the value set by
+    /// setSortedValidation. No sorting validation is done if specified to be
+    /// unsorted, or setSortedValidation was never called.
+    /// \return true  = record was successfully set (and sorted if applicable),
+    ///                false = record was not successfully set 
+    ///                (or not sorted as expected).
     bool ReadRecord(SamFileHeader& header, SamRecord& record);
    
     /// Writes the specified record into the file.
+    /// Validates that the record is sorted according to the value set by
+    /// setSortedValidation. No sorting validation is done if specified to
+    /// be unsorted, or setSortedValidation was never called.  Returns false
+    /// and does not write the record if the record was not properly sorted.
     /// \return true = success; false = failure.
     bool WriteRecord(SamFileHeader& header, SamRecord& record);
    
@@ -165,12 +190,13 @@ public:
     /// Must be called after the file has been opened.
     /// Sorting validation is reset everytime SetReadPosition is called since
     /// it can jump around in the file.
+    /// \param sortType specifies the type of sort to be checked for.
     void setSortedValidation(SortedType sortType);
 
     /// Return the number of records that have been read/written so far.
     uint32_t GetCurrentRecordCount();
 
-    /// Get the Status of the last call that sets status.
+    /// Deprecated, get the Status of the last call that sets status.
     /// To remain backwards compatable - will be removed later.
     inline SamStatus::Status GetFailure()
     {
@@ -183,17 +209,18 @@ public:
         return(myStatus.getStatus());
     }
 
-    /// Get the Status of the last call that sets status.
+    /// Get the Status Message of the last call that sets status.
     inline const char* GetStatusMessage()
     {
         return(myStatus.getStatusMessage());
     }
 
-    /// Sets what part of the BAM file should be read.  This version will
-    /// set it to only read a specific reference id.  The records for that
-    /// reference id will be retrieved on each ReadRecord call.  When all
-    /// records have been retrieved for the specified reference id, ReadRecord
-    /// will return failure until a new read section is set.
+    /// Sets which reference id (index into the BAM list of reference
+    /// information) of the BAM file should be read.  The records
+    /// for that reference id will be retrieved on each ReadRecord call.  
+    /// Reference ids start at 0, and -1 indicates reads with no reference.
+    /// When all records have been retrieved for the specified reference id, 
+    /// ReadRecord will return failure until a new read section is set.
     /// Must be called only after the file has been opened for reading.
     /// Sorting validation is reset everytime SetReadPosition is called since
     /// it can jump around in the file.
@@ -201,10 +228,10 @@ public:
     /// \return true = success; false = failure.
     bool SetReadSection(int32_t refID);
 
-    /// Sets what part of the BAM file should be read.  This version will
-    /// set it to only read a specific reference name.  The records for that
-    /// reference id will be retrieved on each ReadRecord call.  When all
-    /// records have been retrieved for the specified reference name,
+    /// Sets which reference name of the BAM file should be read.  The records
+    /// for that reference name will be retrieved on each ReadRecord call.
+    /// Specify "" or "*" to read records not associated with a reference.
+    /// When all records have been retrieved for the specified reference name,
     /// ReadRecord will return failure until a new read section is set.
     /// Must be called only after the file has been opened for reading.
     /// Sorting validation is reset everytime SetReadPosition is called since
@@ -213,34 +240,35 @@ public:
     /// \return true = success; false = failure.
     bool SetReadSection(const char* refName);
 
-    /// Sets what part of the BAM file should be read.  This version will
-    /// set it to only read a specific reference id and start/end position.
-    /// The records for this section will be retrieved on each ReadRecord
-    /// call.  When all records have been retrieved for the specified section,
-    /// ReadRecord will return failure until a new read section is set.
-    /// Must be called only after the file has been opened for reading.
-    /// Sorting validation is reset everytime SetReadPosition is called since
-    /// it can jump around in the file.
+    /// Sets which reference id (index into the BAM list of reference
+    /// information) & start/end positions of the BAM file should be read.
+    /// The records for that reference id and positions will be retrieved on
+    /// each ReadRecord call.  Reference ids start at 0, and -1 indicates
+    /// reads with no reference.  When all records have been retrieved for the
+    /// specified reference id, ReadRecord will return failure until a new read
+    /// section is set.  Must be called only after the file has been opened
+    /// for reading.  Sorting validation is reset everytime SetReadPosition is
+    /// called since it can jump around in the file.
     /// \param  refID the reference ID of the records to read from the file.
     /// \param  start inclusive 0-based start position of records that should be read for this refID.
     /// \param  end exclusive 0-based end position of records that should be read for this refID.
-    /// \param overlap When true (default), return reads that just overlap the region.  When false, only return reads that fall completely within the region
+    /// \param overlap When true (default), return reads that just overlap the region; when false, only return reads that fall completely within the region
     /// \return true = success; false = failure.   
     bool SetReadSection(int32_t refID, int32_t start, int32_t end, 
                         bool overlap = true);
 
-    /// Sets what part of the BAM file should be read.  This version will
-    /// set it to only read a specific reference name and start/end position.
-    /// The records for this section will be retrieved on each ReadRecord
-    /// call.  When all records have been retrieved for the specified section,
-    /// ReadRecord will return failure until a new read section is set.
-    /// Must be called only after the file has been opened for reading.
-    /// Sorting validation is reset everytime SetReadPosition is called since
-    /// it can jump around in the file.
+    /// Sets which reference name & start/end positions of the BAM file should
+    /// be read.  The records for this reference name & positions will be
+    /// retrieved on each ReadRecord call.  Specify "" or "*" to indicate
+    /// reads with no reference.  When all records have been retrieved for
+    /// the specified section, ReadRecord will return failure until a new read
+    /// section is set.  Must be called only after the file has been opened for
+    /// reading.  Sorting validation is reset everytime SetReadPosition is
+    /// called since it can jump around in the file.
     /// \param  refName the reference name of the records to read from the file.
     /// \param  start inclusive 0-based start position of records that should be read for this refID.
     /// \param  end exclusive 0-based end position of records that should be read for this refID.
-    /// \param overlap When true (default), return reads that just overlap the region.  When false, only return reads that fall completely within the region
+    /// \param overlap When true (default), return reads that just overlap the region; when false, only return reads that fall completely within the region
     /// \return true = success; false = failure.   
     bool SetReadSection(const char* refName, int32_t start, int32_t end, 
                         bool overlap = true);
@@ -274,7 +302,9 @@ public:
                                          SamFileHeader& header);
 
     /// Returns the number of bases in the passed in read that overlap the
-    /// region that is currently set.
+    /// region that is currently set.  Overlapping means that the bases occur
+    /// in both the read and the reference as either matches or mismatches.
+    /// This does not count insertions, deletions, clips, pads, or skips.
     /// \param samRecord to check for overlapping bases.
     /// \return number of bases that overlap region that is currently set.
     uint32_t GetNumOverlaps(SamRecord& samRecord);
@@ -296,6 +326,7 @@ public:
         return(iftell(myFilePtr));
     }
     
+    /// Turn off file read buffering.
     inline void DisableBuffering()
     {
         if(myFilePtr != NULL)
@@ -304,7 +335,8 @@ public:
         }
     }
 
-    
+    /// Print the statistics that have been recorded due to a call to
+    /// GenerateStatistics.
     inline void PrintStatistics() {if(myStatistics != NULL) myStatistics->print();}
 
 protected:
@@ -390,6 +422,7 @@ public:
 };
 
 
+/// Child class of SamFile for reading files.
 class SamFileReader : public SamFile
 {
 public:
@@ -419,6 +452,7 @@ public:
 };
 
 
+/// Child class of SamFile for writing files.
 class SamFileWriter : public SamFile
 {
 public:

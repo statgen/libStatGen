@@ -22,50 +22,58 @@
 #include "StringHash.h"
 #include "SamHeaderTag.h"
 
+/// This class encapsulates the tag value pairs contained with a SAM Header
+/// line with accessors for getting and setting the tags within this header.
 class SamHeaderRecord
 {
 public:
-    enum SamHeaderRecordType {HD, SQ, RG, PG};
+    /// Specifies the Type for the sam header record (line).
+    enum SamHeaderRecordType {
+        HD, ///< Header
+        SQ, ///< Sequence Dictionary
+        RG, ///< Read Group
+        PG  ///< Program
+    };
 
-    // Constructor
+    /// Constructor
     SamHeaderRecord();
    
-    // Destructor
+    /// Destructor
     ~SamHeaderRecord();
 
-    // Set the fields from the passed in line.
-    // Return true if successfully set.
+    /// Set the fields from the passed in line.
+    /// Return true if successfully set.
     bool setFields(const StringArray& tokens);
 
-    // Check to see if the record is valid.
+    /// Check to see if the record is valid.
     bool isValid();
 
-    // Return the value associated with the specified tag.
+    /// Return the value associated with the specified tag.
     const char* getTagValue(const char* tag) const;
 
-    // Set the value of the specified tag to the specified value.
-    // Set value to NULL in order to delete the tag.
-    // Returns whether or not it was successful.
-    // Fails if tag is the key tag and the key tag already exists.
+    /// Set the value of the specified tag to the specified value, deletes
+    /// the tag when value is NULL.
+    /// Returns whether or not it was successful, fails if tag is the key tag
+    /// and the key tag already exists.
     bool setTag(const char* tag, const char* value);
 
-    // Reset this header record to an empty state.
+    /// Reset this header record to an empty state with no tags.
     void reset();
 
-    // Appends the string representation of this header record
-    // to the passed in string.
+    /// Appends the string representation of this header record
+    /// to the passed in string.
     bool appendString(std::string& header);
 
-    // Add the key tag with the specified value.
+    /// Add the key tag with the specified value (not for HD headers).
     bool addKey(const char* value);
 
-    // This record is active if there is at least one tag set.
+    /// This record is active (true) if there is at least one tag set.
     bool isActiveHeaderRecord();
 
-    // Return the type of this header record.
+    /// Return the type of this header record (HD, SQ, RG, or PG) as a string.
     const char* getTypeString();
 
-    // Return the type of this header record.
+    /// Return the type of this header record (HD, SQ, RG, or PG) as an enum.
     SamHeaderRecordType getType();
 
 protected:
