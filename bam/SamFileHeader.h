@@ -341,6 +341,10 @@ public:
     /////////////////////////////
     /// @name  Get the Header Record/Comment/Line by Record/Comment/Line
     /// These methods iterate through the header.
+    /// NOTE: both getNextHeaderRecord and getNextHeaderLine increment the
+    /// same iterator.  getNextHeaderRecord that takes a header type
+    /// uses the same iterator as the getNextXXRecord with that type.
+    /// Otherwise the iterators are independent.
     //@{
 
     /// Get the next SQ header record.  After all SQ headers have been
