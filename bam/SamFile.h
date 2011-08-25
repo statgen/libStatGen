@@ -152,7 +152,7 @@ public:
    
     /// Returns whether or not the end of the file has been reached.
     /// \return true = EOF; false = not eof.
-    /// If the file is not open, false is returned.
+    /// If the file is not open, true is returned.
     bool IsEOF();
    
     /// Reads the header section from the file and stores it in
