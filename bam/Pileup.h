@@ -77,9 +77,20 @@ public:
                             uint16_t excludeFlag = 0x0704, 
                             uint16_t includeFlag = 0);
 
-    // This should be overwritten to perform any necessary
-    // filtering on the record.
+    /// Add an alignment to the pileup.
     virtual void processAlignment(SamRecord& record);
+   
+    /// Add only positions that fall within the specified region of the
+    /// alignment to the pileup.
+    /// \param record alignment to be added to the pileup.
+    /// \param startPos 0-based start position of the bases that should be
+    ///                 added to the pileup.
+    /// \param endPos   0-based end position of the bases that should be added
+    ///                 to the pileup (this position is not added).
+    ///                 Set to -1 if there is no end position to the region.
+    virtual void processAlignmentRegion(SamRecord& record,
+                                        int startPos,
+                                        int endPos);
    
 
     void flushPileup();
@@ -108,7 +119,7 @@ protected:
 
     int    pileupStart;
     int    pileupHead;
-    int    pileupTail;
+    int    pileupTail; // last used position
     int    pileupWindow;
 
     int myCurrentRefID;
@@ -192,6 +203,7 @@ Pileup<PILEUP_TYPE, FUNC_CLASS>::Pileup(int window, const std::string& refSeqFil
 template <class PILEUP_TYPE, class FUNC_CLASS>
 Pileup<PILEUP_TYPE, FUNC_CLASS>::~Pileup()
 {
+    flushPileup();
     if(myRefPtr != NULL)
     {
         delete myRefPtr;
@@ -281,6 +293,42 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignment(SamRecord& record)
 
 
 template <class PILEUP_TYPE, class FUNC_CLASS>
+void Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignmentRegion(SamRecord& record,
+                                                             int startPos,
+                                                             int endPos)
+{
+    int refPosition = record.get0BasedPosition();
+    int refID = record.getReferenceID();
+
+    // Flush any elements from the pileup that are prior to this record
+    // since the file is sorted, we are done with those positions.
+    flushPileup(refID, refPosition);
+    
+    // Check if the region starts after this reference starts.  If so,
+    // we only want to start adding at the region start position.
+    if(startPos > refPosition)
+    {
+        refPosition = startPos;
+    }
+
+    // Loop through for each reference position covered by the record.
+    // It is up to the PILEUP_TYPE to handle insertions/deletions, etc
+    // that are related with the given reference position.
+    for(; refPosition <= record.get0BasedAlignmentEnd(); ++refPosition)
+    {
+        // Check to see if we have gone past the end of the region, in which
+        // case we can stop processing this record.  Check >= since the
+        // end position is not in the region.
+        if((endPos != -1) && (refPosition >= endPos))
+        {
+            break;
+        }
+        addAlignmentPosition(refPosition, record);
+    }
+}
+
+
+template <class PILEUP_TYPE, class FUNC_CLASS>
 void Pileup<PILEUP_TYPE, FUNC_CLASS>::flushPileup()
 {
     // while there are still entries between the head and tail, flush,
@@ -325,9 +373,6 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::flushPileup(int refID, int position)
         // New chromosome, flush everything.
         flushPileup();
         myCurrentRefID = refID;
-        // Set the starts to this position - first entry
-        // in this chromosome.
-        pileupStart = pileupHead = position;
     }
     else
     {
@@ -352,11 +397,11 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::flushPileup(int position)
             pileupStart += pileupWindow;
     }
 
-    // If pileupHead != position, then we stopped because we had already
-    // flushed all the data we had, just set the head and start to the position.
-    if(pileupHead != position)
+    if(pileupHead > pileupTail)
     {
-        pileupHead = pileupStart = position;
+        // All positions have been flushed, so reset pileup info
+        pileupHead = pileupStart = 0;
+        pileupTail = -1;
     }
 }
 
