@@ -20,6 +20,7 @@
 
 #include <stdexcept>
 #include "SamFile.h"
+#include "PosList.h"
 
 template <class PILEUP_TYPE>
 class defaultPileup
@@ -81,16 +82,18 @@ public:
     virtual void processAlignment(SamRecord& record);
    
     /// Add only positions that fall within the specified region of the
-    /// alignment to the pileup.
+    /// alignment to the pileup and outside of the specified excluded positions.
     /// \param record alignment to be added to the pileup.
     /// \param startPos 0-based start position of the bases that should be
     ///                 added to the pileup.
     /// \param endPos   0-based end position of the bases that should be added
     ///                 to the pileup (this position is not added).
     ///                 Set to -1 if there is no end position to the region.
+    /// \param excludeList list of refID/positions to exclude from processing.
     virtual void processAlignmentRegion(SamRecord& record,
                                         int startPos,
-                                        int endPos);
+                                        int endPos,
+                                        PosList* excludeList = NULL);
    
 
     void flushPileup();
@@ -295,7 +298,8 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignment(SamRecord& record)
 template <class PILEUP_TYPE, class FUNC_CLASS>
 void Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignmentRegion(SamRecord& record,
                                                              int startPos,
-                                                             int endPos)
+                                                             int endPos,
+                                                             PosList* excludeList)
 {
     int refPosition = record.get0BasedPosition();
     int refID = record.getReferenceID();
@@ -323,7 +327,22 @@ void Pileup<PILEUP_TYPE, FUNC_CLASS>::processAlignmentRegion(SamRecord& record,
         {
             break;
         }
-        addAlignmentPosition(refPosition, record);
+
+        // Check to see if this position is in the exclude list.
+        bool addPos = true;
+        if(excludeList != NULL)
+        {
+            // There is an exclude list, so lookup the position.
+            if(excludeList->hasPosition(refID, refPosition))
+            {
+                // This position is in the exclude list, so don't add it.
+                addPos = false;
+            }
+        }
+        if(addPos)
+        {
+            addAlignmentPosition(refPosition, record);
+        }
     }
 }
 
@@ -416,6 +435,11 @@ int Pileup<PILEUP_TYPE, FUNC_CLASS>::pileupPosition(int position)
     if(pileupTail == -1)
     {
         pileupStart = pileupHead = position;
+        // This is the first time this position is being used, so
+        // reset the element.
+        resetElement(myElements[0], position);
+        pileupTail = position;
+        return(0);
     }
 
 
@@ -432,6 +456,7 @@ int Pileup<PILEUP_TYPE, FUNC_CLASS>::pileupPosition(int position)
         throw std::runtime_error(errorMessage.c_str());
     }    
 
+    //   int offset = position - pileupStart;
     int offset = position - pileupStart;
     
     if(offset >= pileupWindow)
@@ -439,12 +464,24 @@ int Pileup<PILEUP_TYPE, FUNC_CLASS>::pileupPosition(int position)
         offset -= pileupWindow;
     }
 
-    if(position > pileupTail)
+    // Check to see if position is past the end of the currently
+    // setup pileup positions.
+    while(position > pileupTail)
     {
-        // This is the first time this position is being used.
-        // reset the element for this position.
-        resetElement(myElements[offset], position);
-        pileupTail = position;
+        // Increment pileupTail to the next position since the current
+        // pileupTail is already in use.
+        ++pileupTail;
+
+        // Figure out the offset for this next position.
+        offset = pileupTail - pileupStart;
+        if(offset >= pileupWindow)
+        {
+            offset -= pileupWindow;
+        }
+
+        // This is the first time this position is being used, so
+        // reset the element.
+        resetElement(myElements[offset], pileupTail);
     }
 
     return(offset);
