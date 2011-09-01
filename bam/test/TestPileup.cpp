@@ -22,6 +22,13 @@ void testPileup()
     pileupTest.testPileupPosition();
 }
 
+void TestPileupElement::analyze()
+{
+    assert(strcmp(getChromosome(), "") == 0);
+    assert(getRefPosition() == 14000);
+}
+
+
 void TestPileup::testPileupPosition()
 {
     assert(pileupPosition(14000) == 0);

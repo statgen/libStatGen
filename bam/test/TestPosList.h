@@ -14,24 +14,18 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "PosList.h"
 
-#include "Pileup.h"
-#include "PileupElementBaseQual.h"
 
-void testPileup();
+void testPosList();
 
-class TestPileupElement : public PileupElementBaseQual
+class TestPosList : public PosList
 {
 public:
-    // Overwrite to validate result.
-    virtual void analyze();
+    TestPosList();
 
-};
+    ~TestPosList();
 
-
-class TestPileup : public Pileup<TestPileupElement>
-{
-public:
-    void testPileupPosition();
-private:
+    void testPosList();
+    
 };

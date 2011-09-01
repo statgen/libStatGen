@@ -54,6 +54,7 @@ void PosList::addPosition(int refID, int refPosition)
         // The position list does not currently have space for this reference id,
         // so add it.
         myPosList.resize(refID+1, std::vector<bool>(myNumPos, false));
+        myNumRefs = refID + 1;
     }
 
     // The matrix is now sized for this reference id.

@@ -26,6 +26,7 @@
 #include "TestFilter.h"
 #include "ShiftIndels.h"
 #include "TestPileup.h"
+#include "TestPosList.h"
 
 int main(int argc, char ** argv)
 {
@@ -67,7 +68,9 @@ int main(int argc, char ** argv)
         testShiftIndels();
 
         testPileup();
-   }
+        
+        testPosList();
+    }
     else
     {
         modifyFirstBaseLong();

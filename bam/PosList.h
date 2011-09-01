@@ -38,7 +38,7 @@ public:
     /// and position (negative values will automatically return false).
     bool hasPosition(int refID, int refPosition);
 
-private:
+protected:
     PosList(const PosList& p);
 
     void initVars();
