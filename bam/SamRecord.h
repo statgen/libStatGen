@@ -71,27 +71,18 @@ public:
     ~SamRecord();
 
     /// Reset the fields of the record to a default value.
-    /// This is not necessary when you are reading a Sam/Bam file, 
+    /// This is not necessary when you are reading a SAM/BAM file, 
     /// but if you are setting fields, it is a good idea to clean
     /// out a record before reusing it. Clearing it allows you to 
     /// not have to set any empty fields. 
     void resetRecord();
 
-    /// Reset the tag iterator to the beginning of the tags.
-    void resetTagIter();
- 
-    /// Returns whether or not the record is valid.
-    /// Sets the status to indicate success or failure.
+    /// Returns whether or not the record is valid, setting the status to
+    /// indicate success or failure.
     /// \param header SAM Header associated with the record.  Used to perform
     /// some validation against the header.
     /// \return true if the record is valid, false if not.
     bool isValid(SamFileHeader& header);
-
-    /// Read the BAM record from a file.
-    /// \param filePtr file to read the buffer from.
-    /// \param header BAM header for the record.
-    /// \return status of the reading the BAM record from the file.
-    SamStatus::Status setBufferFromFile(IFILE filePtr, SamFileHeader& header);
 
     /// Set the reference to the specified genome sequence object.
     /// \param reference pointer to the GenomeSequence object.
@@ -115,20 +106,20 @@ public:
     /// \return true if successfully set, false if not.
     bool setReadName(const char* readName);
 
-    /// Set the bitwise flag to the specified value.
+    /// Set the bitwise FLAG to the specified value.
     /// \param flag integer flag to use.
     /// \return true if successfully set, false if not.
     bool setFlag(uint16_t flag);
     
-    /// Set the reference name to the specified name, using the header to
-    /// determine the reference id.
+    /// Set the reference sequence name (RNAME) to the specified name, using
+    /// the header to determine the reference id.
     /// \param header SAM/BAM header to use to determine the reference id.
     /// \param referenceName reference name to use.
     /// \return true if successfully set, false if not
     bool setReferenceName(SamFileHeader& header, 
                           const char* referenceName);
 
-    /// Set the leftmost position using the specified 1-based (SAM format)
+    /// Set the leftmost position (POS) using the specified 1-based (SAM format)
     /// value.
     /// Internal processing handles the switching between SAM/BAM formats 
     /// when read/written.
@@ -144,7 +135,7 @@ public:
     /// \return true if successfully set, false if not.
     bool set0BasedPosition(int32_t position);
 
-    /// Set the mapping quality.
+    /// Set the mapping quality (MAPQ).
     /// \param mapQuality map quality to set in the record.
     /// \return true if successfully set, false if not.
     bool setMapQuality(uint8_t mapQuality);
@@ -164,57 +155,74 @@ public:
     bool setCigar(const Cigar& cigar);
 
 
-    /// Set the mate reference sequence name to the specified name, using the
-    /// header to determine the matee reference id.
+    /// Set the mate/next fragment's reference sequence name (RNEXT) to the
+    /// specified name, using the header to determine the mate reference id.
     /// \param header SAM/BAM header to use to determine the mate reference id.
     /// \param referenceName mate reference name to use.
     /// \return true if successfully set, false if not
     bool setMateReferenceName(SamFileHeader& header,
                               const char* mateReferenceName);
 
-    /// Set the leftmost mate position using the specified 1-based (SAM format)
-    /// value.
+    /// Set the mate/next fragment's leftmost position (PNEXT) using the
+    /// specified 1-based (SAM format) value.
     /// Internal processing handles the switching between SAM/BAM formats 
     /// when read/written.
     /// \param position 1-based start position
     /// \return true if successfully set, false if not.
     bool set1BasedMatePosition(int32_t matePosition);
 
-    /// Set the leftmost mate position using the specified 0-based (BAM format)
-    /// value.
+    /// Set the mate/next fragment's leftmost position using the specified
+    /// 0-based (BAM format) value.
     /// Internal processing handles the switching between SAM/BAM formats 
     /// when read/written.
     /// \param position 0-based start position
     /// \return true if successfully set, false if not.
     bool set0BasedMatePosition(int32_t matePosition);
 
-    /// Sets the inferred insert size.
-    /// \param insertSize inferred insert size.
+    /// Sets the inferred insert size (ISIZE)/observed template length (TLEN).
+    /// \param insertSize inferred insert size/observed template length.
     /// \return true if successfully set, false if not.
     bool setInsertSize(int32_t insertSize);
 
-    /// Sets the sequence to the specified sequence string.  This is a 
-    /// SAM formatted sequence string.  Internal processing handles switching
-    /// between SAM/BAM formats when read/written.
+    /// Sets the sequence (SEQ) to the specified SAM formatted sequence string.
+    ///  Internal processing handles switching between SAM/BAM formats when
+    /// read/written.
     /// \param seq SAM sequence string.  May contain '='.
     /// \return true if successfully set, false if not.
     bool setSequence(const char* seq);
 
-    /// Sets the quality to the specified quality string.  This is a SAM 
-    /// formatted quality string.  Internal processing handles switching 
-    /// between SAM/BAM formats when read/written.
+    /// Sets the quality (QUAL) to the specified SAM formatted quality string.
+    /// Internal processing handles switching between SAM/BAM formats when
+    /// read/written.
     /// \param quality SAM quality string.
     /// \return true if successfully set, false if not.
     bool setQuality(const char* quality);
 
-    /// Sets the SamRecord to contain the information in BAM format
-    /// found in fromBuffer.
+    /// Shift the indels (if any) to the left by updating the CIGAR.
+    /// \return true if the cigar was shifted, false if not.
+    bool shiftIndelsLeft();
+
+    /// Sets the SamRecord to contain the information in the BAM formatted
+    /// fromBuffer.
     /// \param fromBuffer buffer to read the BAM record from.
     /// \param fromBufferSize size of the buffer containing the BAM record.
     /// \param header BAM header for the record.
     /// \return status of reading the BAM record from the buffer.
     SamStatus::Status setBuffer(const char* fromBuffer, uint32_t fromBufferSize,
                                 SamFileHeader& header);
+
+    /// Read the BAM record from a file.
+    /// \param filePtr file to read the buffer from.
+    /// \param header BAM header for the record.
+    /// \return status of the reading the BAM record from the file.
+    SamStatus::Status setBufferFromFile(IFILE filePtr, SamFileHeader& header);
+
+    //@}
+
+    ///////////////////////
+    /// @name  Set Tag Data
+    /// Set methods for tags.
+    //@{
 
     /// Add the specified integer tag to the record.  Internal processing
     /// handles switching between SAM/BAM formats when read/written and 
@@ -225,19 +233,32 @@ public:
     /// \return true if the tag was successfully added, false otherwise.
     bool addIntTag(const char* tag, int32_t value);
 
-    /// Add the specified tag to the record.  Internal processing handles 
-    /// switching between SAM/BAM formats when read/written.  If the tag
-    /// is already there this code will replace it if the specified value
-    /// is different.
+    /// Add the specified tag,vtype,value to the record.  Vtype can be SAM/BAM
+    /// format.  Internal processing handles switching between SAM/BAM formats
+    /// when read/written.  If the tag is already there this code will replace
+    /// it if the specified value is different.
     /// \param tag two character tag to be added to the SAM/BAM record.
     /// \param vtype vtype of the specified value - either SAM/BAM vtypes.
     /// \param value value as a string for the specified tag.
     /// \return true if the tag was successfully added, false otherwise.
     bool addTag(const char* tag, char vtype, const char* value);
 
-    /// Shift the indels (if any) to the left by updating the CIGAR.
-    /// \return true if the cigar was shifted, false if not.
-    bool shiftIndelsLeft();
+    /// Clear the tags in this record.
+    /// Does not set SamStatus.
+    void clearTags();
+   
+    /// Remove a tag.
+    /// \param tag tag to remove.
+    /// \param type of the tag to be removed.
+    /// \return true if the tag no longer exists in the record, false if it could not be removed (Returns true if the tag was not found in the record).
+    bool rmTag(const char* tag, char type);
+
+    /// Remove tags.
+    /// \param tags tags to remove, formatted as  Tag:Type;Tag:Type;Tag:Type...
+    /// \return true if all tags no longer exist in the record, false if any could not be removed
+    /// (Returns true if the tags were not found in the record).
+    /// SamStatus is set to INVALID if the tags are incorrectly formatted.
+    bool rmTags(const char* tags);
 
     //@}
 
@@ -254,37 +275,38 @@ public:
     const void* getRecordBuffer();
 
     /// Get a const pointer to the buffer that contains the BAM representation
-    /// of the record.
+    /// of the record using the specified translation on the sequence.
     /// \param translation type of sequence translation to use.
     /// \return const pointer to the buffer that contains the BAM representation
     /// of the record.
     const void* getRecordBuffer(SequenceTranslation translation);
 
-    /// Write the record as a BAM into the specified file.
+    /// Write the record as a BAM into the specified already opened file.
     /// \param filePtr file to write the BAM record into.
     /// \return status of the write.
     SamStatus::Status writeRecordBuffer(IFILE filePtr);
 
-    /// Write the record as a BAM into the specified file.
+    /// Write the record as a BAM into the specified already opened file using
+    /// the specified translation on the sequence.
     /// \param filePtr file to write the BAM record into.
     /// \param translation type of sequence translation to use.
     /// \return status of the write.
     SamStatus::Status writeRecordBuffer(IFILE filePtr, 
                                         SequenceTranslation translation);
 
-    /// Get the block size of the record.
+    /// Get the block size of the record (BAM format).
     /// \return BAM block size of the record.
     int32_t getBlockSize();
 
-    /// Get the reference sequence name of the record.
+    /// Get the reference sequence name (RNAME) of the record.
     /// \return reference sequence name
     const char* getReferenceName();
 
-    /// Get the reference sequence id of the record.
+    /// Get the reference sequence id of the record (BAM format rid).
     /// \return reference sequence id
     int32_t getReferenceID();
 
-    /// Get the 1-based(SAM) leftmost position of the record.
+    /// Get the 1-based(SAM) leftmost position (POS) of the record.
     /// \return 1-based leftmost position.
     int32_t get1BasedPosition();
  
@@ -296,7 +318,7 @@ public:
     /// \return length of the read name (including null).
     uint8_t getReadNameLength();
 
-    /// Get the mapping quality of the record.
+    /// Get the mapping quality (MAPQ) of the record.
     /// \return map quality.
     uint8_t getMapQuality();
 
@@ -304,11 +326,11 @@ public:
     /// \return BAM bin
     uint16_t getBin();
 
-    /// Get the length of the CIGAR in BAM format.
+    /// Get the length of the BAM formatted CIGAR.
     /// \return length of BAM formatted cigar.
     uint16_t getCigarLength();
 
-    /// Get the flag.
+    /// Get the flag (FLAG).
     /// \return flag.
     uint16_t getFlag();
 
@@ -316,31 +338,33 @@ public:
     /// \return read length.
     int32_t getReadLength();
 
-    /// Get the mate reference sequence name of the record.  If it is equal to
-    /// the reference name, it still returns the reference name.
+    /// Get the mate/next fragment's reference sequence name (RNEXT).  If it
+    /// is equal to the reference name, it still returns the reference name.
     /// \return reference sequence name
     const char* getMateReferenceName();
 
-    /// Get the mate reference sequence name of the record, returning "=" if
-    /// it is the same as the reference name, unless they are both "*" in
-    /// which case "*" is returned.
-    /// \return reference sequence name
+    /// Get the mate/next fragment's reference sequence name (RNEXT),
+    /// returning "=" if it is the same as the reference name, unless 
+    /// they are both "*" in which case "*" is returned.
+    /// \return reference sequence name or '='
     const char* getMateReferenceNameOrEqual();
 
-    /// Get the mate reference id of the record.
+    /// Get the mate reference id of the record
+    /// (BAM format: mate_rid/next_refID).
     /// \return reference id
     int32_t getMateReferenceID();
 
-    /// Get the 1-based(SAM) leftmost mate position of the record.
+    /// Get the 1-based(SAM) leftmost mate/next fragment's position (PNEXT).
     /// \return 1-based leftmost position.
     int32_t get1BasedMatePosition();
 
-    /// Get the 0-based(BAM) leftmost mate position of the record.
+    /// Get the 0-based(BAM) leftmost mate/next fragment's position.
     /// \return 0-based leftmost position.
     int32_t get0BasedMatePosition();
 
-    /// Get the inferred insert size of the read pair.
-    /// \return inferred insert size.
+    /// Get the inferred insert size of the read pair (ISIZE) or
+    /// observed template length (TLEN).
+    /// \return inferred insert size or observed template length.
     int32_t getInsertSize();
 
     /// Returns the 0-based inclusive rightmost position of the
@@ -386,37 +410,38 @@ public:
     /// \return cigar string.
     const char* getCigar();
 
-    /// Returns the SAM formatted sequence string, translating the base as
+    /// Returns the SAM formatted sequence string (SEQ), translating the base as
     /// specified by setSequenceTranslation.
     /// \return sequence string.
     const char* getSequence();
 
-    /// Returns the SAM formatted sequence string performing the specified
+    /// Returns the SAM formatted sequence string (SEQ) performing the specified
     /// sequence translation.
     /// \param translation type of sequence translation to use.
     /// \return sequence string.
     const char* getSequence(SequenceTranslation translation);
 
-    /// Returns the SAM formatted quality string.
+    /// Returns the SAM formatted quality string (QUAL).
     /// \return quality string.
     const char* getQuality();
 
     /// Get the sequence base at the specified index into this sequence 0 to
     /// readLength - 1, translating the base as specified by
-    /// setSequenceTranslation.
+    /// setSequenceTranslation.  Throws an exception if index is out of range.
     /// \param index index into the sequence string (0 to readLength-1).
     /// \return the sequence base at the specified index into the sequence.
     char getSequence(int index);
     
     /// Get the sequence base at the specified index into this sequence 0 to
-    /// readLength -  performing the specified sequence translation1.
+    /// readLength - 1 performing the specified sequence translation. 
+    /// Throws an exception if index is out of range.
     /// \param index index into the sequence string (0 to readLength-1).
     /// \param translation type of sequence translation to use.
     /// \return the sequence base at the specified index into the sequence.
     char getSequence(int index, SequenceTranslation translation);
     
     /// Get the quality character at the specified index into the quality 0 to
-    /// readLength - 1.
+    /// readLength - 1.  Throws an exception if index is out of range.
     /// \param index index into the quality string (0 to readLength-1).
     /// \return the quality character at the specified index into the quality.
     char getQuality(int index);
@@ -425,23 +450,20 @@ public:
     /// The object is essentially read-only, only allowing modifications 
     /// due to lazy evaluations.
     /// \return pointer to the Cigar object.
-    // TODO - want this to be getCigar
     Cigar* getCigarInfo();
 
-    /// Returns the length of the tags in BAM format.
-    /// \return length of tags in BAM format.
-    uint32_t getTagLength();
-
-    /// Get the next tag from the record.
-    /// Sets the Status to SUCCESS when a tag is successfully returned or
-    /// when there are no more tags.  Otherwise the status is set to describe
-    /// why it failed (parsing, etc).
-    /// \param tag set to the tag when a tag is read.
-    /// \param vtype set to the vtype when a tag is read.
-    /// \param value pointer to the value of the tag (will need to cast
-    /// to int, double, char, or string based on vtype).
-    /// \return true if a tag was read, false if there are no more tags.
-    bool getNextSamTag(char* tag, char& vtype, void** value);
+    /// Return the number of bases in this read that overlap the passed in
+    /// region.  Matches & mismatches between the read and the reference
+    /// are counted as overlaps, but insertions, deletions, skips, clips, and
+    /// pads are not counted.
+    /// \param start inclusive 0-based start position (reference position) of
+    ///              the region to check for overlaps in.
+    ///              (-1 indicates to start at the beginning of the reference.)
+    /// \param end   exclusive 0-based end position (reference position) of the
+    ///              region to check for overlaps in.
+    ///              (-1 indicates to go to the end of the reference.)
+    /// \return number of overlapping bases
+    uint32_t getNumOverlaps(int32_t start, int32_t end);
 
     /// Returns the values of all fields except the tags.
     /// \param recStruct structure containing the contents of all 
@@ -454,7 +476,8 @@ public:
     bool getFields(bamRecordStruct& recStruct, String& readName, 
                    String& cigar, String& sequence, String& quality);
 
-    /// Returns the values of all fields except the tags.
+    /// Returns the values of all fields except the tags using the specified
+    /// sequence translation.
     /// \param recStruct structure containing the contents of all 
     /// non-variable length fields.
     /// \param readName read name from the record (return param)
@@ -474,6 +497,29 @@ public:
 
     //@}
 
+    ///////////////////////
+    /// @name  Get Tag Methods
+    /// Get methods for obtaining information on tags.
+    //@{
+
+    /// Returns the length of the BAM formatted tags.
+    /// \return length of the BAM formatted tags.
+    uint32_t getTagLength();
+
+    /// Get the next tag from the record.
+    /// Sets the Status to SUCCESS when a tag is successfully returned or
+    /// when there are no more tags.  Otherwise the status is set to describe
+    /// why it failed (parsing, etc).
+    /// \param tag set to the tag when a tag is read.
+    /// \param vtype set to the vtype when a tag is read.
+    /// \param value pointer to the value of the tag (will need to cast
+    /// to int, double, char, or string based on vtype).
+    /// \return true if a tag was read, false if there are no more tags.
+    bool getNextSamTag(char* tag, char& vtype, void** value);
+
+    /// Reset the tag iterator to the beginning of the tags.
+    void resetTagIter();
+ 
     /// Returns whether or not the specified vtype is an integer type.
     /// Does not set SamStatus.
     /// \param vtype value type to check.
@@ -499,27 +545,6 @@ public:
     /// \return true if the passed in vtype is a string ('Z'), false othwerise.
     bool isStringType(char vtype) const;
 
-    /// Clear the tags in this record.
-    /// Does not set SamStatus.
-    void clearTags();
-   
-    /// Remove a tag.
-    /// \param tag tag to remove.
-    /// \param type of the tag to be removed.
-    /// \return true if the tag no longer exists in the record, false if it could not be removed (Returns true if the tag was not found in the record).
-    bool rmTag(const char* tag, char type);
-
-    /// Remove tags.
-    /// \param tags tags to remove, formatted as  Tag:Type;Tag:Type;Tag:Type...
-    /// \return true if all tags no longer exist in the record, false if any could not be removed
-    /// (Returns true if the tags were not found in the record).
-    /// SamStatus is set to INVALID if the tags are incorrectly formatted.
-    bool rmTags(const char* tags);
-
-    /// Returns the status associated with the last method that sets the status.
-    /// \return SamStatus of the last command that sets status.
-    const SamStatus& getStatus();
-    
     /// Get the string representation of the tags from the record, formatted
     /// as TAG:TYPE:VALUE<delim>TAG:TYPE:VALUE...
     /// Sets the Status to SUCCESS when the tags are successfully returned or
@@ -542,11 +567,6 @@ public:
     /// \retun pointer to the tag's integer value if found, NULL if not found.
     int* getIntegerTag(const char * tag);
 
-    /// Get the char value for the specified tag.
-    /// \param tag tag to retrieve
-    /// \retun pointer to the tag's char value if found, NULL if not found.
-    char* getCharTag(const char * tag);
-
     /// Get the double value for the specified tag.
     /// \param tag tag to retrieve
     /// \return pointer to the tag's double value if found, NULL if not found.
@@ -558,15 +578,9 @@ public:
     /// Get the integer value for the specified tag.
     int &    getInteger(const char * tag);
 
-    /// Get the char value for the specified tag.
-    char &    getChar(const char * tag);
-
     /// Get the double value for the specified tag.
     double & getDouble(const char * tag);
 
-
-//     void getSamExtraFieldFromKey(int key, String& extraField);
-    
     /// Check if the specified tag contains a string.
     /// Does not set SamStatus.
     /// \param tag SAM tag to check contents of.
@@ -591,20 +605,14 @@ public:
     /// \param type value type to check if the SAM tag matches.
     /// \return true if the value associated with the tag is a string.
    bool checkTag(const char * tag, char type);
+    //@}
+
+    /// Returns the status associated with the last method that sets the status.
+    /// \return SamStatus of the last command that sets status.
+    const SamStatus& getStatus();
+    
 
     
-    /// Return the number of bases in this read that overlap the passed in
-    /// region.
-    /// \param start inclusive 0-based start position (reference position) of
-    ///              the region to check for overlaps in.
-    ///              (-1 indicates to start at the beginning of the reference.)
-    /// \param end   exclusive 0-based end position (reference position) of the
-    ///              region to check for overlaps in.
-    ///              (-1 indicates to go to the end of the reference.)
-    /// \return number of overlapping bases
-    /// (matches in the cigar - not skips/deletions)
-    uint32_t getNumOverlaps(int32_t start, int32_t end);
-
 
 private:
     static int MAKEKEY(char ch1, char ch2, char type)
@@ -638,7 +646,6 @@ private:
 
     void* getStringPtr(int offset);
     void* getIntegerPtr(int offset, char& vtype);
-    void* getCharPtr(int offset);
     void* getDoublePtr(int offset);
 
     // Fixes the buffer to match the variable length fields.
@@ -680,7 +687,6 @@ private:
     String & getString(int offset);
     int &    getInteger(int offset);
     char &   getIntegerType(int offset);
-    char &   getChar(int offset);
     double & getDouble(int offset);
 
     static const int DEFAULT_BLOCK_SIZE = 40;

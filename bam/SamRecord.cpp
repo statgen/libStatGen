@@ -152,13 +152,6 @@ void SamRecord::resetRecord()
 }
 
 
-// Reset the tag iterator to the beginning of the tags.
-void SamRecord::resetTagIter()
-{
-    myLastTagIndex = -1;
-}
-
-
 // Returns whether or not the record is valid.
 // Header is needed to perform some validation against it.
 bool SamRecord::isValid(SamFileHeader& header)
@@ -175,82 +168,6 @@ bool SamRecord::isValid(SamFileHeader& header)
     }
     // The record is valid.
     return(true);
-}
-
-
-// Read the BAM record from a file.
-SamStatus::Status SamRecord::setBufferFromFile(IFILE filePtr, 
-                                               SamFileHeader& header)
-{
-    myStatus = SamStatus::SUCCESS;
-    if((filePtr == NULL) || (filePtr->isOpen() == false))
-    {
-        // File is not open, return failure.
-        myStatus.setStatus(SamStatus::FAIL_ORDER, 
-                           "Can't read from an unopened file.");
-        return(SamStatus::FAIL_ORDER);
-    }
-
-    // Clear the record.
-    resetRecord();
-
-    // read the record size.
-    int numBytes = 
-        ifread(filePtr, &(myRecordPtr->myBlockSize), sizeof(int32_t));
-
-    // Check to see if the end of the file was hit and no bytes were read.
-    if(ifeof(filePtr) && (numBytes == 0))
-    {
-        // End of file, nothing was read, no more records.
-        myStatus.setStatus(SamStatus::NO_MORE_RECS,
-                           "No more records left to read.");
-        return(SamStatus::NO_MORE_RECS);
-    }
-    
-    if(numBytes != sizeof(int32_t))
-    {
-        // Failed to read the entire block size.  Either the end of the file
-        // was reached early or there was an error.
-        if(ifeof(filePtr))
-        {
-            // Error: end of the file reached prior to reading the rest of the
-            // record.
-            myStatus.setStatus(SamStatus::FAIL_PARSE, 
-                               "EOF reached in the middle of a record.");
-            return(SamStatus::FAIL_PARSE);
-        }
-        else
-        {
-            // Error reading.
-            myStatus.setStatus(SamStatus::FAIL_IO, 
-                               "Failed to read the record size.");
-            return(SamStatus::FAIL_IO);
-        }
-    }
-
-    // allocate space for the record size.
-    if(!allocateRecordStructure(myRecordPtr->myBlockSize + sizeof(int32_t)))
-    {
-        // Failed to allocate space.
-        // Status is set by allocateRecordStructure.
-        return(SamStatus::FAIL_MEM);
-    }
-
-    // Read the rest of the alignment block, starting at the reference id.
-    if(ifread(filePtr, &(myRecordPtr->myReferenceID), myRecordPtr->myBlockSize)
-       != (unsigned int)myRecordPtr->myBlockSize)
-    {
-        // Error reading the record.  Reset it and return failure.
-        resetRecord();
-        myStatus.setStatus(SamStatus::FAIL_IO,
-                           "Failed to read the record");
-        return(SamStatus::FAIL_IO);
-    }
-
-    setVariablesForNewBuffer(header);
-
-    // Return the status of the record.
-    return(SamStatus::SUCCESS);
 }
 
 
@@ -443,6 +360,162 @@ bool SamRecord::setQuality(const char* quality)
 }
 
 
+//Shift indels to the left
+bool SamRecord::shiftIndelsLeft()
+{
+    // Check to see whether or not the Cigar has already been
+    // set - this is determined by checking if alignment length
+    // is set since alignment length and the cigar are set
+    // at the same time.
+    if(myAlignmentLength == -1)
+    {
+        // Not been set, so calculate it.
+        parseCigar();
+    }
+    
+    // Track whether or not there was a shift.
+    bool shifted = false;
+
+    // Cigar is set, so now myCigarRoller can be used.
+    // Track where in the read we are.
+    uint32_t currentPos = 0;
+
+    // Since the loop starts at 1 because the first operation can't be shifted,
+    // increment the currentPos past the first operation.
+    if(Cigar::foundInQuery(myCigarRoller[0]))
+    {
+        // This op was found in the read, increment the current position.
+        currentPos += myCigarRoller[0].count;
+    }
+   
+    int numOps = myCigarRoller.size();
+    
+    // Loop through the cigar operations from the 2nd operation since
+    // the first operation is already on the end and can't shift.
+    for(int currentOp = 1; currentOp < numOps; currentOp++)
+    {
+        if(myCigarRoller[currentOp].operation == Cigar::insert)
+        {
+            // For now, only shift a max of 1 operation.
+            int prevOpIndex = currentOp-1;
+            // Track the next op for seeing if it is the same as the
+            // previous for merging reasons.
+            int nextOpIndex = currentOp+1;
+            if(nextOpIndex == numOps)
+            {
+                // There is no next op, so set it equal to the current one.
+                nextOpIndex = currentOp;
+            }
+            // The start of the previous operation, so we know when we hit it
+            // so we don't shift past it.
+            uint32_t prevOpStart = 
+                currentPos - myCigarRoller[prevOpIndex].count;
+
+            // We can only shift if the previous operation
+            if(!Cigar::isMatchOrMismatch(myCigarRoller[prevOpIndex]))
+            {
+                // TODO - shift past pads
+                // An insert is in the read, so increment the position.
+                currentPos += myCigarRoller[currentOp].count;                 
+                // Not a match/mismatch, so can't shift into it.
+                continue;
+            }
+                    
+            // It is a match or mismatch, so check to see if we can
+            // shift into it.
+
+            // The end of the insert is calculated by adding the size
+            // of this insert minus 1 to the start of the insert.
+            uint32_t insertEndPos = 
+                currentPos + myCigarRoller[currentOp].count - 1;
+                
+            // The insert starts at the current position.
+            uint32_t insertStartPos = currentPos;
+                
+            // Loop as long as the position before the insert start
+            // matches the last character in the insert. If they match,
+            // the insert can be shifted one index left because the
+            // implied reference will not change.  If they do not match,
+            // we can't shift because the implied reference would change.
+            // Stop loop when insertStartPos = prevOpStart, because we 
+            // don't want to move past that.
+            while((insertStartPos > prevOpStart) && 
+                  (getSequence(insertEndPos,BASES) == 
+                   getSequence(insertStartPos - 1, BASES)))
+            {
+                // We can shift, so move the insert start & end one left.
+                --insertEndPos;
+                --insertStartPos;
+            }
+
+            // Determine if a shift has occurred.
+            int shiftLen = currentPos - insertStartPos;
+            if(shiftLen > 0)
+            {
+                // Shift occured, so adjust the cigar if the cigar will
+                // not become more operations.
+                // If the next operation is the same as the previous or
+                // if the insert and the previous operation switch positions
+                // then the cigar has the same number of operations.
+                // If the next operation is different, and the shift splits
+                // the previous operation in 2, then the cigar would
+                // become longer, so we do not want to shift.
+                if(myCigarRoller[nextOpIndex].operation == 
+                   myCigarRoller[prevOpIndex].operation)
+                {
+                    // The operations are the same, so merge them by adding
+                    // the length of the shift to the next operation.
+                    myCigarRoller.IncrementCount(nextOpIndex, shiftLen);
+                    myCigarRoller.IncrementCount(prevOpIndex, -shiftLen);
+
+                    // If the previous op length is 0, just remove that
+                    // operation.
+                    if(myCigarRoller[prevOpIndex].count == 0)
+                    {
+                        myCigarRoller.Remove(prevOpIndex);
+                    }
+                    shifted = true;
+                } 
+                else
+                {
+                    // Can only shift if the insert shifts past the
+                    // entire previous operation, otherwise an operation
+                    // would need to be added.
+                    if(insertStartPos == prevOpStart)
+                    { 
+                        // Swap the positions of the insert and the
+                        // previous operation.
+                        myCigarRoller.Update(currentOp,
+                                             myCigarRoller[prevOpIndex].operation,
+                                             myCigarRoller[prevOpIndex].count);
+                        // Size of the previous op is the entire
+                        // shift length.
+                        myCigarRoller.Update(prevOpIndex, 
+                                             Cigar::insert,
+                                             shiftLen);
+                        shifted = true;
+                    }
+                }
+            }
+            // An insert is in the read, so increment the position.
+            currentPos += myCigarRoller[currentOp].count;                 
+        }
+        else if(Cigar::foundInQuery(myCigarRoller[currentOp]))
+        {
+            // This op was found in the read, increment the current position.
+            currentPos += myCigarRoller[currentOp].count;
+        }
+    }
+    if(shifted)
+    {
+        // TODO - setCigar is currently inefficient because later the cigar
+        // roller will be recalculated, but for now it will work.
+        setCigar(myCigarRoller);
+    }
+    return(shifted);
+}
+
+
 // Set the BAM record from the passeed in buffer of the specified size.
 // Note: The size includes the block size.
 SamStatus::Status SamRecord::setBuffer(const char* fromBuffer,
@@ -469,6 +542,82 @@ SamStatus::Status SamRecord::setBuffer(const char* fromBuffer,
     }
    
     memcpy(myRecordPtr, fromBuffer, fromBufferSize);
+
+    setVariablesForNewBuffer(header);
+
+    // Return the status of the record.
+    return(SamStatus::SUCCESS);
+}
+
+
+// Read the BAM record from a file.
+SamStatus::Status SamRecord::setBufferFromFile(IFILE filePtr, 
+                                               SamFileHeader& header)
+{
+    myStatus = SamStatus::SUCCESS;
+    if((filePtr == NULL) || (filePtr->isOpen() == false))
+    {
+        // File is not open, return failure.
+        myStatus.setStatus(SamStatus::FAIL_ORDER, 
+                           "Can't read from an unopened file.");
+        return(SamStatus::FAIL_ORDER);
+    }
+
+    // Clear the record.
+    resetRecord();
+
+    // read the record size.
+    int numBytes = 
+        ifread(filePtr, &(myRecordPtr->myBlockSize), sizeof(int32_t));
+
+    // Check to see if the end of the file was hit and no bytes were read.
+    if(ifeof(filePtr) && (numBytes == 0))
+    {
+        // End of file, nothing was read, no more records.
+        myStatus.setStatus(SamStatus::NO_MORE_RECS,
+                           "No more records left to read.");
+        return(SamStatus::NO_MORE_RECS);
+    }
+    
+    if(numBytes != sizeof(int32_t))
+    {
+        // Failed to read the entire block size.  Either the end of the file
+        // was reached early or there was an error.
+        if(ifeof(filePtr))
+        {
+            // Error: end of the file reached prior to reading the rest of the
+            // record.
+            myStatus.setStatus(SamStatus::FAIL_PARSE, 
+                               "EOF reached in the middle of a record.");
+            return(SamStatus::FAIL_PARSE);
+        }
+        else
+        {
+            // Error reading.
+            myStatus.setStatus(SamStatus::FAIL_IO, 
+                               "Failed to read the record size.");
+            return(SamStatus::FAIL_IO);
+        }
+    }
+
+    // allocate space for the record size.
+    if(!allocateRecordStructure(myRecordPtr->myBlockSize + sizeof(int32_t)))
+    {
+        // Failed to allocate space.
+        // Status is set by allocateRecordStructure.
+        return(SamStatus::FAIL_MEM);
+    }
+
+    // Read the rest of the alignment block, starting at the reference id.
+    if(ifread(filePtr, &(myRecordPtr->myReferenceID), myRecordPtr->myBlockSize)
+       != (unsigned int)myRecordPtr->myBlockSize)
+    {
+        // Error reading the record.  Reset it and return failure.
+        resetRecord();
+        myStatus.setStatus(SamStatus::FAIL_IO,
+                           "Failed to read the record");
+        return(SamStatus::FAIL_IO);
+    }
 
     setVariablesForNewBuffer(header);
 
@@ -757,159 +906,223 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
 }
 
 
-//Shift indels to the left
-bool SamRecord::shiftIndelsLeft()
+void SamRecord::clearTags()
 {
-    // Check to see whether or not the Cigar has already been
-    // set - this is determined by checking if alignment length
-    // is set since alignment length and the cigar are set
-    // at the same time.
-    if(myAlignmentLength == -1)
+    if(extras.Entries() != 0)
     {
-        // Not been set, so calculate it.
-        parseCigar();
+        extras.Clear();
     }
-    
-    // Track whether or not there was a shift.
-    bool shifted = false;
+    strings.Clear();
+    integers.Clear();
+    intType.clear();
+    doubles.Clear();
+    myTagBufferSize = 0;
+    resetTagIter();
+}
 
-    // Cigar is set, so now myCigarRoller can be used.
-    // Track where in the read we are.
-    uint32_t currentPos = 0;
 
-    // Since the loop starts at 1 because the first operation can't be shifted,
-    // increment the currentPos past the first operation.
-    if(Cigar::foundInQuery(myCigarRoller[0]))
+bool SamRecord::rmTag(const char* tag, char type)
+{
+    // Check the length of tag.
+    if(strlen(tag) != 2)
     {
-        // This op was found in the read, increment the current position.
-        currentPos += myCigarRoller[0].count;
+        // Tag is the wrong length.
+        myStatus.setStatus(SamStatus::INVALID, 
+                           "rmTag called with tag that is not 2 characters\n");
+        return(false);
     }
-   
-    int numOps = myCigarRoller.size();
-    
-    // Loop through the cigar operations from the 2nd operation since
-    // the first operation is already on the end and can't shift.
-    for(int currentOp = 1; currentOp < numOps; currentOp++)
+
+    myStatus = SamStatus::SUCCESS;
+    if(myNeedToSetTagsFromBuffer)
     {
-        if(myCigarRoller[currentOp].operation == Cigar::insert)
+        if(!setTagsFromBuffer())
         {
-            // For now, only shift a max of 1 operation.
-            int prevOpIndex = currentOp-1;
-            // Track the next op for seeing if it is the same as the
-            // previous for merging reasons.
-            int nextOpIndex = currentOp+1;
-            if(nextOpIndex == numOps)
-            {
-                // There is no next op, so set it equal to the current one.
-                nextOpIndex = currentOp;
-            }
-            // The start of the previous operation, so we know when we hit it
-            // so we don't shift past it.
-            uint32_t prevOpStart = 
-                currentPos - myCigarRoller[prevOpIndex].count;
-
-            // We can only shift if the previous operation
-            if(!Cigar::isMatchOrMismatch(myCigarRoller[prevOpIndex]))
-            {
-                // TODO - shift past pads
-                // An insert is in the read, so increment the position.
-                currentPos += myCigarRoller[currentOp].count;                 
-                // Not a match/mismatch, so can't shift into it.
-                continue;
-            }
-                    
-            // It is a match or mismatch, so check to see if we can
-            // shift into it.
-
-            // The end of the insert is calculated by adding the size
-            // of this insert minus 1 to the start of the insert.
-            uint32_t insertEndPos = 
-                currentPos + myCigarRoller[currentOp].count - 1;
-                
-            // The insert starts at the current position.
-            uint32_t insertStartPos = currentPos;
-                
-            // Loop as long as the position before the insert start
-            // matches the last character in the insert. If they match,
-            // the insert can be shifted one index left because the
-            // implied reference will not change.  If they do not match,
-            // we can't shift because the implied reference would change.
-            // Stop loop when insertStartPos = prevOpStart, because we 
-            // don't want to move past that.
-            while((insertStartPos > prevOpStart) && 
-                  (getSequence(insertEndPos,BASES) == 
-                   getSequence(insertStartPos - 1, BASES)))
-            {
-                // We can shift, so move the insert start & end one left.
-                --insertEndPos;
-                --insertStartPos;
-            }
-
-            // Determine if a shift has occurred.
-            int shiftLen = currentPos - insertStartPos;
-            if(shiftLen > 0)
-            {
-                // Shift occured, so adjust the cigar if the cigar will
-                // not become more operations.
-                // If the next operation is the same as the previous or
-                // if the insert and the previous operation switch positions
-                // then the cigar has the same number of operations.
-                // If the next operation is different, and the shift splits
-                // the previous operation in 2, then the cigar would
-                // become longer, so we do not want to shift.
-                if(myCigarRoller[nextOpIndex].operation == 
-                   myCigarRoller[prevOpIndex].operation)
-                {
-                    // The operations are the same, so merge them by adding
-                    // the length of the shift to the next operation.
-                    myCigarRoller.IncrementCount(nextOpIndex, shiftLen);
-                    myCigarRoller.IncrementCount(prevOpIndex, -shiftLen);
-
-                    // If the previous op length is 0, just remove that
-                    // operation.
-                    if(myCigarRoller[prevOpIndex].count == 0)
-                    {
-                        myCigarRoller.Remove(prevOpIndex);
-                    }
-                    shifted = true;
-                } 
-                else
-                {
-                    // Can only shift if the insert shifts past the
-                    // entire previous operation, otherwise an operation
-                    // would need to be added.
-                    if(insertStartPos == prevOpStart)
-                    { 
-                        // Swap the positions of the insert and the
-                        // previous operation.
-                        myCigarRoller.Update(currentOp,
-                                             myCigarRoller[prevOpIndex].operation,
-                                             myCigarRoller[prevOpIndex].count);
-                        // Size of the previous op is the entire
-                        // shift length.
-                        myCigarRoller.Update(prevOpIndex, 
-                                             Cigar::insert,
-                                             shiftLen);
-                        shifted = true;
-                    }
-                }
-            }
-            // An insert is in the read, so increment the position.
-            currentPos += myCigarRoller[currentOp].count;                 
-        }
-        else if(Cigar::foundInQuery(myCigarRoller[currentOp]))
-        {
-            // This op was found in the read, increment the current position.
-            currentPos += myCigarRoller[currentOp].count;
+            // Failed to read the tags from the buffer, so cannot
+            // get tags.
+            return(false);
         }
     }
-    if(shifted)
+
+    // Construct the key.
+    int key = MAKEKEY(tag[0], tag[1], type);
+    // Look to see if the key exsists in the hash.
+    int offset = extras.Find(key);
+
+    if(offset < 0)
     {
-        // TODO - setCigar is currently inefficient because later the cigar
-        // roller will be recalculated, but for now it will work.
-        setCigar(myCigarRoller);
+        // Not found, so return true, successfully removed since
+        // it is not in tag.
+        return(true);
     }
-    return(shifted);
+
+    // Offset is set, so the key was found.
+    // First if it is an integer, determine the actual type of the int.
+    char vtype;
+    getTypeFromKey(key, vtype);
+    if(vtype == 'i')
+    {
+        vtype = getIntegerType(offset);
+    }
+
+    // Offset is set, so recalculate the buffer size without this entry.
+    // Do NOT remove from strings, integers, or doubles because then
+    // extras would need to be updated for all entries with the new indexes
+    // into those variables.
+    int rmBuffSize = 0;
+    switch(vtype)
+    {
+        case 'A':
+        case 'c':
+        case 'C':
+            rmBuffSize = 4;
+            break;
+        case 's':
+        case 'S':
+            rmBuffSize = 5;
+            break;
+        case 'i':
+        case 'I':
+            rmBuffSize = 7;
+            break;
+        case 'f':
+            rmBuffSize = 7;
+            break;
+        case 'Z':
+            rmBuffSize = 4 + getString(offset).Length();
+            break;
+        default:
+            myStatus.setStatus(SamStatus::INVALID, 
+                               "rmTag called with unknown type.\n");
+            return(false);
+            break;
+    };
+
+    // The buffer tags are now out of sync.
+    myNeedToSetTagsInBuffer = true;
+    myIsTagsBufferValid = false;
+    myIsBufferSynced = false;
+    myTagBufferSize -= rmBuffSize;
+
+    // Remove from the hash.
+    extras.Delete(offset);
+    return(true);
+}
+
+
+bool SamRecord::rmTags(const char* tags)
+{
+    const char* currentTagPtr = tags;
+
+    myStatus = SamStatus::SUCCESS;
+    if(myNeedToSetTagsFromBuffer)
+    {
+        if(!setTagsFromBuffer())
+        {
+            // Failed to read the tags from the buffer, so cannot
+            // get tags.
+            return(false);
+        }
+    }
+    
+    bool returnStatus = true;
+
+    int rmBuffSize = 0;
+    while(*currentTagPtr != '\0')
+    {
+
+        // Tags are formatted as: XY:Z
+        // Where X is [A-Za-z], Y is [A-Za-z], and
+        // Z is A,i,f,Z,H (cCsSI are also excepted)
+        if((currentTagPtr[0] == '\0') || (currentTagPtr[1] == '\0') ||
+           (currentTagPtr[2] != ':') || (currentTagPtr[3] == '\0'))
+        {
+            myStatus.setStatus(SamStatus::INVALID, 
+                               "rmTags called with improperly formatted tags.\n");
+            returnStatus = false;
+            break;
+        }
+
+        // Construct the key.
+        int key = MAKEKEY(currentTagPtr[0], currentTagPtr[1], 
+                          currentTagPtr[3]);
+        // Look to see if the key exsists in the hash.
+        int offset = extras.Find(key);
+
+        if(offset >= 0)
+        {
+            // Offset is set, so the key was found.
+            // First if it is an integer, determine the actual type of the int.
+            char vtype;
+            getTypeFromKey(key, vtype);
+            if(vtype == 'i')
+            {
+                vtype = getIntegerType(offset);
+            }
+            
+            // Offset is set, so recalculate the buffer size without this entry.
+            // Do NOT remove from strings, integers, or doubles because then
+            // extras would need to be updated for all entries with the new indexes
+            // into those variables.
+            switch(vtype)
+            {
+                case 'A':
+                case 'c':
+                case 'C':
+                    rmBuffSize += 4;
+                    break;
+                case 's':
+                case 'S':
+                    rmBuffSize += 5;
+                    break;
+                case 'i':
+                case 'I':
+                    rmBuffSize += 7;
+                    break;
+                case 'f':
+                    rmBuffSize += 7;
+                    break;
+                case 'Z':
+                    rmBuffSize += 4 + getString(offset).Length();
+                    break;
+                default:
+                    myStatus.setStatus(SamStatus::INVALID, 
+                                       "rmTag called with unknown type.\n");
+                    returnStatus = false;
+                    break;
+            };
+            
+            // Remove from the hash.
+            extras.Delete(offset);
+        }
+        // Increment to the next tag.
+        if(currentTagPtr[4] == ';')
+        {
+            // Increment once more.
+            currentTagPtr += 5;
+        }
+        else if(currentTagPtr[4] != '\0')
+        {
+            // Invalid tag format. 
+            myStatus.setStatus(SamStatus::INVALID, 
+                               "rmTags called with improperly formatted tags.\n");
+            returnStatus = false;
+            break;
+        }
+        else
+        {
+            // Last Tag.
+            currentTagPtr += 4;
+        }
+    }
+
+    // The buffer tags are now out of sync.
+    myNeedToSetTagsInBuffer = true;
+    myIsTagsBufferValid = false;
+    myIsBufferSynced = false;
+    myTagBufferSize -= rmBuffSize;
+    
+
+    return(returnStatus);
 }
 
 
@@ -1551,6 +1764,84 @@ Cigar* SamRecord::getCigarInfo()
 }
 
 
+// Return the number of bases in this read that overlap the passed in
+// region.  (start & end are 0-based)
+uint32_t SamRecord::getNumOverlaps(int32_t start, int32_t end)
+{
+    // Determine whether or not the cigar has been parsed, which sets up
+    // the cigar roller.  This is determined by checking the alignment length.
+    if(myAlignmentLength == -1)
+    {
+        parseCigar();
+    }
+    return(myCigarRoller.getNumOverlaps(start, end, get0BasedPosition()));
+}
+
+
+// Returns the values of all fields except the tags.
+bool SamRecord::getFields(bamRecordStruct& recStruct, String& readName, 
+                          String& cigar, String& sequence, String& quality)
+{
+    return(getFields(recStruct, readName, cigar, sequence, quality,
+                     mySequenceTranslation));
+}
+
+
+// Returns the values of all fields except the tags.
+bool SamRecord::getFields(bamRecordStruct& recStruct, String& readName, 
+                          String& cigar, String& sequence, String& quality,
+                          SequenceTranslation translation)
+{
+    myStatus = SamStatus::SUCCESS;
+    if(myIsBufferSynced == false)
+    {
+        if(!fixBuffer(translation))
+        {
+            // failed to set the buffer, return false.
+            return(false);
+        }
+    }
+    memcpy(&recStruct, myRecordPtr, sizeof(bamRecordStruct));
+
+    readName = getReadName();
+    // Check the status.
+    if(myStatus != SamStatus::SUCCESS)
+    {
+        // Failed to set the fields, return false.
+        return(false);
+    }
+    cigar = getCigar();
+    // Check the status.
+    if(myStatus != SamStatus::SUCCESS)
+    {
+        // Failed to set the fields, return false.
+        return(false);
+    }
+    sequence = getSequence(translation);
+    // Check the status.
+    if(myStatus != SamStatus::SUCCESS)
+    {
+        // Failed to set the fields, return false.
+        return(false);
+    }
+    quality = getQuality();
+    // Check the status.
+    if(myStatus != SamStatus::SUCCESS)
+    {
+        // Failed to set the fields, return false.
+        return(false);
+    }
+    return(true);
+}
+
+
+// Returns the reference pointer.
+GenomeSequence* SamRecord::getReference()
+{
+    return(myRefPtr);
+}
+
+
 uint32_t SamRecord::getTagLength()
 {
     myStatus = SamStatus::SUCCESS;
@@ -1654,67 +1945,10 @@ bool SamRecord::getNextSamTag(char* tag, char& vtype, void** value)
 }
 
 
-// Returns the values of all fields except the tags.
-bool SamRecord::getFields(bamRecordStruct& recStruct, String& readName, 
-                          String& cigar, String& sequence, String& quality)
+// Reset the tag iterator to the beginning of the tags.
+void SamRecord::resetTagIter()
 {
-    return(getFields(recStruct, readName, cigar, sequence, quality,
-                     mySequenceTranslation));
-}
-
-
-// Returns the values of all fields except the tags.
-bool SamRecord::getFields(bamRecordStruct& recStruct, String& readName, 
-                          String& cigar, String& sequence, String& quality,
-                          SequenceTranslation translation)
-{
-    myStatus = SamStatus::SUCCESS;
-    if(myIsBufferSynced == false)
-    {
-        if(!fixBuffer(translation))
-        {
-            // failed to set the buffer, return false.
-            return(false);
-        }
-    }
-    memcpy(&recStruct, myRecordPtr, sizeof(bamRecordStruct));
-
-    readName = getReadName();
-    // Check the status.
-    if(myStatus != SamStatus::SUCCESS)
-    {
-        // Failed to set the fields, return false.
-        return(false);
-    }
-    cigar = getCigar();
-    // Check the status.
-    if(myStatus != SamStatus::SUCCESS)
-    {
-        // Failed to set the fields, return false.
-        return(false);
-    }
-    sequence = getSequence(translation);
-    // Check the status.
-    if(myStatus != SamStatus::SUCCESS)
-    {
-        // Failed to set the fields, return false.
-        return(false);
-    }
-    quality = getQuality();
-    // Check the status.
-    if(myStatus != SamStatus::SUCCESS)
-    {
-        // Failed to set the fields, return false.
-        return(false);
-    }
-    return(true);
-}
-
-
-// Returns the reference pointer.
-GenomeSequence* SamRecord::getReference()
-{
-    return(myRefPtr);
+    myLastTagIndex = -1;
 }
 
 
@@ -1757,233 +1991,6 @@ bool SamRecord::isStringType(char vtype) const
         return(true);
     }
     return(false);
-}
-
-
-void SamRecord::clearTags()
-{
-    if(extras.Entries() != 0)
-    {
-        extras.Clear();
-    }
-    strings.Clear();
-    integers.Clear();
-    intType.clear();
-    doubles.Clear();
-    myTagBufferSize = 0;
-    resetTagIter();
-}
-
-
-bool SamRecord::rmTag(const char* tag, char type)
-{
-    // Check the length of tag.
-    if(strlen(tag) != 2)
-    {
-        // Tag is the wrong length.
-        myStatus.setStatus(SamStatus::INVALID, 
-                           "rmTag called with tag that is not 2 characters\n");
-        return(false);
-    }
-
-    myStatus = SamStatus::SUCCESS;
-    if(myNeedToSetTagsFromBuffer)
-    {
-        if(!setTagsFromBuffer())
-        {
-            // Failed to read the tags from the buffer, so cannot
-            // get tags.
-            return(false);
-        }
-    }
-
-    // Construct the key.
-    int key = MAKEKEY(tag[0], tag[1], type);
-    // Look to see if the key exsists in the hash.
-    int offset = extras.Find(key);
-
-    if(offset < 0)
-    {
-        // Not found, so return true, successfully removed since
-        // it is not in tag.
-        return(true);
-    }
-
-    // Offset is set, so the key was found.
-    // First if it is an integer, determine the actual type of the int.
-    char vtype;
-    getTypeFromKey(key, vtype);
-    if(vtype == 'i')
-    {
-        vtype = getIntegerType(offset);
-    }
-
-    // Offset is set, so recalculate the buffer size without this entry.
-    // Do NOT remove from strings, integers, or doubles because then
-    // extras would need to be updated for all entries with the new indexes
-    // into those variables.
-    int rmBuffSize = 0;
-    switch(vtype)
-    {
-        case 'A':
-        case 'c':
-        case 'C':
-            rmBuffSize = 4;
-            break;
-        case 's':
-        case 'S':
-            rmBuffSize = 5;
-            break;
-        case 'i':
-        case 'I':
-            rmBuffSize = 7;
-            break;
-        case 'f':
-            rmBuffSize = 7;
-            break;
-        case 'Z':
-            rmBuffSize = 4 + getString(offset).Length();
-            break;
-        default:
-            myStatus.setStatus(SamStatus::INVALID, 
-                               "rmTag called with unknown type.\n");
-            return(false);
-            break;
-    };
-
-    // The buffer tags are now out of sync.
-    myNeedToSetTagsInBuffer = true;
-    myIsTagsBufferValid = false;
-    myIsBufferSynced = false;
-    myTagBufferSize -= rmBuffSize;
-
-    // Remove from the hash.
-    extras.Delete(offset);
-    return(true);
-}
-
-
-bool SamRecord::rmTags(const char* tags)
-{
-    const char* currentTagPtr = tags;
-
-    myStatus = SamStatus::SUCCESS;
-    if(myNeedToSetTagsFromBuffer)
-    {
-        if(!setTagsFromBuffer())
-        {
-            // Failed to read the tags from the buffer, so cannot
-            // get tags.
-            return(false);
-        }
-    }
-    
-    bool returnStatus = true;
-
-    int rmBuffSize = 0;
-    while(*currentTagPtr != '\0')
-    {
-
-        // Tags are formatted as: XY:Z
-        // Where X is [A-Za-z], Y is [A-Za-z], and
-        // Z is A,i,f,Z,H (cCsSI are also excepted)
-        if((currentTagPtr[0] == '\0') || (currentTagPtr[1] == '\0') ||
-           (currentTagPtr[2] != ':') || (currentTagPtr[3] == '\0'))
-        {
-            myStatus.setStatus(SamStatus::INVALID, 
-                               "rmTags called with improperly formatted tags.\n");
-            returnStatus = false;
-            break;
-        }
-
-        // Construct the key.
-        int key = MAKEKEY(currentTagPtr[0], currentTagPtr[1], 
-                          currentTagPtr[3]);
-        // Look to see if the key exsists in the hash.
-        int offset = extras.Find(key);
-
-        if(offset >= 0)
-        {
-            // Offset is set, so the key was found.
-            // First if it is an integer, determine the actual type of the int.
-            char vtype;
-            getTypeFromKey(key, vtype);
-            if(vtype == 'i')
-            {
-                vtype = getIntegerType(offset);
-            }
-            
-            // Offset is set, so recalculate the buffer size without this entry.
-            // Do NOT remove from strings, integers, or doubles because then
-            // extras would need to be updated for all entries with the new indexes
-            // into those variables.
-            switch(vtype)
-            {
-                case 'A':
-                case 'c':
-                case 'C':
-                    rmBuffSize += 4;
-                    break;
-                case 's':
-                case 'S':
-                    rmBuffSize += 5;
-                    break;
-                case 'i':
-                case 'I':
-                    rmBuffSize += 7;
-                    break;
-                case 'f':
-                    rmBuffSize += 7;
-                    break;
-                case 'Z':
-                    rmBuffSize += 4 + getString(offset).Length();
-                    break;
-                default:
-                    myStatus.setStatus(SamStatus::INVALID, 
-                                       "rmTag called with unknown type.\n");
-                    returnStatus = false;
-                    break;
-            };
-            
-            // Remove from the hash.
-            extras.Delete(offset);
-        }
-        // Increment to the next tag.
-        if(currentTagPtr[4] == ';')
-        {
-            // Increment once more.
-            currentTagPtr += 5;
-        }
-        else if(currentTagPtr[4] != '\0')
-        {
-            // Invalid tag format. 
-            myStatus.setStatus(SamStatus::INVALID, 
-                               "rmTags called with improperly formatted tags.\n");
-            returnStatus = false;
-            break;
-        }
-        else
-        {
-            // Last Tag.
-            currentTagPtr += 4;
-        }
-    }
-
-    // The buffer tags are now out of sync.
-    myNeedToSetTagsInBuffer = true;
-    myIsTagsBufferValid = false;
-    myIsBufferSynced = false;
-    myTagBufferSize -= rmBuffSize;
-    
-
-    return(returnStatus);
-}
-
-
-// Return the error after a failed SamRecord call.
-const SamStatus& SamRecord::getStatus()
-{
-    return(myStatus);
 }
 
 
@@ -2296,69 +2303,11 @@ bool SamRecord::checkTag(const char * tag, char type)
 }
 
 
-// Return the number of bases in this read that overlap the passed in
-// region.  (start & end are 0-based)
-uint32_t SamRecord::getNumOverlaps(int32_t start, int32_t end)
+// Return the error after a failed SamRecord call.
+const SamStatus& SamRecord::getStatus()
 {
-    // Determine whether or not the cigar has been parsed, which sets up
-    // the cigar roller.  This is determined by checking the alignment length.
-    if(myAlignmentLength == -1)
-    {
-        parseCigar();
-    }
-    return(myCigarRoller.getNumOverlaps(start, end, get0BasedPosition()));
+    return(myStatus);
 }
-
-
-// // Get the Extra field: <tag>:<vtype>:<value> for the key.
-// void SamRecord::getSamExtraFieldFromKey(int key, String& extraField) 
-// {
-//     myStatus = SamStatus::SUCCESS;
-//     // Extract the tag from the key.
-//     char tag[3];
-//     getTag(key, tag);
-
-//     char vtype;
-//     getVtype(key, vtype);
-
-//     // Look up the key to get the offset into the appropriate array.
-//     int offset = extras.Find(key);
-
-//     // Get the value associated with the key based on the vtype.
-//     switch (vtype)
-//     {
-//         case 'A' :
-//             extraField = tag;
-//             extraField += ":A:";
-//             extraField += (char)(getInteger(offset));
-//             break;
-//         case 'f' :
-//             extraField = tag;
-//             extraField += ":f:";
-//             extraField += getDouble(offset);
-//             break;
-//         case 'c' :
-//         case 'C' :
-//         case 's' :
-//         case 'S' :
-//         case 'i' :
-//         case 'I' :
-//             extraField = tag;
-//             extraField += ":i:";
-//             extraField += getInteger(offset);
-//             break;
-//         case 'Z' :
-//             //         String valueString = getString(offset).c_str();
-//             extraField = tag;
-//             extraField += ":Z:";
-//             extraField += getString(offset);
-//             break;
-//         default:
-//             myStatus.setStatus(SamStatus::FAIL_PARSE,
-//                                "Unknown tag type.");
-//             break;
-//     }
-// }
 
 
 // Allocate space for the record - does a realloc.  
