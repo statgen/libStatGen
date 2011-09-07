@@ -17,7 +17,7 @@
 
 #include "SamFile.h"
 #include "WriteFiles.h"
-#include "Validate.h"
+#include "TestValidate.h"
 
 #include <assert.h>
 #include <stdio.h>

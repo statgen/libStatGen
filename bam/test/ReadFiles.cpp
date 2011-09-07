@@ -16,7 +16,7 @@
  */
 
 #include "ReadFiles.h"
-#include "Validate.h"
+#include "TestValidate.h"
 #include "SamTags.h"
 #include <assert.h>
 

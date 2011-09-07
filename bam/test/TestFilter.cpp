@@ -16,7 +16,7 @@
  */
 
 #include "TestFilter.h"
-#include "Validate.h"
+#include "TestValidate.h"
 #include "SamFilter.h"
 #include <assert.h>
 
@@ -54,18 +54,18 @@ void FilterTest::testFilter(FileType inputType)
     // Clip the read, 2 from the front and 2 from the back, which causes 2D to
     // be dropped.
     assert(SamFilter::softClip(samRecord, 2, 2) == SamFilter::CLIPPED);
-    assert(samRecord.get0BasedPosition() == Validate::READ1_POS + 2);
+    assert(samRecord.get0BasedPosition() == TestValidate::READ1_POS + 2);
     std::string expectedCigar = "2S1M2S";
     assert(samRecord.getCigar() == expectedCigar);
-    assert(samRecord.getSequence() == Validate::READ1_SEQ);
-    assert(samRecord.getQuality() == Validate::READ1_QUAL);
+    assert(samRecord.getSequence() == TestValidate::READ1_SEQ);
+    assert(samRecord.getQuality() == TestValidate::READ1_QUAL);
     // Only 1 base, so the end is the same as start
-    assert(samRecord.get0BasedAlignmentEnd() == Validate::READ1_POS + 2);
+    assert(samRecord.get0BasedAlignmentEnd() == TestValidate::READ1_POS + 2);
     assert(samRecord.getAlignmentLength() == 1);
-    assert(samRecord.get0BasedUnclippedStart() == Validate::READ1_UNCLIP_START);
+    assert(samRecord.get0BasedUnclippedStart() == TestValidate::READ1_UNCLIP_START);
     // The new unclipped end is not the same as the original end because the
     // 2 deletions are lost.
-    assert(samRecord.get0BasedUnclippedEnd() == Validate::READ1_UNCLIP_END - 2);
+    assert(samRecord.get0BasedUnclippedEnd() == TestValidate::READ1_UNCLIP_END - 2);
 
 
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
@@ -85,32 +85,32 @@ void FilterTest::testFilter(FileType inputType)
 
     // Clip the read 2 more from the front and 2 from the back.
     assert(SamFilter::softClip(samRecord, 5, 2) == SamFilter::CLIPPED);
-    assert(samRecord.get0BasedPosition() == Validate::READ6_POS + 2);
+    assert(samRecord.get0BasedPosition() == TestValidate::READ6_POS + 2);
     expectedCigar = "2H5S1M2S";
     assert(samRecord.getCigar() == expectedCigar);
-    assert(samRecord.getSequence() == Validate::READ6_SEQ);
-    assert(samRecord.getQuality() == Validate::READ6_QUAL);
+    assert(samRecord.getSequence() == TestValidate::READ6_SEQ);
+    assert(samRecord.getQuality() == TestValidate::READ6_QUAL);
     // Only 1 base, so the end is the same as start
-    assert(samRecord.get0BasedAlignmentEnd() == Validate::READ6_POS + 2);
+    assert(samRecord.get0BasedAlignmentEnd() == TestValidate::READ6_POS + 2);
     assert(samRecord.getAlignmentLength() == 1);
-    assert(samRecord.get0BasedUnclippedStart() == Validate::READ6_UNCLIP_START);
-    assert(samRecord.get0BasedUnclippedEnd() == Validate::READ6_UNCLIP_END);
+    assert(samRecord.get0BasedUnclippedStart() == TestValidate::READ6_UNCLIP_START);
+    assert(samRecord.get0BasedUnclippedEnd() == TestValidate::READ6_UNCLIP_END);
 
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead7(samRecord);
 
     // Clip the read 2 more from the front and 2 morefrom the back.
     assert(SamFilter::softClip(samRecord, 5, 3) == SamFilter::CLIPPED);
-    assert(samRecord.get0BasedPosition() == Validate::READ7_POS + 2);
+    assert(samRecord.get0BasedPosition() == TestValidate::READ7_POS + 2);
     expectedCigar = "5S1M3S3H";
     assert(samRecord.getCigar() == expectedCigar);
-    assert(samRecord.getSequence() == Validate::READ7_SEQ);
-    assert(samRecord.getQuality() == Validate::READ7_QUAL);
+    assert(samRecord.getSequence() == TestValidate::READ7_SEQ);
+    assert(samRecord.getQuality() == TestValidate::READ7_QUAL);
     // Only 1 base, so the end is the same as start
-    assert(samRecord.get0BasedAlignmentEnd() == Validate::READ7_POS + 2);
+    assert(samRecord.get0BasedAlignmentEnd() == TestValidate::READ7_POS + 2);
     assert(samRecord.getAlignmentLength() == 1);
-    assert(samRecord.get0BasedUnclippedStart() == Validate::READ7_UNCLIP_START);
-    assert(samRecord.get0BasedUnclippedEnd() == Validate::READ7_UNCLIP_END);
+    assert(samRecord.get0BasedUnclippedStart() == TestValidate::READ7_UNCLIP_START);
+    assert(samRecord.get0BasedUnclippedEnd() == TestValidate::READ7_UNCLIP_END);
 
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead8(samRecord);

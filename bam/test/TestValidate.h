@@ -33,7 +33,7 @@ void validateHeader(SamFileHeader& samHeader);
 void validateHeaderFields(SamFileHeader& samHeader);
 void validateHeaderString(SamFileHeader& samHeader);
 
-class Validate
+class TestValidate
 {
 public:
     static const int READ1_POS = 1010;

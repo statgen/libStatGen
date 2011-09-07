@@ -16,7 +16,7 @@
  */
 
 #include "BamIndex.h"
-#include "Validate.h"
+#include "TestValidate.h"
 #include "BamIndexTest.h"
 
 #include <assert.h>

@@ -15,20 +15,20 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Validate.h"
+#include "TestValidate.h"
 #include "BaseUtilities.h"
 
-const std::string Validate::READ1_CIGAR = "5M2D";
-const std::string Validate::READ1_SEQ = "CCGAA";
-const std::string Validate::READ1_QUAL = "6>6+4";
+const std::string TestValidate::READ1_CIGAR = "5M2D";
+const std::string TestValidate::READ1_SEQ = "CCGAA";
+const std::string TestValidate::READ1_QUAL = "6>6+4";
 
-const std::string Validate::READ6_CIGAR = "3S2H5M";
-const std::string Validate::READ6_SEQ = "TGCACGTN";
-const std::string Validate::READ6_QUAL = "453;>>>>";
+const std::string TestValidate::READ6_CIGAR = "3S2H5M";
+const std::string TestValidate::READ6_SEQ = "TGCACGTN";
+const std::string TestValidate::READ6_QUAL = "453;>>>>";
 
-const std::string Validate::READ7_CIGAR = "3S5M1S3H";
-const std::string Validate::READ7_SEQ = "TGCACGTNG";
-const std::string Validate::READ7_QUAL = "453;>>>>5";
+const std::string TestValidate::READ7_CIGAR = "3S5M1S3H";
+const std::string TestValidate::READ7_SEQ = "TGCACGTNG";
+const std::string TestValidate::READ7_QUAL = "453;>>>>5";
 
 void validateRead1(SamRecord& samRecord)
 {
@@ -51,7 +51,7 @@ void validateRead1(SamRecord& samRecord)
 
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
-    expectedRecordPtr->myPosition = Validate::READ1_POS;
+    expectedRecordPtr->myPosition = TestValidate::READ1_POS;
     expectedRecordPtr->myReadNameLength = 23;
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
@@ -67,13 +67,13 @@ void validateRead1(SamRecord& samRecord)
     assert(samRecord.getInteger("YZ") == -1);
     assert(samRecord.getDouble("YZ") == -1);
     // Check the alignment end
-    assert(samRecord.get0BasedAlignmentEnd() == Validate::READ1_ALIGN_END);
-    assert(samRecord.get1BasedAlignmentEnd() == (Validate::READ1_ALIGN_END + 1));
-    assert(samRecord.getAlignmentLength() == Validate::READ1_ALIGN_LEN);
-    assert(samRecord.get1BasedUnclippedStart() == (Validate::READ1_UNCLIP_START + 1));
-    assert(samRecord.get0BasedUnclippedStart() == Validate::READ1_UNCLIP_START);
-    assert(samRecord.get1BasedUnclippedEnd() == (Validate::READ1_UNCLIP_END + 1));
-    assert(samRecord.get0BasedUnclippedEnd() == Validate::READ1_UNCLIP_END);
+    assert(samRecord.get0BasedAlignmentEnd() == TestValidate::READ1_ALIGN_END);
+    assert(samRecord.get1BasedAlignmentEnd() == (TestValidate::READ1_ALIGN_END + 1));
+    assert(samRecord.getAlignmentLength() == TestValidate::READ1_ALIGN_LEN);
+    assert(samRecord.get1BasedUnclippedStart() == (TestValidate::READ1_UNCLIP_START + 1));
+    assert(samRecord.get0BasedUnclippedStart() == TestValidate::READ1_UNCLIP_START);
+    assert(samRecord.get1BasedUnclippedEnd() == (TestValidate::READ1_UNCLIP_END + 1));
+    assert(samRecord.get0BasedUnclippedEnd() == TestValidate::READ1_UNCLIP_END);
 
     // Check the accessors.
     assert(samRecord.getBlockSize() == expectedRecordPtr->myBlockSize);
@@ -100,9 +100,9 @@ void validateRead1(SamRecord& samRecord)
            expectedRecordPtr->myMatePosition);
     assert(samRecord.getInsertSize() == expectedRecordPtr->myInsertSize);
     assert(strcmp(samRecord.getReadName(), "1:1011:F:255+17M15D20M") == 0);
-    assert(samRecord.getCigar() == Validate::READ1_CIGAR);
-    assert(samRecord.getSequence() == Validate::READ1_SEQ);
-    assert(samRecord.getQuality() == Validate::READ1_QUAL);
+    assert(samRecord.getCigar() == TestValidate::READ1_CIGAR);
+    assert(samRecord.getSequence() == TestValidate::READ1_SEQ);
+    assert(samRecord.getQuality() == TestValidate::READ1_QUAL);
 
     assert(samRecord.getSequence(0) == 'C');
     assert(samRecord.getQuality(0) == '6');
@@ -312,7 +312,7 @@ void validateRead2(SamRecord& samRecord)
 
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
-    expectedRecordPtr->myPosition = Validate::READ2_POS;
+    expectedRecordPtr->myPosition = TestValidate::READ2_POS;
     expectedRecordPtr->myReadNameLength = 23;
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
@@ -1163,7 +1163,7 @@ void validateRead6(SamRecord& samRecord)
 
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
-    expectedRecordPtr->myPosition = Validate::READ6_POS;
+    expectedRecordPtr->myPosition = TestValidate::READ6_POS;
     expectedRecordPtr->myReadNameLength = 21;
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
@@ -1199,9 +1199,9 @@ void validateRead6(SamRecord& samRecord)
            expectedRecordPtr->myMatePosition);
     assert(samRecord.getInsertSize() == expectedRecordPtr->myInsertSize);
     assert(strcmp(samRecord.getReadName(), "18:462+29M5I3M:F:296") == 0);
-    assert(samRecord.getCigar() == Validate::READ6_CIGAR);
-    assert(samRecord.getSequence() == Validate::READ6_SEQ);
-    assert(samRecord.getQuality() == Validate::READ6_QUAL);
+    assert(samRecord.getCigar() == TestValidate::READ6_CIGAR);
+    assert(samRecord.getSequence() == TestValidate::READ6_SEQ);
+    assert(samRecord.getQuality() == TestValidate::READ6_QUAL);
     assert(samRecord.getNumOverlaps(1750, 1755) == 5);
     assert(samRecord.getNumOverlaps(1750, 1754) == 4);
     assert(samRecord.getNumOverlaps(0, 2000) == 5);
@@ -1211,13 +1211,13 @@ void validateRead6(SamRecord& samRecord)
     assert(samRecord.getNumOverlaps(0, 19) == 0);
 
     // Check the alignment end
-    assert(samRecord.get0BasedAlignmentEnd() == Validate::READ6_ALIGN_END);
-    assert(samRecord.get1BasedAlignmentEnd() == (Validate::READ6_ALIGN_END + 1));
-    assert(samRecord.getAlignmentLength() == Validate::READ6_ALIGN_LEN);
-    assert(samRecord.get0BasedUnclippedStart() == Validate::READ6_UNCLIP_START);
-    assert(samRecord.get1BasedUnclippedStart() == (Validate::READ6_UNCLIP_START + 1));
-    assert(samRecord.get0BasedUnclippedEnd() == Validate::READ6_UNCLIP_END);
-    assert(samRecord.get1BasedUnclippedEnd() == (Validate::READ6_UNCLIP_END + 1));
+    assert(samRecord.get0BasedAlignmentEnd() == TestValidate::READ6_ALIGN_END);
+    assert(samRecord.get1BasedAlignmentEnd() == (TestValidate::READ6_ALIGN_END + 1));
+    assert(samRecord.getAlignmentLength() == TestValidate::READ6_ALIGN_LEN);
+    assert(samRecord.get0BasedUnclippedStart() == TestValidate::READ6_UNCLIP_START);
+    assert(samRecord.get1BasedUnclippedStart() == (TestValidate::READ6_UNCLIP_START + 1));
+    assert(samRecord.get0BasedUnclippedEnd() == TestValidate::READ6_UNCLIP_END);
+    assert(samRecord.get1BasedUnclippedEnd() == (TestValidate::READ6_UNCLIP_END + 1));
 
     // No tags.
     assert(samRecord.getNextSamTag(tag, type, &value) == false);
@@ -1309,7 +1309,7 @@ void validateRead7(SamRecord& samRecord)
 
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 1;
-    expectedRecordPtr->myPosition = Validate::READ7_POS;
+    expectedRecordPtr->myPosition = TestValidate::READ7_POS;
     expectedRecordPtr->myReadNameLength = 21;
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
@@ -1345,9 +1345,9 @@ void validateRead7(SamRecord& samRecord)
            expectedRecordPtr->myMatePosition);
     assert(samRecord.getInsertSize() == expectedRecordPtr->myInsertSize);
     assert(strcmp(samRecord.getReadName(), "18:462+29M5I3M:F:297") == 0);
-    assert(samRecord.getCigar() == Validate::READ7_CIGAR);
-    assert(samRecord.getSequence() == Validate::READ7_SEQ);
-    assert(samRecord.getQuality() == Validate::READ7_QUAL);
+    assert(samRecord.getCigar() == TestValidate::READ7_CIGAR);
+    assert(samRecord.getSequence() == TestValidate::READ7_SEQ);
+    assert(samRecord.getQuality() == TestValidate::READ7_QUAL);
     assert(samRecord.getNumOverlaps(1750, 1755) == 5);
     assert(samRecord.getNumOverlaps(1750, 1754) == 4);
     assert(samRecord.getNumOverlaps(0, 2000) == 5);
@@ -1357,13 +1357,13 @@ void validateRead7(SamRecord& samRecord)
     assert(samRecord.getNumOverlaps(0, 19) == 0);
 
     // Check the alignment end
-    assert(samRecord.get0BasedAlignmentEnd() == Validate::READ7_ALIGN_END);
-    assert(samRecord.get1BasedAlignmentEnd() == (Validate::READ7_ALIGN_END + 1));
-    assert(samRecord.getAlignmentLength() == Validate::READ7_ALIGN_LEN);
-    assert(samRecord.get0BasedUnclippedStart() == Validate::READ7_UNCLIP_START);
-    assert(samRecord.get1BasedUnclippedStart() == (Validate::READ7_UNCLIP_START + 1));
-    assert(samRecord.get0BasedUnclippedEnd() == Validate::READ7_UNCLIP_END);
-    assert(samRecord.get1BasedUnclippedEnd() == (Validate::READ7_UNCLIP_END + 1));
+    assert(samRecord.get0BasedAlignmentEnd() == TestValidate::READ7_ALIGN_END);
+    assert(samRecord.get1BasedAlignmentEnd() == (TestValidate::READ7_ALIGN_END + 1));
+    assert(samRecord.getAlignmentLength() == TestValidate::READ7_ALIGN_LEN);
+    assert(samRecord.get0BasedUnclippedStart() == TestValidate::READ7_UNCLIP_START);
+    assert(samRecord.get1BasedUnclippedStart() == (TestValidate::READ7_UNCLIP_START + 1));
+    assert(samRecord.get0BasedUnclippedEnd() == TestValidate::READ7_UNCLIP_END);
+    assert(samRecord.get1BasedUnclippedEnd() == (TestValidate::READ7_UNCLIP_END + 1));
 
     // No tags.
     assert(samRecord.getNextSamTag(tag, type, &value) == false);
