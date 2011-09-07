@@ -23,46 +23,50 @@
 #include "BaseAsciiMap.h"
 #include "BaseCount.h"
 
+/// Class that tracks the composition of base by read location.
 class BaseComposition
 {
- public:
-   // Constructor.
-   BaseComposition();
+public:
+    /// Constructor.
+    BaseComposition();
 
-   // Update the composition for the specified index with the specified
-   // character.
-   // Return false if the character is not a valid raw sequence character.
-   // Return true if it is valid.
-   bool updateComposition(unsigned int rawSequenceCharIndex, char baseChar);
+    /// Update the composition for the specified index with the specified
+    /// character.
+    /// \return false if the character is not a valid raw sequence character,
+    /// true if it is valid.
+    bool updateComposition(unsigned int rawSequenceCharIndex, char baseChar);
 
-   BaseAsciiMap::SPACE_TYPE getSpaceType()
-   {
-      return(myBaseAsciiMap.getSpaceType());
-   }
+    /// Get the space type for this composition.
+    BaseAsciiMap::SPACE_TYPE getSpaceType()
+    {
+        return(myBaseAsciiMap.getSpaceType());
+    }
 
-   void resetBaseMapType()
-   {
-      myBaseAsciiMap.resetBaseMapType();
-   };
+    /// Reset the base map type for this composition.
+    void resetBaseMapType()
+    {
+        myBaseAsciiMap.resetBaseMapType();
+    };
 
-   void setBaseMapType(BaseAsciiMap::SPACE_TYPE spaceType)
-   {
-      myBaseAsciiMap.setBaseMapType(spaceType);
-   }
+    /// Set the base map type for this composition.
+    void setBaseMapType(BaseAsciiMap::SPACE_TYPE spaceType)
+    {
+        myBaseAsciiMap.setBaseMapType(spaceType);
+    }
 
-   // Print the composition.
-   void print();
+    /// Print the composition.
+    void print();
 
-   // Clear the composition stored in the base count vector.
-   void clear();
+    /// Clear the composition stored in the base count vector.
+    void clear();
 
- private:
-   // Map of bases used to determine if a character is valid and if so
-   // maps it to a number.
-   BaseAsciiMap myBaseAsciiMap;
+private:
+    // Map of bases used to determine if a character is valid and if so
+    // maps it to a number.
+    BaseAsciiMap myBaseAsciiMap;
 
-   // Vector used to store the occurrence of each base type at a given 
-   // read location.
-   vector<BaseCount> myBaseCountVector;
+    // Vector used to store the occurrence of each base type at a given 
+    // read location.
+    vector<BaseCount> myBaseCountVector;
 };
 #endif
