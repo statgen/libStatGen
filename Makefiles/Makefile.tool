@@ -11,6 +11,7 @@ ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 
 .PHONY: package wholepackage
 
+# Does not include the library.
 package : 
 # the touch gets rid of a tar warning
 	touch $(RELEASE_FILE)
@@ -22,6 +23,7 @@ WHOLEPACKAGE_MAKE := $(BASE_LIB_DIRNAME)/Makefiles/Makefile.wholepackage
 
 DIR_ABOVE_LIB :=  $(patsubst %$(BASE_LIB_DIRNAME)/, %, $(BASE_LIB_PATH))
 
+# also includes the library
 wholepackage: 
 # the touch gets rid of a tar warning
 	touch $(RELEASE_FILE)
