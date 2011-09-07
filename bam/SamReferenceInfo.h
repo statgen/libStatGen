@@ -22,39 +22,52 @@
 #include "StringHash.h"
 #include "IntArray.h"
 
+/// Class for tracking the reference information mapping between the
+/// reference ids and the reference names.
 class SamReferenceInfo
 {
 public:
+    /// Constructor.
     SamReferenceInfo();
+    /// Destructor.
     ~SamReferenceInfo();
-    // Add reference sequence name and reference sequence length.
+    /// Add reference sequence name and reference sequence length.
     void add(const char* referenceSequenceName, 
              int32_t referenceSequenceLength);
 
-    // Get the reference ID for the specified name.
-    // If addID is set to true, a reference id will be created for the
-    // referenceName if one does not already exist.  If addID is set to
-    // false (default), it will return NO_REF_ID.
+    /// Get the reference ID for the specified name, if addID is set to true,
+    /// a reference id will be created for the referenceName if one does not
+    /// already exist, while if addID is set to false (default), it will return
+    /// NO_REF_ID if the reference name does not exist.
     int getReferenceID(const String & referenceName, bool addID = false);
+    /// Get the reference ID for the specified name, if addID is set to true,
+    /// a reference id will be created for the referenceName if one does not
+    /// already exist, while if addID is set to false (default), it will return
+    /// NO_REF_ID if the reference name does not exist.
     int getReferenceID(const char* referenceName, bool addID = false);
+    /// Get the reference name for the specified id, if the id is not found,
+    /// return "*".
     const String & getReferenceLabel(int id) const;
 
-    // Get the number of entries contained here.
+    /// Get the number of entries contained here.
     int32_t getNumEntries() const;
 
-    // Return the reference name at the specified index.
-    // Returns "" if index is out of bounds
+    /// Return the reference name at the specified index, returning "" if the
+    /// index is out of bounds.
     const char* getReferenceName(int index) const;
     
-    // Return the reference length at the specified index.
-    // Returns 0 if index is out of bounds
+    /// Return the reference length at the specified index, returning 0 if the
+    /// index is out of bounds.
     int32_t getReferenceLength(int index) const;
 
-    // Reset this reference info.
+    /// Reset this reference info.
     void clear();
 
+    /// Copy the reference information.
     SamReferenceInfo & operator = (const SamReferenceInfo & rhs);
 
+    /// Constant for the value returned if a reference id does not exist
+    /// for a queried reference name.
     static const int NO_REF_ID = -3;
 
 private:

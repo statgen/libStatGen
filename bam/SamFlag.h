@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 2010  Regents of the University of Michigan
- *
+ *1
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
@@ -20,11 +20,13 @@
 
 #include <stdint.h>
 
-
+/// Class for extracting information from a SAM Flag.
 class SamFlag
 {
 public:
-    /// Constants for parsing a flag.
+    ///////////////////////
+    /// @name  Constants for parsing a flag.
+    //@{
     static const int16_t PAIRED              = 0x0001;
     static const int16_t PROPER_PAIR         = 0x0002;
     static const int16_t UNMAPPED            = 0x0004;
@@ -36,31 +38,43 @@ public:
     static const int16_t SECONDARY_ALIGNMENT = 0x0100;
     static const int16_t FAILED_QUALITY      = 0x0200;
     static const int16_t DUPLICATE           = 0x0400;
-
     static const int16_t FRAGMENT_INFO       = 0x00C0;
     static const int16_t FRAGMENT_SHIFT      = 6;
+    //@}
 
+    ///////////////////////
+    /// @name  Static methods for determining the contents of a flag.
+    //@{
     static inline bool isMapped(uint16_t flag) {return(!(flag & UNMAPPED));}
     static inline bool isPaired(uint16_t flag) {return(flag & PAIRED);}
     static inline bool isReverse(uint16_t flag) {return(flag & REVERSE);}
     static inline bool isProperPair(uint16_t flag) {return(flag & PROPER_PAIR);}
     static inline bool isDuplicate(uint16_t flag) {return(flag & DUPLICATE);}
     static inline bool isQCFailure(uint16_t flag) {return(flag & FAILED_QUALITY);}
+
+    /// Return if it is the first fragment or not
+    /// (if FIRST_READ is set and SECOND_READ is not).
     static inline bool isFirstFragment(uint16_t flag) 
     {
         // first fragment if FIRST_READ is set and SECOND_READ is not.
         return((flag & FIRST_READ) && !(flag & SECOND_READ));
     }
+    /// Return if it is the last fragment or not
+    /// (if FIRST_READ is not set and SECOND_READ is).
     static inline bool isLastFragment(uint16_t flag) 
     {
         // last fragment if FIRST_READ is not set and SECOND_READ is set.
         return(!(flag & FIRST_READ) && (flag & SECOND_READ));
     }
+    /// Return if it is a middle fragment or not
+    /// (if FIRST_READ is set and SECOND_READ is also set).
     static inline bool isMidFragment(uint16_t flag) 
     {
         // mid fragment if both FIRST_READ and SECOND_READ are set.
         return((flag & FIRST_READ) && (flag & SECOND_READ));
     }
+    /// Return if it is an unknown fragment fragment or not
+    /// (if FIRST_READ is not set and SECOND_READ is also not set).
     static inline bool isUnknownFragment(uint16_t flag) 
     {
         // unknown fragment index if neither FIRST_READ nor SECOND_READ are not.
@@ -72,7 +86,9 @@ public:
         return((flag & FRAGMENT_INFO) >> FRAGMENT_SHIFT);
     }
 
+    /// Mark the passed in flag as unmapped.
     static inline void setUnmapped(uint16_t& flag) { flag |= UNMAPPED;}
+    //@}
 
 private:
     SamFlag();

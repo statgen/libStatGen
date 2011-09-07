@@ -20,40 +20,24 @@
 
 #include <iostream>
 
+/// Class that controlsthe handling of errors.
 class ErrorHandler
 {
 public:
 
-    // This specifies how this class should respond to errors.
-    //   EXCEPTION - throw an exception for the error
-    //   ABORT     - exit the program on the error
-    //   RETURN    - just return failure on the error.
-    enum HandlingType {EXCEPTION, ABORT, RETURN};
+    /// This specifies how this class should respond to errors.
+    enum HandlingType {EXCEPTION, ///< throw an exception for the error
+                       ABORT,     ///< exit the program on the error
+                       RETURN     ///< just return failure on the error
+    };
 
-//     // Type of Error.
-//     //    SUCCESS      : method completed successfully.
-//     //    UNKNOWN      : unknown result (default value should never be used)
-//     //    FAIL_IO      : method failed due to an I/O issue.
-//     //    FAIL_MEM     : fail a memory allocation.
-//     //    FAIL_ORDER   : method failed because it was called out of order,
-//     //                   like trying to read a file without opening it for
-//     //                   read or trying to read a record before the header.
-//     //    FAIL_PARSE   : failed to parse a record/header - invalid format.
-//     //    INVALID      : record is invalid other than for sorting.
-//     //    NO_MORE_RECS : failed to read a record since there are no more to read
-//     //                   either in the file or section if section based reading.
-//     //    INVALID_SORT : record is invalid due to it not being sorted.
-//     enum Type {SUCCESS = 0, UNKNOWN, FAIL_IO, FAIL_MEM, FAIL_ORDER, FAIL_PARSE,
-//                INVALID, NO_MORE_RECS, INVALID_SORT};
-
-
-    // Constructor
+    /// Constructor
     ErrorHandler();
    
-    // Destructor
+    /// Destructor
     ~ErrorHandler();
 
-    // Handle an error based on the error handling type.
+    /// Handle an error based on the error handling type.
     static void handleError(const char* message, 
                             HandlingType handlingType = EXCEPTION);
       

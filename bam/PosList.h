@@ -24,17 +24,20 @@
 class PosList
 {
 public:
+    /// Constructor
     PosList();
 
     /// Reserves space for numRefs reference ids and numPositions for each id.
     PosList(int numRefs, int numPositions);
 
-    ~PosList();
+    /// Destructor
+    virtual ~PosList();
 
-    /// Add the specified reference id/position (negative values will not be added).
+    /// Add the specified reference id/position (negative values will not be
+    /// added).
     void addPosition(int refID, int refPosition);
 
-    /// Returns whether or not this list contains the specified reference ID
+    /// Return whether or not this list contains the specified reference ID
     /// and position (negative values will automatically return false).
     bool hasPosition(int refID, int refPosition);
 

@@ -22,10 +22,13 @@
 #include <stdexcept>
 #include "SamRecord.h"
 
+/// Class for parsing/creating/operating on SAM/BAM record tags.
 class SamTags
 {
 public:
-    /// Constants for parsing a tags.
+    ///////////////////////
+    /// @name  Constants for parsing tags.
+    //@{
     static const char* BQ_TAG;
     static const char BQ_TAG_TYPE;
     static const char* MD_TAG;
@@ -36,6 +39,7 @@ public:
     static const char ORIG_CIGAR_TAG_TYPE;
     static const char* ORIG_QUAL_TAG;
     static const char ORIG_QUAL_TAG_TYPE;
+    //@}
 
     /// Create the MD tag for the specified input record and the genome.
     /// \return returns true if an MD tag was created, false if one could not

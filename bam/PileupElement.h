@@ -28,30 +28,36 @@ class PileupElement
 public:
     static const int32_t UNSET_POSITION = -1;
 
+    /// Pileup element constructor.
     PileupElement();
 
-    // NOTE that this method does not actually copy, it just resets.
+    /// Constructor that resets the pileup element, does not copy, just resets.
     PileupElement(const PileupElement& q);
 
+    /// Pileup element destructor.
     virtual ~PileupElement();
 
 
-    // Add an entry to this pileup element.  
+    /// Add an entry to this pileup element.  
     virtual void addEntry(SamRecord& record);
 
-    // Perform the analysis associated with this class.
+    /// Perform the analysis associated with this class.
     virtual void analyze();
 
-    // Resets the entry, setting the new position associated with this element.
+    /// Resets the entry, setting the new position associated with this element.
     virtual void reset(int32_t refPosition);
     
+    /// Get the chromosome name stored in this element.
     const char* getChromosome() const { return(myChromosome.c_str()); }
 
+    /// Get the reference position stored in this element.
     int32_t getRefPosition()  const { return(myRefPosition); }
 
+    /// Set the reference to use for all pilepElements.
     static void setReference(GenomeSequence* reference);
 
 protected:
+    /// Get a pointer to the reference.
     static GenomeSequence* getReference() { return(myRefPtr); }
 
 private:

@@ -44,36 +44,45 @@ void defaultPileupAnalyze(PILEUP_TYPE& element)
 }
 
 
+/// Class to perform a pileup of all reads by position, assuming
+/// the reads are coordinate sorted.
 template <class PILEUP_TYPE, 
           class FUNC_CLASS = defaultPileup<PILEUP_TYPE> >
 class Pileup
 {
 public:
+    /// Constructor using the default maximum number of bases a read spans.
     Pileup(const FUNC_CLASS& fp = FUNC_CLASS());
 
+    /// Constructor that sets the maximum number of bases a read spans.
+    /// This is the "window" the length of the buffer that holds
+    /// the pileups for each position until the read start has moved
+    /// past the position.
     Pileup(int window, const FUNC_CLASS& fp = FUNC_CLASS());
 
-    // Perform pileup with a reference.
+    /// Perform pileup with a reference.
     Pileup(const std::string& refSeqFileName,
            const FUNC_CLASS& fp = FUNC_CLASS());
 
-    // Perform pileup with a reference.
+    /// Perform pileup with a reference and a specified window size.
     Pileup(int window, const std::string& refSeqFileName, 
            const FUNC_CLASS& fp = FUNC_CLASS());
 
+    /// Destructor
     ~Pileup();
 
-    // Performs a pileup on the specified file.
-    // Returns 0 for success and non-zero for failure.
-    // If excludeFlag is specified, any bit may be set for the
-    // record to be dropped.
-    // Defaulted to exclude:
-    //    * unmapped, 
-    //    * not primary alignment
-    //    * failed platform/vendor quality check
-    //    * PCR or optical duplicate
-    // If includeFlag is specified, every bit must be set for the
-    // record to be included - defaulted to 0 - no bits are required to be set.
+    /// Performs a pileup on the specified file.
+    /// \param excludeFlag if specified, if any bit set in the exclude flag
+    ///                    is set in the record's flag, it will be dropped.
+    /// Defaulted to exclude:
+    ///    * unmapped, 
+    ///    * not primary alignment
+    ///    * failed platform/vendor quality check
+    ///    * PCR or optical duplicate
+    /// \param includeFlag if specified, every bit must be set in the 
+    ///                    record's flag for it to be included - 
+    ///                    defaulted to 0, no bits are required to be set.
+    /// \return 0 for success and non-zero for failure.
     virtual int processFile(const std::string& fileName, 
                             uint16_t excludeFlag = 0x0704, 
                             uint16_t includeFlag = 0);
@@ -95,7 +104,8 @@ public:
                                         int endPos,
                                         PosList* excludeList = NULL);
    
-
+    /// Done processing, flush every position that is currently being stored
+    /// in the pileup.
     void flushPileup();
 
 protected:

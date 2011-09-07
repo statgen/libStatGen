@@ -21,21 +21,23 @@
 #include "SamRecord.h"
 #include "GenomeSequence.h"
 
+/// Class for helping to filter a SAM/BAM record.
 class SamFilter
 {
 public:
+    /// Enum describing what sort of filtering was done.
     enum FilterStatus {
-        NONE, // The filter did not affect the read.
-        CLIPPED, // Filtering clipped the read.
-        FILTERED // Filtering caused the read to be modified to unmapped.
+        NONE,    ///< The filter did not affect the read.
+        CLIPPED, ///< Filtering clipped the read.
+        FILTERED ///< Filtering caused the read to be modified to unmapped.
     };
 
-    // Clip the read based on the specified mismatch threshold.
-    // Returns how the read was affected, 
-    //     NONE if the read was not modified,
-    //     CLIPPED if the read was clipped,
-    //     FILTERED if the whole read would have been clipped so instead the
-    //              read was modified to unmapped.
+    /// Clip the read based on the specified mismatch threshold.
+    /// \return how the read was affected, 
+    ///     NONE if the read was not modified,
+    ///     CLIPPED if the read was clipped,
+    ///     FILTERED if the whole read would have been clipped so instead the
+    ///              read was modified to unmapped.
     static FilterStatus clipOnMismatchThreshold(SamRecord& record, 
                                                 GenomeSequence& refSequence,
                                                 double mismatchThreshold);
@@ -72,21 +74,27 @@ public:
                                  int32_t& startPos,
                                  CigarRoller& updatedCigar);
 
-    // Filter the read based on the specified quality threshold.
-    // Returns how the read was affected, 
-    //     NONE if the read was not modified,
-    //     FILTERED if the read was modified to unmapped because it was over
-    //              the quality threshold.
+    /// Filter the read based on the specified quality threshold.
+    /// \return how the read was affected, 
+    ///     NONE if the read was not modified,
+    ///     FILTERED if the read was modified to unmapped because it was over
+    ///              the quality threshold.
     static FilterStatus filterOnMismatchQuality(SamRecord& record,
                                                 GenomeSequence& refSequence,
                                                 uint32_t qualityThreshold, 
                                                 uint8_t defaultQualityInt);
     
+    /// Get the sum of the qualities of all mismatches in the record.
+    /// \param record record on which to calculate the sum the mismatch qualities
+    /// \param refSequence reference to use to check for mismatches.
+    /// \param defaultQualityInt default value to use for the quality if no
+    ///        quality was specified in the read.
+    /// \return sum of the qualities of mismatches
     static uint32_t sumMismatchQuality(SamRecord& record, 
                                        GenomeSequence& refSequence,
                                        uint8_t defaultQualityInt);
 
-    // Filter the read out (mark it as unmapped.
+    /// Filter the read by marking it as unmapped.
     static void filterRead(SamRecord& record);
 };
 
