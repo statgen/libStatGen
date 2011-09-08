@@ -268,6 +268,13 @@ public:
     int FastFindLastChar(char ch) const;
     int SlowFindLastChar(char ch) const;
 
+    // Since there is no longer implicit conversion
+    // from char to String, declare this method that
+    // takes a character rather than a String reference.
+    int Find(char ch, int start = 0) const
+    {
+        return(FindChar(ch, start));
+    }
     int Find(const String & str, int start = 0) const;
     int FastFind(const String & str, int start = 0) const;
     int SlowFind(const String & str, int start = 0) const;

@@ -57,9 +57,22 @@ public:
     static int ComparePosition(MarkerInfo ** left, MarkerInfo ** right);
 
     String GetAlleleLabel(int allele);
+    int    GetAlleleNumber(char label) const
+    {
+        String labelString;
+        labelString = label;
+        return(GetAlleleNumber(labelString));
+    }
     int    GetAlleleNumber(const String & label) const
     {
         return label == "0" ? 0 : alleleNumbers.Integer(label);
+    }
+
+    int  NewAllele(char label)
+    {
+        String labelString;
+        labelString = label;
+        return(NewAllele(labelString));
     }
 
     int  NewAllele(const String & label);
