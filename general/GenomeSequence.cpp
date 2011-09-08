@@ -31,6 +31,8 @@
 #include <sstream>
 #include <stdexcept>
 
+// not general use:
+#include "CSG_MD5.h"
 
 //
 // Map ASCII values to a 2 (or 3) bit encoding for the base pair value
@@ -367,14 +369,14 @@ bool GenomeSequence::setChromosomeMD5andLength(uint32_t whichChromosome)
     //
     char *md5Buffer = (char *) malloc(c->size);
 
-    MD5_Init(&md5Context);
+    MD5Init(&md5Context);
 
     for (genomeIndex_t i = 0; i < c->size; i ++)
     {
         md5Buffer[i] = (*this)[c->start + i];
     }
-    MD5_Update(&md5Context, md5Buffer, c->size);
-    MD5_Final((unsigned char *) &md5Signature, &md5Context);
+    MD5Update(&md5Context, (unsigned char *) md5Buffer, c->size);
+    MD5Final((unsigned char *) &md5Signature, &md5Context);
     free(md5Buffer);
     for (int i=0; i<MD5_DIGEST_LENGTH; i++)
     {

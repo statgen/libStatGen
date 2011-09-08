@@ -24,10 +24,8 @@
 #include <stddef.h>             // for size_t, which md5.h needs (for correct systems)
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(WIN32)
+#if !defined(MD5_DIGEST_LENGTH)
 #define MD5_DIGEST_LENGTH 16
-#else
-#include <openssl/md5.h>        // for MD5_DIGEST_LENGTH
 #endif
 #include <string>
 #include <vector>
