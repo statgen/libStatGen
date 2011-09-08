@@ -40,6 +40,18 @@ $(STAT_GEN_LIB_DEBUG): $(OBJECTS_DEBUG)
 $(STAT_GEN_LIB_PROFILE): $(OBJECTS_PROFILE)
 	ar -cr $@ $(OBJECTS_PROFILE)
 
+UNAME=$(shell uname)
+
+ifeq ($(UNAME), Darwin)
+specific_clean:
+	-rm -f  $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
+	-$(AR) d $(STAT_GEN_LIB_OPT) $(OBJECTS_OPT)
+	-$(RANLIB) $(STAT_GEN_LIB_OPT)
+	-$(AR) d $(STAT_GEN_LIB_DEBUG) $(OBJECTS_DEBUG)
+	-$(RANLIB) $(STAT_GEN_LIB_DEBUG)
+	-$(AR) d $(STAT_GEN_LIB_PROFILE) $(OBJECTS_PROFILE)
+	-$(RANLIB) $(STAT_GEN_LIB_PROFILE)
+else
 specific_clean:
 	-rm -f  $(addprefix $(INCLUDE_PATH)/, $(HEADERS))
 	$(AR) d $(STAT_GEN_LIB_OPT) $(OBJECTS_OPT)
@@ -48,3 +60,4 @@ specific_clean:
 	$(RANLIB) $(STAT_GEN_LIB_DEBUG)
 	$(AR) d $(STAT_GEN_LIB_PROFILE) $(OBJECTS_PROFILE)
 	$(RANLIB) $(STAT_GEN_LIB_PROFILE)
+endif
