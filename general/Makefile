@@ -83,6 +83,7 @@ HDRONLY= \
 	LongInt.h \
 	MathConstant.h \
 	PedigreeAlleles.h \
+	Performance.h \
 	SimpleStats.h
 
 include ../Makefiles/Makefile.lib
