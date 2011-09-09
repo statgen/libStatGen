@@ -19,9 +19,9 @@
 
 #include "GenomeSequence.h"
 
-const char* RM_BS_REFERENCE = "rm -f ../../../src/karma/test/phiX-bs.umfa";
-const char* RM_CS_REFERENCE = "rm -f ../../../src/karma/test/phiX-cs.umfa";
-const char* REFERENCE_NAME = "../../../src/karma/test/phiX.fa";
+const char* RM_BS_REFERENCE = "rm -f ./phiX-bs.umfa";
+const char* RM_CS_REFERENCE = "rm -f ./phiX-cs.umfa";
+const char* REFERENCE_NAME = "./phiX.fa";
 
 TEST(GenomeSequenceTest, staticLookupTest)
 {

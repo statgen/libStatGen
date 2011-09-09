@@ -22,7 +22,7 @@
 // This can turn on the benchmark of STLUtilities class and String class
 //
 #ifdef _STLUTILITIES_BENCHMARK_
-#include "../../karma/Performance.h"
+#include "Performance.h"
 #include "Random.h"
 #include "StringBasics.h"
 #endif /* _STLUTILITIES_BENCHMARK_ */
@@ -109,11 +109,13 @@ TEST(STLUtilitiesTest, tSTLUtilitiesTest)
     // a single tab splits two empty fields, so should see two tokens here:
     Tokenize(tokens, "\t", '\t');
     EXPECT_EQ(tokens.size(), 2U);
+    EXPECT_TRUE(tokens[0] == "");
+    EXPECT_TRUE(tokens[1] == "");
 
 
     Tokenize(tokens, "bahbah", '\t');
-    EXPECT_TRUE(tokens[0] == "bahbah");
     EXPECT_EQ(tokens.size(), 1U);
+    EXPECT_TRUE(tokens[0] == "bahbah");
 
     //
     // no data on the line is the same as a single empty field.
@@ -122,8 +124,8 @@ TEST(STLUtilitiesTest, tSTLUtilitiesTest)
     // to let the caller simply say 'if tokens[0]==""'
     //
     Tokenize(tokens, "", '\t');
-    EXPECT_TRUE(tokens[0] == "");
     EXPECT_EQ(tokens.size(), 1U);
+    EXPECT_TRUE(tokens[0] == "");
 
 #if 0
     toot = "";
