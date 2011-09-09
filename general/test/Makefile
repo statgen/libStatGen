@@ -18,7 +18,7 @@ all test: $(SUBDIRS)
 clean: $(SUBDIRS)
 	# clean current directory
 	rm -f *.o *~
-	rm -f phiX-bs.umfa phiX-cs.umfa
+	rm -f phiX-bs.umfa phiX-cs.umfa gtest
 
 $(SUBDIRS):
 	@$(MAKE) OPTFLAG="$(OPTFLAG)" -C $@ $(TARGET)
