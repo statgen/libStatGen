@@ -450,31 +450,6 @@ bool GenomeSequence::create(bool isColor)
 {
     setColorSpace(isColor);
 
-    // quick sanity check...
-    assert(int2base[base2int[(int) 'A']]=='A');
-    assert(int2base[base2int[(int) 'a']]=='A');
-    assert(int2base[base2int[(int) 'T']]=='T');
-    assert(int2base[base2int[(int) 't']]=='T');
-    assert(int2base[base2int[(int) 'C']]=='C');
-    assert(int2base[base2int[(int) 'c']]=='C');
-    assert(int2base[base2int[(int) 'G']]=='G');
-    assert(int2base[base2int[(int) 'g']]=='G');
-    assert(int2base[base2int[(int) 'N']]=='N');
-    assert(int2base[base2int[(int) 'n']]=='N');
-    assert(int2base[base2int[(int) 'M']]=='M');
-    assert(int2base[base2int[(int) 'm']]=='M');
-
-    assert(base2int[(int) 'N']==4);
-    assert(base2int[(int) 'n']==4);
-    assert(base2int[(int) 'A']==0);
-    assert(base2int[(int) 'a']==0);
-    assert(base2int[(int) 'T']==3);
-    assert(base2int[(int) 't']==3);
-    assert(base2int[(int) 'C']==1);
-    assert(base2int[(int) 'c']==1);
-    assert(base2int[(int) 'G']==2);
-    assert(base2int[(int) 'g']==2);
-
     if (_baseFilename=="")
     {
         std::cerr << "Base reference filename is empty." << std::endl;
