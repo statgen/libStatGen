@@ -18,17 +18,12 @@
 #ifndef _GENOME_SEQUENCE_H
 #define _GENOME_SEQUENCE_H
 
-#include <assert.h>
-#include <fcntl.h>
-#include <stdio.h>              // for size_t, which md5.h needs (for redhat)
-#include <stddef.h>             // for size_t, which md5.h needs (for correct systems)
 #include <sys/types.h>
 #include <sys/stat.h>
 #if !defined(MD5_DIGEST_LENGTH)
 #define MD5_DIGEST_LENGTH 16
 #endif
 #include <string>
-#include <vector>
 #include "MemoryMapArray.h"
 
 // Goncalo's String class
@@ -186,18 +181,15 @@ public:
         return genomeSequenceArray::open(filename, flags);
     }
 
-    /// if true, then show progress when creating and pre-fetching
 private:
     bool    _searchCommonFileSuffix;
 public:
-    bool create();
-    //
-    // backwards compatability:
-    bool create(bool isColor) {setColorSpace(isColor); return create(); }
+    bool create(bool isColor = false);
 
     // NEW API?
 
     // load time modifiers:
+    /// if set, then show progress when creating and pre-fetching
     void setProgressStream(std::ostream &progressStream) {_progressStream = &progressStream;}
     void setColorSpace(bool colorSpace) {_colorSpace = colorSpace; }
     void setSearchCommonFileSuffix(bool searchCommonFileSuffix) {_searchCommonFileSuffix = searchCommonFileSuffix;}

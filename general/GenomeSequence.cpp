@@ -446,8 +446,10 @@ static bool getFastaStats(const char *fastaData, size_t fastaDataSize, uint32_t 
 // The format parsed here is a simpler subset, and is
 // described here http://www.ncbi.nlm.nih.gov/blast/fasta.shtml
 //
-bool GenomeSequence::create()
+bool GenomeSequence::create(bool isColor)
 {
+    setColorSpace(isColor);
+
     // quick sanity check...
     assert(int2base[base2int[(int) 'A']]=='A');
     assert(int2base[base2int[(int) 'a']]=='A');
