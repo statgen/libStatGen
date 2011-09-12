@@ -48,113 +48,7 @@ typedef uint32_t    genomeIndex_t;
 // chromosome index is just a signed int, so this is ok here:
 #define INVALID_CHROMOSOME_INDEX -1
 
-
-//
-// ChromosomeInfo represents the per chromosome information
-// necessary to write out SAM/BAM records.  In addition, it
-// contains a single internal index used to point to the vector
-// offset where the chromosome bases start.
-//
-// This is mildly non-optimal for larger collections of chromosomes
-// or contigs - one use case described having millions of contigs,
-// in which case, this structure alone would take a gigabyte or more.
-//
-struct ChromosomeInfo
-{
-    static const int  MAX_GENOME_INFO_STRING=128;
-
-    void constructorClear()
-    {
-        memset(this,0, sizeof(*this));
-    }
-    void setChromosomeName(const char *n)
-    {
-        strncpy(name, n, sizeof(name)-1);
-    }
-    genomeIndex_t   start;                              // internal offset to combined genome vector
-    genomeIndex_t   size;                               // SAM SQ:LN value
-    char            md5[2*MD5_DIGEST_LENGTH + 1];       // 32 chars plus NUL, SAM SQ:M5 value
-    char            name[MAX_GENOME_INFO_STRING];       // SAM SQ:SN value
-    char            assemblyID[MAX_GENOME_INFO_STRING]; // SAM SQ:AS value
-    char            uri[MAX_GENOME_INFO_STRING];        // SAM SQ:UR value
-    char            species[MAX_GENOME_INFO_STRING];    // SAM SQ:SP value
-
-    // handy setting methods:
-    void setAssemblyID(const char *newID)
-    {
-        strncpy(assemblyID, newID, sizeof(assemblyID) - 1);
-    }
-    void setSpecies(const char *newSpecies)
-    {
-        strncpy(species, newSpecies, sizeof(newSpecies));
-    }
-    void setURI(const char *newURI)
-    {
-        strncpy(uri, newURI, sizeof(uri));
-    }
-};
-
-class genomeSequenceMmapHeader : public MemoryMapArrayHeader
-{
-    friend class GenomeSequence;
-    friend std::ostream &operator << (std::ostream &, genomeSequenceMmapHeader &);
-private:
-    uint32_t    _chromosomeCount;
-    bool        _colorSpace;
-
-    ChromosomeInfo  _chromosomes[0];
-
-public:
-    //
-    // getHeaderSize is special in that it must not access any
-    // member variables, since it is called when the header has
-    // not been created yet.
-    //
-    static size_t  getHeaderSize(int chromosomeCount)
-    {
-        return sizeof(genomeSequenceMmapHeader) + sizeof(ChromosomeInfo[1]) * chromosomeCount;
-    }
-    //
-    // below methods return TRUE if it failed, false otherwise (primarily
-    // a length check).
-    //
-};
-
-std::ostream &operator << (std::ostream &stream, genomeSequenceMmapHeader &h);
-
-//
-// define the genomeSequence array type:
-//
-// NB the access/set routines use the encoded base values in the range
-// 0-15, not the corresponding base pair character.
-//
-inline uint8_t genomeSequenceAccess(void *base, genomeIndex_t index)
-{
-    if ((index&1)==0)
-    {
-        return ((uint8_t *) base)[index>>1] & 0xf;
-    }
-    else
-    {
-        return (((uint8_t *) base)[index>>1] & 0xf0) >> 4;
-    }
-};
-inline void genomeSequenceSet(void *base, genomeIndex_t index, uint8_t v)
-{
-    if ((index&1)==0)
-    {
-        ((uint8_t *) base)[index>>1] = (((uint8_t *) base)[index>>1] & 0xf0) | v;
-    }
-    else
-    {
-        ((uint8_t *) base)[index>>1] = (((uint8_t *) base)[index>>1] & 0x0f) | v<<4;
-    }
-}
-
-inline size_t mmapGenomeSequenceElementCount2Bytes(genomeIndex_t i)
-{
-    return sizeof(uint8_t) * i / 2;
-}
+#include "GenomeSequenceHelpers.h"
 
 #define UMFA_COOKIE 0x1b7933a1  // unique cookie id
 #define UMFA_VERSION 20100401U  // YYYYMMDD of last change to file layout
@@ -170,33 +64,6 @@ mmapGenomeSequenceElementCount2Bytes,
 genomeSequenceMmapHeader
 > genomeSequenceArray;
 
-class PackedRead
-{
-    void set(int index, int val)
-    {
-        packedBases[index>>1] =
-            (packedBases[index>>1]             // original value
-             & ~(7<<((index&0x01)<<2)))         // logical AND off the original value
-            | ((val&0x0f)<<((index&0x1)<<2));  // logical OR in the new value
-    }
-public:
-    std::vector<uint8_t> packedBases;
-    uint32_t    length;
-    int size()
-    {
-        return length;
-    }
-    void clear()
-    {
-        packedBases.clear();
-        length=0;
-    }
-    void set(const char *rhs, int padWithNCount = 0);
-    uint8_t operator [](int index)
-    {
-        return (packedBases[index>>1] >> ((index&0x1)<<2)) & 0xf;
-    }
-};
 
 // std::string &operator = (std::string &lhs, const PackedRead &rhs);
 //
