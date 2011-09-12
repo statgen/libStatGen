@@ -557,8 +557,8 @@ bool GenomeSequence::create(bool isColor)
             newPercent = (int) (1.0 * fastaIndex / fastaDataSize) * 100;
             if (newPercent>percent)
             {
-                std::cerr << "\r" << newPercent << "% ";
-                std::cerr << std::flush;
+                *_progressStream << "\r" << newPercent << "% ";
+                *_progressStream << std::flush;
                 percent = newPercent;
             }
         }
