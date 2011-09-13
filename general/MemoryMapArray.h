@@ -420,7 +420,7 @@ inline void mmap4BitSet(void *base, uint32_t i, uint32_t v)
          & ~(7<<((i&0x01)<<2)))              // logical AND off the original value
         | ((v&0x0f)<<((i&0x1)<<2));         // logical OR in the new value
 }
-inline size_t mmap4BitelementCount2Bytes(uint32_t i)
+inline size_t mmap4BitElementCount2Bytes(uint32_t i)
 {
     return (size_t)(i+1)/2;
 }
@@ -432,7 +432,7 @@ uint32_t,
 20090109,
 mmap4BitAccess,
 mmap4BitSet,
-mmap4BitelementCount2Bytes,
+mmap4BitElementCount2Bytes,
 MemoryMapArrayHeader
 > mmapArray4Bit_t;
 
