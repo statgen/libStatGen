@@ -126,15 +126,15 @@ class elementT,
 typename indexT,
 unsigned int cookieVal,
 unsigned int versionVal,
-elementT accessorFunc(void *base, indexT),
-void setterFunc(void *base, indexT, elementT),
+elementT accessorFunc(char *base, indexT),
+void setterFunc(char *base, indexT, elementT),
 size_t elementCount2BytesFunc(indexT),
 class arrayHeaderClass>
 class MemoryMapArray : public MemoryMap
 {
 protected:
     arrayHeaderClass    *header;
-    void                *data;
+    char                *data;
     std::string         errorStr;
 public:
     void constructorClear()
@@ -217,7 +217,7 @@ public:
         header->typeVersion = versionVal;
         header->headerSize = header->getHeaderSize(optionalHeaderCount);
         header->elementCount = elementCount;
-        data = (elementT *)((char *) MemoryMap::data + header->headerSize);
+        data = (char *)((char *) MemoryMap::data + header->headerSize);
 
         const char *env;
         char hostname[256];
@@ -269,7 +269,7 @@ public:
             return true;
         }
         header = (arrayHeaderClass *) MemoryMap::data;
-        data = (elementT *)((char *) MemoryMap::data + header->headerSize);
+        data = (char *)((char *) MemoryMap::data + header->headerSize);
         if (header->typeCookie!=cookieVal)
         {
             std::ostringstream buf;
@@ -322,11 +322,11 @@ public:
 //
 // define the uint32 array type:
 //
-inline uint32_t mmapUint32Access(void *base, uint32_t index)
+inline uint32_t mmapUint32Access(char *base, uint32_t index)
 {
     return ((uint32_t *)base)[index];
 }
-inline void mmapUint32Set(void *base, uint32_t index, uint32_t v)
+inline void mmapUint32Set(char *base, uint32_t index, uint32_t v)
 {
     ((uint32_t *)base)[index] = v;
 }
@@ -346,93 +346,112 @@ mmapUint32elementCount2Bytes,
 MemoryMapArrayHeader
 > mmapArrayUint32_t;
 
-//
-// define the boolean memory mapped array type.
-// NB: it is limited to 2**32 elements
-//
-inline bool mmapBoolAccess(void *base, uint32_t i)
+template<typename T>
+inline uint32_t PackedAccess_1Bit(T byteSequence, uint32_t bitIndex)
 {
-    return (((char*)base)[i>>3] >> (i&0x7)) & 0x1;
+    return (((byteSequence)[bitIndex>>3] >> (bitIndex&0x7)) & 0x1);
 }
-inline void mmapBoolSet(void *base, uint32_t i, bool v)
+
+template<typename T>
+inline void PackedAssign_1Bit(T byteSequence, uint32_t bitIndex, uint32_t value)
 {
-    ((unsigned char*) base)[i>>3] =
-        (((unsigned char*) base)[i>>3] & ~(1<<(i&0x7))) |
-        ((v&1)<<(i&0x7));
+    (byteSequence)[bitIndex>>3] =
+        ((byteSequence)[bitIndex>>3]
+        & ~(1<<(bitIndex&0x07)))
+        | ((value&0x01)<<(bitIndex&0x7));
 }
-inline size_t mmapBoolelementCount2Bytes(uint32_t i)
+
+inline size_t Packed1BitElementCount2Bytes(uint32_t i)
 {
     return (size_t)(i+7)/8;
 }
 
+template<typename T>
+inline uint32_t PackedAccess_2Bit(T byteSequence, uint32_t index)
+{
+    return (((byteSequence)[index>>2] >> ((index&0x3)<<1)) & 0x3);
+}
+
+template<typename T>
+inline void PackedAssign_2Bit(T byteSequence, uint32_t index, uint32_t value)
+{
+    (byteSequence)[index>>2] =
+        ((byteSequence)[index>>2]
+        & ~(3<<((index&0x03)<<1)))
+        | ((value&0x03)<<((index&0x3)<<1));
+}
+
+inline size_t Packed4BitElementCount2Bytes(uint32_t i)
+{
+    return (size_t)(i+1)/2;
+}
+
+template<typename T>
+inline uint32_t PackedAccess_4Bit(T byteSequence, uint32_t index)
+{
+    return (((byteSequence)[index>>1] >> ((index&0x1)<<2)) & 0xf);
+}
+
+template<typename T>
+inline void PackedAssign_4Bit(T byteSequence, uint32_t index, uint32_t value)
+{
+    (byteSequence)[index>>1] =
+        ((byteSequence)[index>>1]
+        & ~(7<<((index&0x01)<<2)))
+        | ((value&0x0f)<<((index&0x1)<<2));
+}
+
+inline size_t Packed2BitElementCount2Bytes(uint32_t i)
+{
+    return (size_t)(i+3)/4;
+}
+
+//
+// These macros allows us to re-use the nibble assignment logic
+// elsewhere.  The other goal is to ensure bits are packed in
+// a consisten order across classes that may eventually share
+// the underlying binary data.
+//
+
+//
+// define the boolean memory mapped array type.
+// NB: it is limited to 2**32 elements
+//
+
 typedef MemoryMapArray<
-bool,
+uint32_t,
 uint32_t,
 0xac6c1dc7,
 20090109,
-mmapBoolAccess,
-mmapBoolSet,
-mmapBoolelementCount2Bytes,
+PackedAccess_1Bit,
+PackedAssign_1Bit,
+Packed1BitElementCount2Bytes,
 MemoryMapArrayHeader
 > mmapArrayBool_t;
 
 //
 // define the two bit memory mapped array type:
 //
-inline uint32_t mmap2BitAccess(void *base, uint32_t i)
-{
-    return (((unsigned char*)base)[i>>2] >> ((i&0x3)<<1)) & 0x3;
-}
-inline void mmap2BitSet(void *base, uint32_t i, uint32_t v)
-{
-    ((unsigned char*) base)[i>>2] =
-        (((unsigned char*) base)[i>>2]      // original value
-         & ~(3<<((i&0x03)<<1)))              // logical AND off the original value
-        | ((v&0x03)<<((i&0x3)<<1));         // logical OR in the new value
-}
-inline size_t mmap2BitElementCount2Bytes(uint32_t i)
-{
-    return (size_t)(i+3)/4;
-}
 
 typedef MemoryMapArray<
 uint32_t,
 uint32_t,
 0x25b3ea5f,
 20090109,
-mmap2BitAccess,
-mmap2BitSet,
-mmap2BitElementCount2Bytes,
+PackedAccess_2Bit,
+PackedAssign_2Bit,
+Packed2BitElementCount2Bytes,
 MemoryMapArrayHeader
 > mmapArray2Bit_t;
-
-//
-// define the four bit memory mapped array type:
-//
-inline uint32_t mmap4BitAccess(void *base, uint32_t i)
-{
-    return (((unsigned char*)base)[i>>1] >> ((i&0x1)<<2)) & 0xf;
-}
-inline void mmap4BitSet(void *base, uint32_t i, uint32_t v)
-{
-    ((unsigned char*) base)[i>>1] =
-        (((unsigned char*) base)[i>>1]      // original value
-         & ~(7<<((i&0x01)<<2)))              // logical AND off the original value
-        | ((v&0x0f)<<((i&0x1)<<2));         // logical OR in the new value
-}
-inline size_t mmap4BitElementCount2Bytes(uint32_t i)
-{
-    return (size_t)(i+1)/2;
-}
 
 typedef MemoryMapArray<
 uint32_t,
 uint32_t,
 0x418e1874,
 20090109,
-mmap4BitAccess,
-mmap4BitSet,
-mmap4BitElementCount2Bytes,
+PackedAccess_4Bit,
+PackedAssign_4Bit,
+Packed4BitElementCount2Bytes,
 MemoryMapArrayHeader
 > mmapArray4Bit_t;
 

@@ -49,13 +49,13 @@ typedef uint32_t    genomeIndex_t;
 #define UMFA_VERSION 20100401U  // YYYYMMDD of last change to file layout
 
 typedef MemoryMapArray<
-uint8_t,
+uint32_t,
 genomeIndex_t,
 UMFA_COOKIE,
 UMFA_VERSION,
-genomeSequenceAccess,
-genomeSequenceSet,
-mmapGenomeSequenceElementCount2Bytes,
+PackedAccess_4Bit,
+PackedAssign_4Bit,
+Packed4BitElementCount2Bytes,
 genomeSequenceMmapHeader
 > genomeSequenceArray;
 
@@ -178,7 +178,16 @@ public:
     bool open(const char *filename, int flags = O_RDONLY)
     {
         _umfaFilename = filename;
-        return genomeSequenceArray::open(filename, flags);
+#if 0
+        if(genomeSequenceArray::open(filename, flags)) {
+            //
+            // if load of the umfa (binary encoded file) fails, attempt
+            // to load it as a fasta file.
+            //
+            return loadFasta();
+        }
+#endif
+        return false;
     }
 
 private:
