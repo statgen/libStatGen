@@ -114,6 +114,24 @@ void check(int &returnCode, TITLE title, ITEM item, EXPECT expect, GOT got)
 }
 
 //
+// specialization of template below:
+// load a set of lines from a file into a vector of strings.
+//
+inline std::istream &operator >> (std::istream &stream, std::vector<std::string> &vec)
+{
+    std::string val;
+    while (true)
+    {
+        if (!stream.good()) break;
+        getline(stream, val);
+        stream >> val;
+        vec.push_back(val);
+    }
+    return stream;
+}
+
+
+//
 // read values from a stream, appending to the provided
 // vec.  stops when the stream is consumed.
 //
