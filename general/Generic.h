@@ -109,7 +109,7 @@ void check(int &returnCode, TITLE title, ITEM item, EXPECT expect, GOT got)
     if (expect!=got)
     {
         std::cout << "Test " << title << ": expect " << item << " = " << expect << ", but got " << got << "." << std::endl;
-        returnCode = 1;
+        returnCode += 1;
     }
 }
 
