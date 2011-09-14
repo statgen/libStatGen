@@ -293,10 +293,10 @@ public:
         return false;
     }
 
-    void close()
+    bool close()
     {
         constructorClear();
-        MemoryMap::close();
+        return MemoryMap::close();
     }
     void debugPrint(FILE *f)
     {
