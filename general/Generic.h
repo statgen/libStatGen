@@ -141,8 +141,8 @@ std::istream &operator >> (std::istream &stream, std::vector<T> &vec)
     T val;
     while (true)
     {
-        stream >> val;
         if (!stream.good()) break;
+        stream >> val;
         vec.push_back(val);
     }
     return stream;
@@ -172,5 +172,71 @@ std::ostream &operator << (
 }
 
 #endif
+
+
+//
+// These are packed set/get functions for dealing with
+// packed 1, 2 and 4 bit unsigned values inside of arbitrary
+// arrays of data (char */std::vector<char> whatever).
+//
+template<typename T>
+inline uint32_t PackedAccess_1Bit(T byteSequence, uint32_t bitIndex)
+{
+    return (((byteSequence)[bitIndex>>3] >> (bitIndex&0x7)) & 0x1);
+}
+
+template<typename T>
+inline void PackedAssign_1Bit(T byteSequence, uint32_t bitIndex, uint32_t value)
+{
+    (byteSequence)[bitIndex>>3] =
+        ((byteSequence)[bitIndex>>3]
+        & ~(1<<(bitIndex&0x07)))
+        | ((value&0x01)<<(bitIndex&0x7));
+}
+
+inline size_t Packed1BitElementCount2Bytes(uint32_t i)
+{
+    return (size_t)(i+7)/8;
+}
+
+template<typename T>
+inline uint32_t PackedAccess_2Bit(T byteSequence, uint32_t index)
+{
+    return (((byteSequence)[index>>2] >> ((index&0x3)<<1)) & 0x3);
+}
+
+template<typename T>
+inline void PackedAssign_2Bit(T byteSequence, uint32_t index, uint32_t value)
+{
+    (byteSequence)[index>>2] =
+        ((byteSequence)[index>>2]
+        & ~(3<<((index&0x03)<<1)))
+        | ((value&0x03)<<((index&0x3)<<1));
+}
+
+inline size_t Packed2BitElementCount2Bytes(uint32_t i)
+{
+    return (size_t)(i+3)/4;
+}
+
+template<typename T>
+inline uint32_t PackedAccess_4Bit(T byteSequence, uint32_t index)
+{
+    return (((byteSequence)[index>>1] >> ((index&0x1)<<2)) & 0xf);
+}
+
+template<typename T>
+inline void PackedAssign_4Bit(T byteSequence, uint32_t index, uint32_t value)
+{
+    (byteSequence)[index>>1] =
+        ((byteSequence)[index>>1]
+        & ~(7<<((index&0x01)<<2)))
+        | ((value&0x0f)<<((index&0x1)<<2));
+}
+
+inline size_t Packed4BitElementCount2Bytes(uint32_t i)
+{
+    return (size_t)(i+1)/2;
+}
 
 #endif
