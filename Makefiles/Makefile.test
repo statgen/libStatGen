@@ -46,7 +46,7 @@ $(OBJDIR):
 	mkdir $(OBJDIR)
 
 clean : 
-	-rm -f $(OBJDIR)/*.o $(EXE) *~ results/*
+	-rm -rf $(OBJDIR) $(EXE) *~ results
 	$(TEST_CLEAN)
 
 test : all
