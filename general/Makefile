@@ -84,7 +84,8 @@ HDRONLY= \
 	MathConstant.h \
 	PedigreeAlleles.h \
 	Performance.h \
-	SimpleStats.h
+	SimpleStats.h \
+	UnitTest.h
 
 include ../Makefiles/Makefile.lib
 
