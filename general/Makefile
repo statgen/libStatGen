@@ -82,6 +82,7 @@ HDRONLY= \
 	InplaceMerge.h \
 	LongInt.h \
 	MathConstant.h \
+	PackedVector.h \
 	PedigreeAlleles.h \
 	Performance.h \
 	SimpleStats.h \
