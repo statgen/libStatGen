@@ -58,6 +58,7 @@ TOOLBASE=\
 	PedigreePerson \
 	QuickIndex \
 	Random \
+	ReferenceSequence \
 	SmithWaterman \
 	Sort \
 	STLUtilities \

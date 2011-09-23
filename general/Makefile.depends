@@ -9,8 +9,9 @@ $(OBJDIR_OPT)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
 $(OBJDIR_OPT)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_OPT)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_OPT)/Chromosome.o: Chromosome.h GenomeSequence.h MemoryMapArray.h
-$(OBJDIR_OPT)/Chromosome.o: MemoryMap.h StringArray.h StringBasics.h
-$(OBJDIR_OPT)/Chromosome.o: InputFile.h FileType.h
+$(OBJDIR_OPT)/Chromosome.o: Generic.h MemoryMap.h StringArray.h
+$(OBJDIR_OPT)/Chromosome.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_OPT)/Chromosome.o: GenomeSequenceHelpers.h
 $(OBJDIR_OPT)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_OPT)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
@@ -22,7 +23,7 @@ $(OBJDIR_OPT)/FortranFormat.o: FileType.h IntArray.h Error.h
 $(OBJDIR_OPT)/GenomeSequence.o: Error.h Generic.h GenomeSequence.h
 $(OBJDIR_OPT)/GenomeSequence.o: MemoryMapArray.h MemoryMap.h StringArray.h
 $(OBJDIR_OPT)/GenomeSequence.o: StringBasics.h InputFile.h FileType.h
-$(OBJDIR_OPT)/GenomeSequence.o: CSG_MD5.h
+$(OBJDIR_OPT)/GenomeSequence.o: GenomeSequenceHelpers.h CSG_MD5.h
 $(OBJDIR_OPT)/GenotypeLists.o: GenotypeLists.h Pedigree.h Constant.h
 $(OBJDIR_OPT)/GenotypeLists.o: PedigreeAlleles.h LongInt.h PedigreePerson.h
 $(OBJDIR_OPT)/GenotypeLists.o: PedigreeGlobals.h StringArray.h StringBasics.h
@@ -52,7 +53,7 @@ $(OBJDIR_OPT)/MathVector.o: Sort.h Constant.h
 $(OBJDIR_OPT)/MemoryAllocators.o: MemoryAllocators.h
 $(OBJDIR_OPT)/MemoryInfo.o: MemoryInfo.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/MemoryInfo.o: FileType.h
-$(OBJDIR_OPT)/MemoryMapArray.o: MemoryMapArray.h MemoryMap.h
+$(OBJDIR_OPT)/MemoryMapArray.o: MemoryMapArray.h Generic.h MemoryMap.h
 $(OBJDIR_OPT)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_OPT)/MiniDeflate.o: MiniDeflate.h
 $(OBJDIR_OPT)/Parameters.o: Parameters.h StringMap.h StringBasics.h
@@ -99,6 +100,9 @@ $(OBJDIR_OPT)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_OPT)/QuickIndex.o: InputFile.h FileType.h StringArray.h StringHash.h
 $(OBJDIR_OPT)/QuickIndex.o: Constant.h Hash.h IntArray.h StringMap.h Error.h
 $(OBJDIR_OPT)/Random.o: Random.h MathConstant.h Error.h
+$(OBJDIR_OPT)/ReferenceSequence.o: Error.h Generic.h ReferenceSequence.h
+$(OBJDIR_OPT)/ReferenceSequence.o: BaseAsciiMap.h StringBasics.h InputFile.h
+$(OBJDIR_OPT)/ReferenceSequence.o: FileType.h PackedVector.h
 $(OBJDIR_OPT)/SmithWaterman.o: SmithWaterman.h CigarRoller.h Cigar.h
 $(OBJDIR_OPT)/SmithWaterman.o: Generic.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/SmithWaterman.o: FileType.h
@@ -147,8 +151,9 @@ $(OBJDIR_DEBUG)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
 $(OBJDIR_DEBUG)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_DEBUG)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/Chromosome.o: Chromosome.h GenomeSequence.h MemoryMapArray.h
-$(OBJDIR_DEBUG)/Chromosome.o: MemoryMap.h StringArray.h StringBasics.h
-$(OBJDIR_DEBUG)/Chromosome.o: InputFile.h FileType.h
+$(OBJDIR_DEBUG)/Chromosome.o: Generic.h MemoryMap.h StringArray.h
+$(OBJDIR_DEBUG)/Chromosome.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_DEBUG)/Chromosome.o: GenomeSequenceHelpers.h
 $(OBJDIR_DEBUG)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_DEBUG)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
@@ -160,7 +165,7 @@ $(OBJDIR_DEBUG)/FortranFormat.o: FileType.h IntArray.h Error.h
 $(OBJDIR_DEBUG)/GenomeSequence.o: Error.h Generic.h GenomeSequence.h
 $(OBJDIR_DEBUG)/GenomeSequence.o: MemoryMapArray.h MemoryMap.h StringArray.h
 $(OBJDIR_DEBUG)/GenomeSequence.o: StringBasics.h InputFile.h FileType.h
-$(OBJDIR_DEBUG)/GenomeSequence.o: CSG_MD5.h
+$(OBJDIR_DEBUG)/GenomeSequence.o: GenomeSequenceHelpers.h CSG_MD5.h
 $(OBJDIR_DEBUG)/GenotypeLists.o: GenotypeLists.h Pedigree.h Constant.h
 $(OBJDIR_DEBUG)/GenotypeLists.o: PedigreeAlleles.h LongInt.h PedigreePerson.h
 $(OBJDIR_DEBUG)/GenotypeLists.o: PedigreeGlobals.h StringArray.h
@@ -191,7 +196,7 @@ $(OBJDIR_DEBUG)/MathVector.o: Sort.h Constant.h
 $(OBJDIR_DEBUG)/MemoryAllocators.o: MemoryAllocators.h
 $(OBJDIR_DEBUG)/MemoryInfo.o: MemoryInfo.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/MemoryInfo.o: FileType.h
-$(OBJDIR_DEBUG)/MemoryMapArray.o: MemoryMapArray.h MemoryMap.h
+$(OBJDIR_DEBUG)/MemoryMapArray.o: MemoryMapArray.h Generic.h MemoryMap.h
 $(OBJDIR_DEBUG)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_DEBUG)/MiniDeflate.o: MiniDeflate.h
 $(OBJDIR_DEBUG)/Parameters.o: Parameters.h StringMap.h StringBasics.h
@@ -242,6 +247,9 @@ $(OBJDIR_DEBUG)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_DEBUG)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
 $(OBJDIR_DEBUG)/QuickIndex.o: StringMap.h Error.h
 $(OBJDIR_DEBUG)/Random.o: Random.h MathConstant.h Error.h
+$(OBJDIR_DEBUG)/ReferenceSequence.o: Error.h Generic.h ReferenceSequence.h
+$(OBJDIR_DEBUG)/ReferenceSequence.o: BaseAsciiMap.h StringBasics.h
+$(OBJDIR_DEBUG)/ReferenceSequence.o: InputFile.h FileType.h PackedVector.h
 $(OBJDIR_DEBUG)/SmithWaterman.o: SmithWaterman.h CigarRoller.h Cigar.h
 $(OBJDIR_DEBUG)/SmithWaterman.o: Generic.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/SmithWaterman.o: FileType.h
@@ -292,8 +300,9 @@ $(OBJDIR_PROFILE)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
 $(OBJDIR_PROFILE)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_PROFILE)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/Chromosome.o: Chromosome.h GenomeSequence.h
-$(OBJDIR_PROFILE)/Chromosome.o: MemoryMapArray.h MemoryMap.h StringArray.h
-$(OBJDIR_PROFILE)/Chromosome.o: StringBasics.h InputFile.h FileType.h
+$(OBJDIR_PROFILE)/Chromosome.o: MemoryMapArray.h Generic.h MemoryMap.h
+$(OBJDIR_PROFILE)/Chromosome.o: StringArray.h StringBasics.h InputFile.h
+$(OBJDIR_PROFILE)/Chromosome.o: FileType.h GenomeSequenceHelpers.h
 $(OBJDIR_PROFILE)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_PROFILE)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h
@@ -305,7 +314,8 @@ $(OBJDIR_PROFILE)/FortranFormat.o: FileType.h IntArray.h Error.h
 $(OBJDIR_PROFILE)/GenomeSequence.o: Error.h Generic.h GenomeSequence.h
 $(OBJDIR_PROFILE)/GenomeSequence.o: MemoryMapArray.h MemoryMap.h
 $(OBJDIR_PROFILE)/GenomeSequence.o: StringArray.h StringBasics.h InputFile.h
-$(OBJDIR_PROFILE)/GenomeSequence.o: FileType.h CSG_MD5.h
+$(OBJDIR_PROFILE)/GenomeSequence.o: FileType.h GenomeSequenceHelpers.h
+$(OBJDIR_PROFILE)/GenomeSequence.o: CSG_MD5.h
 $(OBJDIR_PROFILE)/GenotypeLists.o: GenotypeLists.h Pedigree.h Constant.h
 $(OBJDIR_PROFILE)/GenotypeLists.o: PedigreeAlleles.h LongInt.h
 $(OBJDIR_PROFILE)/GenotypeLists.o: PedigreePerson.h PedigreeGlobals.h
@@ -336,7 +346,7 @@ $(OBJDIR_PROFILE)/MathVector.o: MathConstant.h Sort.h Constant.h
 $(OBJDIR_PROFILE)/MemoryAllocators.o: MemoryAllocators.h
 $(OBJDIR_PROFILE)/MemoryInfo.o: MemoryInfo.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/MemoryInfo.o: FileType.h
-$(OBJDIR_PROFILE)/MemoryMapArray.o: MemoryMapArray.h MemoryMap.h
+$(OBJDIR_PROFILE)/MemoryMapArray.o: MemoryMapArray.h Generic.h MemoryMap.h
 $(OBJDIR_PROFILE)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_PROFILE)/MiniDeflate.o: MiniDeflate.h
 $(OBJDIR_PROFILE)/Parameters.o: Parameters.h StringMap.h StringBasics.h
@@ -390,6 +400,9 @@ $(OBJDIR_PROFILE)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_PROFILE)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
 $(OBJDIR_PROFILE)/QuickIndex.o: StringMap.h Error.h
 $(OBJDIR_PROFILE)/Random.o: Random.h MathConstant.h Error.h
+$(OBJDIR_PROFILE)/ReferenceSequence.o: Error.h Generic.h ReferenceSequence.h
+$(OBJDIR_PROFILE)/ReferenceSequence.o: BaseAsciiMap.h StringBasics.h
+$(OBJDIR_PROFILE)/ReferenceSequence.o: InputFile.h FileType.h PackedVector.h
 $(OBJDIR_PROFILE)/SmithWaterman.o: SmithWaterman.h CigarRoller.h Cigar.h
 $(OBJDIR_PROFILE)/SmithWaterman.o: Generic.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/SmithWaterman.o: FileType.h
