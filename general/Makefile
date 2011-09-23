@@ -78,6 +78,7 @@ SRCONLY=\
 HDRONLY= \
 	Constant.h \
 	Generic.h \
+	GenomeSequenceHelpers.h \
 	GreedyTupleAligner.h \
 	InplaceMerge.h \
 	LongInt.h \
