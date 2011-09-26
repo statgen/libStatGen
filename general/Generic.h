@@ -76,7 +76,7 @@ std::ostream &operator << (std::ostream &stream, std::pair<A, B> p)
 // Example code is in Generic.cpp
 //
 template <typename T>
-std::ostream &operator << (std::ostream &stream, std::vector<T> v)
+std::ostream &operator << (std::ostream &stream, std::vector<T> &v)
 {
 
     typename std::vector<T>::iterator i;
