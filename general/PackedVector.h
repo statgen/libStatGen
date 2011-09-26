@@ -46,7 +46,9 @@ protected:
     double              m_growthRateMultiplier;
     double              m_growthRateAdder;
 public:
-    PackedVector() : m_elementCount(0), m_growthRateMultiplier(1.20),
+    PackedVector() :
+        m_elementCount(0),
+        m_growthRateMultiplier(1.20),
         m_growthRateAdder(128) {;}
 
     // accessing
@@ -64,6 +66,10 @@ public:
         return m_elementCount;
     }
 
+    double getUtilization() {
+        return elementCount2BytesFunc(m_elementCount) / (double) m_data.capacity();
+    }
+
     void reserve(uint32_t reserveElements) {
         m_data.reserve(elementCount2BytesFunc(reserveElements));
     }
@@ -75,10 +81,12 @@ public:
         m_data.resize(elementCount2BytesFunc(m_elementCount));
     }
 
+    // it's a bit of a challenge to optimize this...
     void push_back(uint32_t value) {
-        if(m_elementCount > m_data.size()) {
+        m_elementCount++;
+        if(elementCount2BytesFunc(m_elementCount) >= m_data.size()) {
 
-            if( (elementCount2BytesFunc(m_elementCount) + 1) > m_data.capacity())
+            if( (elementCount2BytesFunc(m_elementCount)) > m_data.capacity())
             {
                 size_t newCapacity = m_data.capacity() * m_growthRateMultiplier;
 
@@ -88,12 +96,12 @@ public:
                     newCapacity = m_data.capacity() + m_growthRateAdder;
                 }
 
-                reserve(newCapacity);
+                m_data.reserve(newCapacity);
             }
 
         }
-        resize(m_elementCount + 1);
-        set(m_elementCount - 1, value);
+        m_data.resize(elementCount2BytesFunc(m_elementCount));
+        set(m_elementCount-1, value);
     }
 };
 
