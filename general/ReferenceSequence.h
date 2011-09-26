@@ -25,17 +25,48 @@
 #include <algorithm>
 #include <iostream>
 
+//
+// The namespace Sequence is for templated algorithms that are by and large
+// independent of the underlying storage mechanism for the bases.
+//
+// They are written in such a way as to assume that the array operator []
+// will return an ASCII representation of a base space nucleotide.
+//
+// In theory, this set of templates will work with a variety of combinations
+// of means for representing bases - String, std::string, and others.
+//
+// The containers are expected to allow for an overidden [] operator,
+// and provide a size() method to return the number of bases in the
+// container.
+//
+// In containers where sequence data is placed, they must in addition
+// have a clear() method as well as a push_back() method as done
+// in std::string containers.
+//
 namespace Sequence {
 
+//
+// wordMatch(Sequnece, Index, Word) - compare a word to a sequence of bases
+//  Sequence is a generic container with a large set of bases
+//  Index is the starting point to start the comparison
+//  Word is the small sequence of bases to match
+//
 template<typename sequenceType, typename sequenceIndexType, typename wordType>
 bool wordMatch(sequenceType &sequence,  sequenceIndexType index, wordType &word) 
 {
+    if( (index + word.size()) >= sequence.size() ) return false;
+
     for(size_t i = 0; i < word.size(); i++) {
         if( sequence[index + i] != word[i]) return false;
     }
     return true;
 }
 
+//
+// printNearbyWords(output, sequence, index, word, deviation) searches
+// for 'deviation' bases on either side of the index into sequence
+// and prints all occurrences where word appears.
+//
 template<typename sequenceType, typename sequenceIndexType, typename wordType>
 void printNearbyWords(std::ostream &output, sequenceType &sequence,  sequenceIndexType index, wordType &word, int deviation)
 {
@@ -55,6 +86,10 @@ void printNearbyWords(std::ostream &output, sequenceType &sequence,  sequenceInd
     }
 }
 
+//
+// getString(sequence, index, baseCount, word) - populate word with the 'baseCount'
+// bases that occur at the 'index' starting position in sequence.
+//
 template<typename sequenceType, typename sequenceIndexType, typename wordType>
 void getString(sequenceType &sequence, sequenceIndexType index, int baseCount, wordType &word)
 {
@@ -65,6 +100,11 @@ void getString(sequenceType &sequence, sequenceIndexType index, int baseCount, w
     }
 }
 
+//
+// getHighLightedString() is a debugging aid for printing "highlighted"
+// subsets of bases, where the highlighting is done via turning the
+// base into a lower case ASCII equivalent.
+//
 template<typename sequenceType, typename sequenceIndexType, typename wordType>
 void getHighLightedString(
         sequenceType &sequence,
@@ -86,7 +126,10 @@ void getHighLightedString(
     }
 }
 
-
+//
+// printBaseContext() outputs a base at location 'index' along with 'baseCount'
+// bases on either side of that base (default 30).
+//
 template<typename sequenceType, typename sequenceIndexType>
 void printBaseContext(std::ostream &output, sequenceType &sequence, sequenceIndexType index, int baseCount = 30)
 {
