@@ -88,6 +88,15 @@ ACTGACTGA\n\
     std::string quality("");
     size_t location = Sequence::simpleLocalAligner(sequence, 0, read, quality, 12);
     check(m_failures, ++m_testNum, "Test simpleLocalAligner with std::string", (size_t) 0, location);
+
+    read="ACNG";
+    int misMatches = Sequence::getMismatchCount(sequence, 0, read);
+    check(m_failures, ++m_testNum, "Test getMismatchCount with std::string", 1, misMatches);
+
+    read="ACNG";
+    quality="$$$$";
+    int sumQ = Sequence::getSumQ(sequence, 0, read, quality);
+    check(m_failures, ++m_testNum, "Test getSumQ with std::string", 3, sumQ);
 }
 
 int main(int argc, char **argv)
