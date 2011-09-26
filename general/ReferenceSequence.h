@@ -246,22 +246,33 @@ typedef uint32_t PackedVectorIndex_t;
 // the load/set methods do indirection from the symbol
 // value through a symbol value to symbol lookup table.
 //
-class PackedSequenceData : PackedVector4Bit_t
+class PackedSequenceData : public PackedVector4Bit_t
 {
 
     public:
     inline char operator[](PackedVectorIndex_t baseIndex)
     {
-        return BaseAsciiMap::int2base[ ((PackedVector4Bit_t) *this)[baseIndex]];
+        return BaseAsciiMap::int2base[ (static_cast<PackedVector4Bit_t>(*this))[baseIndex]];
     }
     inline void set(PackedVectorIndex_t baseIndex, char value)
     {
-        ((PackedVector4Bit_t) *this).set(baseIndex, BaseAsciiMap::base2int[(uint32_t) value]);
+        this->PackedVector4Bit_t::set(baseIndex, BaseAsciiMap::base2int[(uint32_t) value]);
+    }
+    inline void push_back(char value)
+    {
+        this->PackedVector4Bit_t::push_back(BaseAsciiMap::base2int[(uint32_t) value]);
     }
 };
 
+std::ostream &operator << (std::ostream &stream, PackedSequenceData &v)
+{
+    for(size_t i=0; i<v.size(); i++) {
+        stream << i << ": " << v[i] << std::endl;
+    }
+    return stream;
+}
 
-#if 0
+
 //
 // Load a fasta format file from filename into the buffer
 // provided by the caller.
@@ -276,9 +287,10 @@ class PackedSequenceData : PackedVector4Bit_t
 // To safely pre-allocate space in sequenceData, use the reserve() method
 // before calling this function.
 //
+template<typename SequenceDataType, typename ChromosomeNameType>
 bool loadFastaFile(const char *filename,
-        std::vector<PackedSequenceData> &sequenceData,
-        std::vector<std::string> &chromosomeNames)
+        std::vector<SequenceDataType> &sequenceData,
+        std::vector<ChromosomeNameType> &chromosomeNames)
 {
     InputFile inputStream(filename, "r", InputFile::DEFAULT);
 
@@ -288,6 +300,15 @@ bool loadFastaFile(const char *filename,
     }
 
     int whichChromosome = -1;
+
+    //
+    // chromosomeNames is cheap to clear, so do it here.
+    //
+    // NB: I explicitly choose not to clear the sequence data
+    // container, this allows the caller to pre-allocate based
+    // on their knowledge of the size of the expected genome.
+    //
+
     chromosomeNames.clear();
 
     char ch;
@@ -321,6 +342,8 @@ bool loadFastaFile(const char *filename,
 
                 whichChromosome++;
 
+                sequenceData.resize(whichChromosome+1);
+
                 break;
             }
             default:
@@ -329,6 +352,8 @@ bool loadFastaFile(const char *filename,
                 // save the base value
                 // Note: invalid characters come here as well, but we
                 // let ::set deal with mapping them.
+
+                sequenceData[whichChromosome].push_back(toupper(ch));
 #if 0
                 if (isColorSpace())
                 {
@@ -386,10 +411,5 @@ bool loadFastaFile(const char *filename,
     }
     return false;
 }
-#endif
-
-#if 0
-
-#endif
 
 #endif

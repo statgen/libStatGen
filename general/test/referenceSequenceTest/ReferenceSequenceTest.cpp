@@ -23,16 +23,20 @@
 
 #include <assert.h>
 #include <sstream>
-#include <stdlib.h>
+
 
 class ReferenceSequenceTest : public UnitTest
 {
 public:
     ReferenceSequenceTest(const char *title) : UnitTest(title) {;}
     void test1();
+    void test2();
+    void test3();
 
     void test() {
         test1();
+        test2();
+        test3();
     }
 };
 
@@ -97,6 +101,62 @@ ACTGACTGA\n\
     quality="$$$$";
     int sumQ = Sequence::getSumQ(sequence, 0, read, quality);
     check(m_failures, ++m_testNum, "Test getSumQ with std::string", 3, sumQ);
+}
+
+void ReferenceSequenceTest::test2(void)
+{
+    PackedSequenceData sequence;
+    std::string word;
+
+    sequence.push_back('A');
+    sequence.push_back('C');
+    sequence.push_back('T');
+    sequence.push_back('G');
+
+    sequence.push_back('A');
+    sequence.push_back('C');
+    sequence.push_back('T');
+    sequence.push_back('G');
+
+    sequence.push_back('A');
+    sequence.push_back('C');
+    sequence.push_back('T');
+    sequence.push_back('G');
+
+    sequence.push_back('A');
+    sequence.push_back('C');
+    sequence.push_back('T');
+    sequence.push_back('G');
+
+    Sequence::getString(sequence, 4, 4, word);
+
+    check(m_failures, ++m_testNum, "Test getString with PackedSequenceData", "ACTG", word);
+    
+    std::cout << "test2 sequence utilization is " << sequence.getUtilization() * 100 << "% - expect around 6.25%" << std::endl;
+
+}
+
+void ReferenceSequenceTest::test3(void)
+{
+    std::vector<PackedSequenceData> chromosomeSequence;
+    std::vector<std::string> chromosomeNames;
+
+    loadFastaFile("../phiX.fa", chromosomeSequence, chromosomeNames);
+
+    std::cout << "phiX reference utilization is " << chromosomeSequence[0].getUtilization() * 100 << "% - expect around 96.8%" << std::endl;
+
+
+
+    check(m_failures, ++m_testNum, "Test loadFastaFile with PackedSequenceData", (size_t) 1, chromosomeNames.size());
+    check(m_failures, ++m_testNum, "Test loadFastaFile with PackedSequenceData", (size_t) 1, chromosomeSequence.size());
+    check(m_failures, ++m_testNum, "Test loadFastaFile with PackedSequenceData", "1", chromosomeNames[0]);
+
+    std::string word;
+
+    Sequence::getString(chromosomeSequence[0], 60, 10, word);
+
+    check(m_failures, ++m_testNum, "Test loadFastaFile with PackedSequenceData", "AAATTATCTT", word);
+
 }
 
 int main(int argc, char **argv)
