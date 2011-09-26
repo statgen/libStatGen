@@ -76,10 +76,10 @@ std::ostream &operator << (std::ostream &stream, std::pair<A, B> p)
 // Example code is in Generic.cpp
 //
 template <typename T>
-std::ostream &operator << (std::ostream &stream, std::vector<T> &v)
+std::ostream &operator << (std::ostream &stream, std::vector<T> const &v)
 {
 
-    typename std::vector<T>::iterator i;
+    typename std::vector<T>::const_iterator i;
     for (i = v.begin(); i != v.end(); i++)
     {
         stream << (i - v.begin()) << ": " << *i << std::endl;
@@ -91,10 +91,10 @@ std::ostream &operator << (std::ostream &stream, std::vector<T> &v)
 // same overload as above, except for std::list
 //
 template <typename T>
-std::ostream &operator << (std::ostream &stream, std::list<T> l)
+std::ostream &operator << (std::ostream &stream, std::list<T> const &l)
 {
 
-    typename std::list<T>::iterator i;
+    typename std::list<T>::const_iterator i;
     int j = 0;
     for (i = l.begin(); i != l.end(); i++, j++)
     {
