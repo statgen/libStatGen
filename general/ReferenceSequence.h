@@ -213,7 +213,7 @@ class PackedSequenceData : PackedVector4Bit_t
     }
     inline void set(PackedVectorIndex_t baseIndex, char value)
     {
-        ((PackedVector4Bit_t) *this).set(baseIndex, BaseAsciiMap::baseColor2int[(uint32_t) value]);
+        ((PackedVector4Bit_t) *this).set(baseIndex, BaseAsciiMap::base2int[(uint32_t) value]);
     }
 };
 
