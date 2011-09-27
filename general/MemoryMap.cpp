@@ -31,7 +31,7 @@
 
 #if defined(WIN32)
 SYSTEM_INFO MemoryMap::system_info;
-static bool need_system_info = 1;
+static bool need_system_info = true;
 #else
 #include <sys/mman.h>
 #endif
@@ -81,6 +81,7 @@ void MemoryMap::constructor_clear()
 {
 #if defined(WIN32)
     file_handle = 0;
+    map_handle = 0;
 #else
     fd = -1;
 #endif
@@ -96,23 +97,40 @@ void MemoryMap::destructor_clear()
     if (data!=NULL)
     {
 #if defined(WIN32)
+        // free windows mapped object
         UnmapViewOfFile((LPVOID) data);
 #else
+        // free unix mapped object
         munmap(data, mapped_length);
 #endif
     }
+
 #if !defined(WIN32)
+    // free unix resources
     if (fd!=-1)
     {
         ::close(fd);
     }
 #endif
+
     constructor_clear();
 };
 
 #if defined(WIN32)
 // XXX
 // TODO implement win32 ::open and ::create
+bool MemoryMap::open(const char * file, int flags)
+{
+    fprintf(stderr, "WIN32 MemoryMap::open not implemented.\n");
+    return true;
+}
+
+bool MemoryMap::create(const char *file, size_t size)
+{
+    fprintf(stderr, "WIN32 MemoryMap::create not implemented.\n");
+    return true;
+}
+
 #else
 bool MemoryMap::open(const char * file, int flags)
 {
