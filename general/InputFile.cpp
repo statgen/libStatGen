@@ -184,10 +184,13 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
             // BGZF compression - recovery is possible, so use
             // Bgzf recovery reader if asked.
             //
-            if(myAttemptRecovery && index(mode,'r') ) {
+            if(myAttemptRecovery && ((mode[0] == 'r') || (mode[0] == 'R')))
+            {
                 // NB: this reader will throw std::runtime_error when it recovers
                 myFileTypePtr = new BgzfFileTypeRecovery(filename, mode);
-            } else {
+            }
+            else
+            {
                 myFileTypePtr = new BgzfFileType(filename, mode);
             }
             break;
