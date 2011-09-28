@@ -359,7 +359,6 @@ bool GenomeSequence::setChromosomeMD5andLength(uint32_t whichChromosome)
     ChromosomeInfo *c = &header->_chromosomes[whichChromosome];
     c->size = header->elementCount - c->start;
 
-#if !defined(WIN32)
     MD5_CTX md5Context;
     uint8_t md5Signature[MD5_DIGEST_LENGTH];
 
@@ -386,9 +385,7 @@ bool GenomeSequence::setChromosomeMD5andLength(uint32_t whichChromosome)
     // redundant, strictly speaking due to sprintf NUL terminating
     // it's output strings, but put it here anyway.
     c->md5[2*MD5_DIGEST_LENGTH] = '\0';
-#else
-    memset(c->md5, 0, 2*MD5_DIGEST_LENGTH);
-#endif
+
     return false;
 }
 
