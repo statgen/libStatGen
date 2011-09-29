@@ -32,11 +32,13 @@ public:
     void test1();
     void test2();
     void test3();
+    void humanGenomeTest1();
 
     void test() {
         test1();
         test2();
         test3();
+        humanGenomeTest1();
     }
 };
 
@@ -141,7 +143,12 @@ void ReferenceSequenceTest::test3(void)
     std::vector<PackedSequenceData> chromosomeSequence;
     std::vector<std::string> chromosomeNames;
 
-    loadFastaFile("../phiX.fa", chromosomeSequence, chromosomeNames);
+    bool result = loadFastaFile("../phiX.fa", chromosomeSequence, chromosomeNames);
+
+    if(result) {
+        std::cout << "../phiX.fa not found - skipping these tests." << std::endl;
+        return;
+    }
 
     std::cout << "phiX reference utilization is " << chromosomeSequence[0].getUtilization() * 100 << "% - expect around 96.8%" << std::endl;
 
@@ -156,6 +163,21 @@ void ReferenceSequenceTest::test3(void)
     Sequence::getString(chromosomeSequence[0], 60, 10, word);
 
     check(m_failures, ++m_testNum, "Test loadFastaFile with PackedSequenceData", "AAATTATCTT", word);
+
+}
+
+void ReferenceSequenceTest::humanGenomeTest1(void)
+{
+    std::vector<PackedSequenceData> chromosomeSequence;
+    std::vector<std::string> chromosomeNames;
+
+#define HUMAN_GENOME "/data/local/ref/karma.ref/human.g1k.v37.fa"
+    bool result = loadFastaFile(HUMAN_GENOME, chromosomeSequence, chromosomeNames);
+
+    if(result) {
+        std::cout << HUMAN_GENOME << " not found - skipping these tests." << std::endl;
+        return;
+    }
 
 }
 
