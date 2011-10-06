@@ -156,8 +156,8 @@ const char* SamStatus::getStatusMessage() const
 // passed in status and to clear the message string.
 SamStatus & SamStatus::operator = (SamStatus::Status newStatus)
 {
-    reset();
     myType = newStatus;
+    myMessage.clear();
 
     if(newStatus != SUCCESS)
     {
