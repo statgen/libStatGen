@@ -43,11 +43,16 @@ class PackedVector
 protected:
     std::vector<uint8_t> m_data;
     size_t              m_elementCount;
+    double              m_growthRateMultiplier;
+    double              m_growthRateAdder;
 public:
-    PackedVector() : m_elementCount(0) {;}
+    PackedVector() :
+        m_elementCount(0),
+        m_growthRateMultiplier(1.20),
+        m_growthRateAdder(128) {;}
 
     // accessing
-    inline uint8_t operator[](uint32_t i)
+    inline uint32_t operator[](uint32_t i)
     {
         return accessorFunc(m_data, i);
     }
@@ -61,20 +66,42 @@ public:
         return m_elementCount;
     }
 
+    double getUtilization() {
+        return elementCount2BytesFunc(m_elementCount) / (double) m_data.capacity();
+    }
+
     void reserve(uint32_t reserveElements) {
         m_data.reserve(elementCount2BytesFunc(reserveElements));
     }
 
-    uint32_t size() {return m_elementCount;}
+    size_t size() {return m_elementCount;}
 
     void resize(uint32_t newSize) {
         m_elementCount = newSize;
         m_data.resize(elementCount2BytesFunc(m_elementCount));
     }
 
+    // it's a bit of a challenge to optimize this...
     void push_back(uint32_t value) {
-        resize(m_elementCount + 1);
-        m_data.back() = value;
+        m_elementCount++;
+        if(elementCount2BytesFunc(m_elementCount) >= m_data.size()) {
+
+            if( (elementCount2BytesFunc(m_elementCount)) > m_data.capacity())
+            {
+                size_t newCapacity = m_data.capacity() * m_growthRateMultiplier;
+
+                // for small capacities, small fractional multipliers don't work,
+                // so we check and do a linear increase in those cases:
+                if(newCapacity == m_data.capacity()) {
+                    newCapacity = m_data.capacity() + m_growthRateAdder;
+                }
+
+                m_data.reserve(newCapacity);
+            }
+
+        }
+        m_data.resize(elementCount2BytesFunc(m_elementCount));
+        set(m_elementCount-1, value);
     }
 };
 

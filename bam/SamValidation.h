@@ -21,6 +21,14 @@
 #include "SamFile.h"
 #include <list>
 
+// On windows, ERROR and WARNING are pre-defined macros, so undefine them.
+#ifdef WARNING
+#undef WARNING
+#endif
+#ifdef ERROR
+#undef ERROR
+#endif
+
 /// The SamValidationError class describes a validation error that occured,
 /// containing the error type, severity, and textual error message.
 class SamValidationError

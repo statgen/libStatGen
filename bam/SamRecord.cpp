@@ -2906,8 +2906,8 @@ bool SamRecord::setTagsFromBuffer()
     while (myRecordPtr->myBlockSize + 4 - 
            (extraPtr - (unsigned char *)myRecordPtr) > 0)
     {
-        int key;
-        int value;
+        int key = 0;
+        int value = 0;
         void * content = extraPtr + 3;
         int tagBufferSize = 0;
 

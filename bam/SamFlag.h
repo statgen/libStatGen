@@ -20,6 +20,10 @@
 
 #include <stdint.h>
 
+#ifdef DUPLICATE
+#undef DUPLICATE
+#endif
+
 /// Class for extracting information from a SAM Flag.
 class SamFlag
 {

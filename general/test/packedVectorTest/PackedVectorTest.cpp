@@ -31,11 +31,13 @@ public:
     void testBool();
     void test2Bit();
     void test4Bit();
+    void testResize();
 
     void test() {
         testBool();
         test2Bit();
         test4Bit();
+        testResize();
     }
 };
 
@@ -113,6 +115,40 @@ void PackedArrayTest::test4Bit(void)
     testVector.set(8,8);
     testVector.set(9,9);
     testVector.set(10,10);
+
+    check(m_failures, ++m_testNum, "Access 4 bit element 0", 0U, testVector[0]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 1", 1U, testVector[1]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 2", 2U, testVector[2]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 3", 3U, testVector[3]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 4", 4U, testVector[4]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 5", 5U, testVector[5]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 6", 6U, testVector[6]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 7", 7U, testVector[7]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 8", 8U, testVector[8]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 9", 9U, testVector[9]);
+    check(m_failures, ++m_testNum, "Access 4 bit element 10", 10U, testVector[10]);
+}
+
+void PackedArrayTest::testResize(void)
+{
+    PackedVector4Bit_t   testVector;
+
+    testVector.resize(0);
+    check(m_failures, ++m_testNum, "New size is 0", 0U, testVector.size());
+
+    testVector.push_back(0);
+    testVector.push_back(1);
+    testVector.push_back(2);
+    testVector.push_back(3);
+    testVector.push_back(4);
+    testVector.push_back(5);
+    testVector.push_back(6);
+    testVector.push_back(7);
+    testVector.push_back(8);
+    testVector.push_back(9);
+    testVector.push_back(10);
+
+    check(m_failures, ++m_testNum, "New size is 11", 11U, testVector.size());
 
     check(m_failures, ++m_testNum, "Access 4 bit element 0", 0U, testVector[0]);
     check(m_failures, ++m_testNum, "Access 4 bit element 1", 1U, testVector[1]);

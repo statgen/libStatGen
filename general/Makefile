@@ -58,6 +58,7 @@ TOOLBASE=\
 	PedigreePerson \
 	QuickIndex \
 	Random \
+	ReferenceSequence \
 	SmithWaterman \
 	Sort \
 	STLUtilities \
@@ -92,7 +93,7 @@ HDRONLY= \
 include ../Makefiles/Makefile.lib
 
 
-CPP_TESTS := $(shell grep -m 1 'if defined(TEST)' *cpp |cut -f1 -d: )
+CPP_TESTS := $(shell grep -l 'if defined(TEST)' *cpp)
 selftest: 
 	@for i in $(CPP_TESTS); do \
 		if [ "XXX$$i" = XXX ] ;\

@@ -37,7 +37,7 @@
 
 #define debug false
 
-class GzipHeader {
+class RecoveryGzipHeader {
 private:
     uint8_t m_ID1;
     uint8_t m_ID2;
@@ -48,7 +48,7 @@ private:
     uint8_t m_OS;
     uint16_t m_XLEN;
 public:
-    GzipHeader() {;}
+    RecoveryGzipHeader() {;}
 
     void defaults() {
         m_ID1 = 31;
@@ -73,7 +73,7 @@ public:
     }
 };
 
-class BGZFHeader : public GzipHeader {
+class BGZFHeader : public RecoveryGzipHeader {
 private:
     uint8_t m_SI1;
     uint8_t m_SI2;
@@ -91,7 +91,7 @@ public:
     uint16_t SLEN() {return m_SLEN;}
     uint16_t BSIZE() {return m_BSIZE;}
     bool sane() {
-        return GzipHeader::sane() && 
+        return RecoveryGzipHeader::sane() && 
             (m_SI1=='B' && m_SI2=='C' && m_SLEN==2 && m_BSIZE > sizeof(BGZFHeader));
     }
 };
