@@ -28,6 +28,10 @@ void testReadSam()
     // Call generic test which since the sam and bam are identical, should
     // contain the same results.
     testRead(inSam);
+
+    inSam.Close();
+
+    testFlagRead("testFiles/testSam.sam");
 }
 
 void testReadBam()
@@ -38,6 +42,10 @@ void testReadBam()
     // Call generic test which since the sam and bam are identical, should
     // contain the same results.
     testRead(inSam);
+
+    inSam.Close();
+
+    testFlagRead("testFiles/testBam.bam");
 }
 
 void testRead(SamFile &inSam)
@@ -697,5 +705,97 @@ void testModHeader(SamFileHeader& samHeader)
 
 
     // TODO Get the comments.
+
+}
+
+
+
+void testFlagRead(const char* fileName)
+{
+    SamFile inSam;
+    SamFileHeader samHeader;
+    SamRecord samRecord;
+
+    ////////////////////////////////////////////////////////////
+    // Required flag 0x48  (only flag 73 matches)
+    // Exclude nothing
+    assert(inSam.OpenForRead(fileName));
+    assert(inSam.ReadHeader(samHeader));
+    validateHeader(samHeader);
+    inSam.SetReadFlags(0x48, 0x0);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateRead1(samRecord);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+
+    inSam.Close();
+
+    ////////////////////////////////////////////////////////////
+    // No required flags.
+    // Exclude 0x48.  This leaves just the one read with flag 133.
+    assert(inSam.OpenForRead(fileName));
+    assert(inSam.ReadHeader(samHeader));
+    validateHeader(samHeader);
+    inSam.SetReadFlags(0x0, 0x48);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateRead2(samRecord);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+
+    inSam.Close();
+
+    ////////////////////////////////////////////////////////////
+    // Required flag 0x40 
+    // Exclude 0x48.
+    // This will not find any records since the exclude and required conflict.
+    assert(inSam.OpenForRead(fileName));
+    assert(inSam.ReadHeader(samHeader));
+    validateHeader(samHeader);
+    inSam.SetReadFlags(0x40, 0x48);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+
+    inSam.Close();
+
+    ////////////////////////////////////////////////////////////
+    // Required flag 0x4
+    // Exclude 0x8.
+    // Only finds flag 133.
+    assert(inSam.OpenForRead(fileName));
+    assert(inSam.ReadHeader(samHeader));
+    validateHeader(samHeader);
+    inSam.SetReadFlags(0x4, 0x8);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateRead2(samRecord);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+
+    inSam.Close();
+
+     ////////////////////////////////////////////////////////////
+    // Required flag 0x4
+    // Exclude nothing
+    // Finds flags 133 & 141.
+    assert(inSam.OpenForRead(fileName));
+    assert(inSam.ReadHeader(samHeader));
+    validateHeader(samHeader);
+    inSam.SetReadFlags(0x4, 0x0);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateRead2(samRecord);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateRead8(samRecord);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
+    validateRead10(samRecord);
+
+    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+
+    inSam.Close();
+
 
 }

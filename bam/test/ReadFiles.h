@@ -27,3 +27,5 @@ void testValidateSortedRead();
 void validateRead1ModQuality(SamRecord& samRecord);
 
 void testModHeader(SamFileHeader& samHeader);
+
+void testFlagRead(const char* fileName);

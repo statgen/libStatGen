@@ -24,31 +24,18 @@
 
 // Constructor, init variables.
 SamFile::SamFile()
-    : myFilePtr(NULL),
-      myInterfacePtr(NULL),
-      myStatistics(NULL),
-      myStatus(),
-      myBamIndex(NULL),
-      myRefPtr(NULL),
-      myReadTranslation(SamRecord::NONE),
-      myWriteTranslation(SamRecord::NONE),
-      myAttemptRecovery(false)
+    : myStatus()
 {
+    init();
     resetFile();
 }
 
 
 // Constructor, init variables.
 SamFile::SamFile(ErrorHandler::HandlingType errorHandlingType)
-    : myFilePtr(NULL),
-      myInterfacePtr(NULL),
-      myStatistics(NULL),
-      myStatus(errorHandlingType),
-      myBamIndex(NULL),
-      myRefPtr(NULL),
-      myReadTranslation(SamRecord::NONE),
-      myWriteTranslation(SamRecord::NONE)
+    : myStatus(errorHandlingType)
 {
+    init();
     resetFile();
 }
 
@@ -537,30 +524,69 @@ bool SamFile::ReadRecord(SamFileHeader& header,
         }
     }
 
-    // Check to see if the file should be read by index.
-    if(myRefID != BamIndex::REF_ID_ALL)
+    // Read until a record is not successfully read or there are no more
+    // requested records.
+    while(myStatus == SamStatus::SUCCESS)
     {
-        // Reference ID is set, so read by index.
-        return(readIndexedRecord(header, record));
-    }
+        record.setReference(myRefPtr);
+        record.setSequenceTranslation(myReadTranslation);
 
-    record.setReference(myRefPtr);
-    record.setSequenceTranslation(myReadTranslation);
+        // If reading by index, this method will setup to ensure it is in
+        // the correct position for the next record (if not already there).
+        // Sets myStatus if it could not move to a good section.
+        // Just returns true if it is not setup to read by index.
+        if(!ensureIndexedReadPosition())
+        {
+            // Either there are no more records in the section
+            // or it failed to move to the right section, so there
+            // is nothing more to read, stop looping.
+            break;
+        }
+        
+        // File is open for reading and the header has been read, so read the
+        // next record.
+        myInterfacePtr->readRecord(myFilePtr, header, record, myStatus);
+        if(myStatus != SamStatus::SUCCESS)
+        {
+            // Failed to read the record, so break out of the loop.
+            break;
+        }
 
-    // File is open for reading and the header has been read, so read the next
-    // record.
-    myInterfacePtr->readRecord(myFilePtr, header, record, myStatus);
-    if(myStatus == SamStatus::SUCCESS)
-    {
-        // A record was successfully read, so increment the record count.
+        // Successfully read a record, so check if we should filter it.
+        // First check if it is out of the section.  Returns true
+        // if not reading by sections, returns false if the record
+        // is outside of the section.  Sets status to NO_MORE_RECS if
+        // there is nothing left ot read in the section.
+        if(!checkRecordInSection(record))
+        {
+            // The record is not in the section.
+            // The while loop will detect if NO_MORE_RECS was set.
+            continue;
+        }
+
+        // Check the flag for required/excluded flags.
+        uint16_t flag = record.getFlag();
+        if((flag & myRequiredFlags) != myRequiredFlags)
+        {
+            // The record does not conatain all required flags, so
+            // continue looking.
+            continue;
+        }
+        if((flag & myExcludedFlags) != 0)
+        {
+            // The record contains an excluded flag, so continue looking.
+            continue;
+        }
+
+        //increment the record count.
         myRecordCount++;
-
+        
         if(myStatistics != NULL)
         {
             // Statistics should be updated.
             myStatistics->updateStatistics(record);
         }
-
+        
         // Successfully read the record, so check the sort order.
         if(!validateSortOrder(record, header))
         {
@@ -568,9 +594,11 @@ bool SamFile::ReadRecord(SamFileHeader& header,
             return(false);
         }
         return(true);
-    }
-    // Failed to read the record.
-    return(false);
+
+    } // End while loop that checks if a desired record is found or failure.
+
+    // Return true if a record was found.
+    return(myStatus == SamStatus::SUCCESS);
 }
 
 
@@ -738,6 +766,12 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
 }
 
 
+void SamFile::SetReadFlags(uint16_t requiredFlags, uint16_t excludedFlags)
+{
+    myRequiredFlags = requiredFlags;
+    myExcludedFlags = excludedFlags;
+}
+
 
 // Get the number of mapped reads in the specified reference id.  
 // Returns -1 for out of range refIDs.
@@ -861,7 +895,7 @@ const BamIndex* SamFile::GetBamIndex()
 
 
 // initialize.
-void SamFile::init(const char* filename, OpenType mode, SamFileHeader* header)
+void SamFile::init()
 {
     myFilePtr = NULL;
     myInterfacePtr = NULL;
@@ -870,6 +904,15 @@ void SamFile::init(const char* filename, OpenType mode, SamFileHeader* header)
     myRefPtr = NULL;
     myReadTranslation = SamRecord::NONE;
     myWriteTranslation = SamRecord::NONE;
+    myAttemptRecovery = false;
+    myRequiredFlags = 0;
+    myExcludedFlags = 0;
+}
+
+
+void SamFile::init(const char* filename, OpenType mode, SamFileHeader* header)
+{
+    init();
         
     resetFile();
 
@@ -1079,134 +1122,112 @@ SamFile::SortedType SamFile::getSortOrderFromHeader(SamFileHeader& header)
 }
 
 
-// Read a record from the currently opened file based on the indexing info.
-bool SamFile::readIndexedRecord(SamFileHeader& header, 
-                                SamRecord& record)
+ bool SamFile::ensureIndexedReadPosition()
+ {
+     // If no sections are specified, return true.
+     if(myRefID == BamIndex::REF_ID_ALL)
+     {
+         return(true);
+     }
+
+     // Check to see if we have more to read out of the current chunk.
+     // By checking the current position in relation to the current
+     // end chunk.  If the current position is >= the end of the
+     // current chunk, then we must see to the next chunk.
+     uint64_t currentPos = iftell(myFilePtr);
+     if(currentPos >= myCurrentChunkEnd)
+     {
+         // If there are no more chunks to process, return failure.
+         if(myChunksToRead.empty())
+         {
+             myStatus = SamStatus::NO_MORE_RECS;
+             return(false);
+         }
+         
+         // There are more chunks left, so get the next chunk.
+         Chunk newChunk = myChunksToRead.pop();
+         
+         // Move to the location of the new chunk if it is not adjacent
+         // to the current chunk.
+         if(newChunk.chunk_beg != currentPos)
+         {
+             // New chunk is not adjacent, so move to it.
+             if(ifseek(myFilePtr, newChunk.chunk_beg, SEEK_SET) != true)
+             {
+                 // seek failed, cannot retrieve next record, return failure.
+                 myStatus.setStatus(SamStatus::FAIL_IO, 
+                                    "Failed to seek to the next record");
+                 return(false);
+             }
+         }
+         // Seek succeeded, set the end of the new chunk.
+         myCurrentChunkEnd = newChunk.chunk_end;
+     }
+     return(true);
+ }
+
+
+bool SamFile::checkRecordInSection(SamRecord& record)
 {
-    record.setReference(myRefPtr);
-    record.setSequenceTranslation(myReadTranslation);
-
-    // A section to read is set and the file is open for reading, as verified
-    // prior to calling into this protected method.
-    bool recordFound = false;
-    while(!recordFound)
+    bool recordFound = true;
+    if(myRefID == BamIndex::REF_ID_ALL)
     {
-        // Check to see if we have more to read out of the current chunk.
-        // By checking the current position in relation to the current
-        // end chunk.  If the current position is >= the end of the
-        // current chunk, then we must see to the next chunk.
-        uint64_t currentPos = iftell(myFilePtr);
-        if(currentPos >= myCurrentChunkEnd)
-        {
-            // If there are no more chunks to process, return failure.
-            if(myChunksToRead.empty())
-            {
-                myStatus = SamStatus::NO_MORE_RECS;
-                return(false);
-            }
-      
-            // There are more chunks left, so get the next chunk.
-            Chunk newChunk = myChunksToRead.pop();
-
-            // Move to the location of the new chunk if it is not adjacent
-            // to the current chunk.
-            if(newChunk.chunk_beg != currentPos)
-            {
-                // New chunk is not adjacent, so move to it.
-                if(ifseek(myFilePtr, newChunk.chunk_beg, SEEK_SET) != true)
-                {
-                    // seek failed, cannot retrieve next record, return failure.
-                    myStatus.setStatus(SamStatus::FAIL_IO, 
-                                       "Failed to seek to the next record");
-                    return(false);
-                }
-            }
-            // Seek succeeded, set the end of the new chunk.
-            myCurrentChunkEnd = newChunk.chunk_end;
-        }
-
-        // At the position of the next record.  Read the record.
-        myInterfacePtr->readRecord(myFilePtr, header, record, myStatus);
-        if(myStatus != SamStatus::SUCCESS)
-        {
-            // Reading the record failed, return failure.
-            return(false);
-        }
-
-        // Successfully read the record.  Check to see if it is in the correct 
-        // reference/position.
-        if(record.getReferenceID() != myRefID)
-        {
-            // Incorrect reference ID, return no more records.
-            myStatus = SamStatus::NO_MORE_RECS;
-            return(false);
-        }
-   
-        // Found a record.
-        recordFound = true;
-
-        // If start/end position are set, verify that the alignment falls
-        // within those.
-        // If the alignment start is greater than the end of the region,
-        // return NO_MORE_RECS.
-        // Since myEndPos is Exclusive 0-based, anything >= myEndPos is outside
-        // of the region.
-        if((myEndPos != -1) && (record.get0BasedPosition() >= myEndPos))
-        {
-            myStatus = SamStatus::NO_MORE_RECS;
-            return(false);
-        }
-        
-        // We know the start is less than the end position, so the alignment
-        // overlaps the region if the alignment end position is greater than the
-        // start of the region.
-        if((myStartPos != -1) && (record.get0BasedAlignmentEnd() < myStartPos))
-        {
-            // If it does not overlap the region, so go to the next
-            // record...set recordFound back to false.
-            recordFound = false;
-        }
-
-        if(!myOverlapSection)
-        {
-            // Needs to be fully contained.  Not fully contained if
-            // 1) the record start position is < the region start position.
-            // or
-            // 2) the end position is specified and the record end position
-            //    is greater than or equal to the region end position.
-            //    (equal to since the region is exclusive.
-            if((record.get0BasedPosition() < myStartPos) ||
-               ((myEndPos != -1) && 
-                (record.get0BasedAlignmentEnd() >= myEndPos)))
-            {
-                // This record is not fully contained, so move on to the next
-                // record.
-                recordFound = false;
-            }
-        }
+        return(true);
     }
-
-    // Successfully read the record, so check the sort order.
-    if(!validateSortOrder(record, header))
+    // Check to see if it is in the correct reference/position.
+    if(record.getReferenceID() != myRefID)
     {
-        myStatus.setStatus(SamStatus::INVALID_SORT, 
-                           "The file is not properly sorted.");
+        // Incorrect reference ID, return no more records.
+        myStatus = SamStatus::NO_MORE_RECS;
         return(false);
     }
    
-    // If it made it here, then the record was successfully read
-    // and met the criteria, so return success.
-    myRecordCount++;
+    // Found a record.
+    recordFound = true;
 
-    if(myStatistics != NULL)
+    // If start/end position are set, verify that the alignment falls
+    // within those.
+    // If the alignment start is greater than the end of the region,
+    // return NO_MORE_RECS.
+    // Since myEndPos is Exclusive 0-based, anything >= myEndPos is outside
+    // of the region.
+    if((myEndPos != -1) && (record.get0BasedPosition() >= myEndPos))
     {
-        // Successfully read, statistics should be updated.
-        myStatistics->updateStatistics(record);
+        myStatus = SamStatus::NO_MORE_RECS;
+        return(false);
     }
-    
-    return(true);
-}
+        
+    // We know the start is less than the end position, so the alignment
+    // overlaps the region if the alignment end position is greater than the
+    // start of the region.
+    if((myStartPos != -1) && (record.get0BasedAlignmentEnd() < myStartPos))
+    {
+        // If it does not overlap the region, so go to the next
+        // record...set recordFound back to false.
+        recordFound = false;
+    }
 
+    if(!myOverlapSection)
+    {
+        // Needs to be fully contained.  Not fully contained if
+        // 1) the record start position is < the region start position.
+        // or
+        // 2) the end position is specified and the record end position
+        //    is greater than or equal to the region end position.
+        //    (equal to since the region is exclusive.
+        if((record.get0BasedPosition() < myStartPos) ||
+           ((myEndPos != -1) && 
+            (record.get0BasedAlignmentEnd() >= myEndPos)))
+        {
+            // This record is not fully contained, so move on to the next
+            // record.
+            recordFound = false;
+        }
+    }
+
+    return(recordFound);
+}
+   
 
 bool SamFile::processNewSection(SamFileHeader &header)
 {

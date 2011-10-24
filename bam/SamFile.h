@@ -273,6 +273,18 @@ public:
     bool SetReadSection(const char* refName, int32_t start, int32_t end, 
                         bool overlap = true);
 
+    /// Specify which reads should be returned by ReadRecord.
+    /// Reads will only be returned by ReadRecord that contain the specified
+    /// required flags and that do not contain any of the specified excluded
+    /// flags.  ReadRecord will continue to read from the file until a record
+    /// that complies with these flag settings is found or until the end of the
+    /// file/region.
+    /// \param requiredFlags flags that are required to be in records
+    /// returned by ReadRecord (set to 0x0 if there are no required flags).
+    /// \param excludedFlags flags that are required to not be in records
+    /// returned by ReadRecord (set to 0x0 if there are no excluded flags).
+    void SetReadFlags(uint16_t requiredFlags, uint16_t excludedFlags);
+
     /// Get the number of mapped reads in the specified reference id.  
     /// Returns -1 for out of range refIDs.
     /// \param refID reference ID for which to extract the number of mapped reads.
@@ -340,6 +352,7 @@ public:
     inline void PrintStatistics() {if(myStatistics != NULL) myStatistics->print();}
 
 protected:
+    void init();
     void init(const char* filename, OpenType mode, SamFileHeader* header);
 
     /// Resets the file prepping for a new file.
@@ -356,10 +369,23 @@ protected:
     // or set to an unknown value, UNSORTED is returned.
     SortedType getSortOrderFromHeader(SamFileHeader& header);
 
-    /// Overwrites read record to read from the specific reference only.
-    bool readIndexedRecord(SamFileHeader& header, SamRecord& record);
-
     bool processNewSection(SamFileHeader &header);
+
+    // Check if there is more to read in the current chunk, if not,
+    // move to the next chunk.
+    // If no sections are specified or it successfully found a chunk to read,
+    // return true.
+    // Sets the status and returns false if it was unable to move to a new chunk
+    // or there are no more chunks to read, otherwise returns true.
+    bool ensureIndexedReadPosition();
+
+    // Check whether or not the record falls within the specified section. 
+    // If no sections are specified or this read falls within the
+    // specified sections, return true.
+    // If it does not, return false.
+    // If the record position indicates there will be no more records within the
+    // region, return false AND set the sam status to indicate NO_MORE_RECS.
+    bool checkRecordInSection(SamRecord& record);
 
     IFILE  myFilePtr;
     GenericSamInterface* myInterfacePtr;
@@ -409,6 +435,9 @@ protected:
 
 private:
     bool    myAttemptRecovery;
+
+    uint16_t myRequiredFlags;
+    uint16_t myExcludedFlags;
 
 public:
 
