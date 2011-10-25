@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-/// Class that controlsthe handling of errors.
+/// Class that controls the handling of errors.
 class ErrorHandler
 {
 public:

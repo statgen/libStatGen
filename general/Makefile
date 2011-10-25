@@ -27,6 +27,7 @@ TOOLBASE=\
 	Cigar \
 	CigarRoller \
 	Error \
+	ErrorHandler \
 	FileType \
 	FortranFormat \
 	GenomeSequence \
@@ -61,6 +62,7 @@ TOOLBASE=\
 	SmithWaterman \
 	Sort \
 	STLUtilities \
+	StatGenStatus \
 	StringAlias \
 	StringArray \
 	StringBasics \

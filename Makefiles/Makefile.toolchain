@@ -40,6 +40,7 @@ TOOLCHAIN_PREFIX=amd64-mingw32msvc-
 else ifeq ($(TARGET),llvm)
 TOOLCHAIN_PREFIX=llvm-
 else
+#TOOLCHAIN_DIR=
 TOOLCHAIN_PREFIX=
 endif
 
