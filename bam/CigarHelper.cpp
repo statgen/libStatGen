@@ -1,0 +1,137 @@
+/*
+ *  Copyright (C) 2011  Regents of the University of Michigan
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+//////////////////////////////////////////////////////////////////////////
+
+#include "CigarHelper.h"
+
+// Soft Clip from the end of the read at the specified reference position.
+int32_t CigarHelper::softClipEndByRefPos(SamRecord& record, 
+                                         int32_t refPosition0Based,
+                                         CigarRoller& newCigar)
+{
+    newCigar.clear();
+    Cigar* cigar = record.getCigarInfo();
+    if(cigar == NULL)
+    {
+        // Failed to get the cigar.
+        ErrorHandler::handleError("Soft clipping, but failed to read the cigar");
+        return(NO_CLIP);
+    }
+
+    // Check to see if the reference position occurs within the record,
+    // if not, do no clipping.
+    if((refPosition0Based < record.get0BasedPosition()) ||
+       (refPosition0Based > record.get0BasedAlignmentEnd()))
+    {
+        // Not within this read, so nothing to clip.
+        newCigar.Set(record.getCigar());
+        return(NO_CLIP);
+    }
+
+    // The position falls within the read, so loop through until the position is found.
+    int32_t currentRefPosition = record.get0BasedPosition();
+    int32_t readClipPosition = 0;
+    for(int i = 0; i < cigar->size(); i++)
+    {
+        const Cigar::CigarOperator* op = &(cigar->getOperator(i));
+
+        // If the operation is found in the reference, increase the reference position.
+        if(Cigar::foundInReference(*op))
+        {
+            // match, mismatch, deletion, skip
+            // increment the current reference position to just past this operation.
+            currentRefPosition += op->count;
+        }
+         
+        // Check to see if we have hit our clip position.
+        if(refPosition0Based < currentRefPosition)
+        {
+            // If this read is also in the query (match/mismatch), 
+            // write the partial op to the new cigar.
+            int numKeep = 0;
+            if(Cigar::foundInQuery(*op))
+            {
+                numKeep = op->count - (currentRefPosition - refPosition0Based);
+                if(numKeep > 0)
+                {
+                    newCigar.Add(op->operation, numKeep);
+                }
+                readClipPosition += numKeep;
+            }
+            else
+            {
+                // Not found in the query (skip/deletion),
+                // so don't write any of the operation.
+            }
+            // Found the clip point, so break.
+            break;
+        }
+        else if(refPosition0Based == currentRefPosition)
+        {
+            newCigar += *op;
+            if(Cigar::foundInQuery(*op))
+            {
+                readClipPosition += op->count;
+            }
+        }
+        else
+        {
+            // Not yet to the clip position, so add this opeartion/size to the new cigar.
+            newCigar += *op;
+            if(Cigar::foundInQuery(*op))
+            {
+                // Found in the query, so update the read clip position.
+                readClipPosition += op->count;
+            }
+        }
+    } // End loop through cigar.
+
+    // Before adding the softclip, read from the end of the cigar checking to see if the
+    // operations are in the query, removing operations that are not (pad/delete/skip) until
+    // a hardclip or an operation in the query is found.
+    // We do not want a pad/delete/skip right before a softclip.
+    for(int j = newCigar.size() - 1; j >= 0; j--)
+    {
+        const Cigar::CigarOperator* op = &(newCigar.getOperator(j));
+        if(!Cigar::foundInQuery(*op) && !Cigar::isClip(*op))
+        {
+            // pad/delete/skip
+            newCigar.Remove(j);
+        }
+        else
+        {
+            // Found a cigar operation that should not be deleted, so stop deleting.
+            break;
+        }
+    } 
+
+    // Determine the number of soft clips.
+    int32_t numSoftClips = record.getReadLength() - readClipPosition;
+    // NOTE that if the previous operation is a softclip, the CigarRoller logic
+    // will merge this with that one.
+    newCigar.Add(Cigar::softClip, numSoftClips);
+
+    // Check if an ending hard clip needs to be added.
+    const Cigar::CigarOperator* lastOp = &(cigar->getOperator(cigar->size() - 1));
+    if(lastOp->operation == Cigar::hardClip)
+    {
+        newCigar += *lastOp;
+    }
+
+    return(readClipPosition);
+}

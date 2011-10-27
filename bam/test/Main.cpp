@@ -27,6 +27,7 @@
 #include "ShiftIndels.h"
 #include "TestPileup.h"
 #include "TestPosList.h"
+#include "TestCigarHelper.h"
 
 int main(int argc, char ** argv)
 {
@@ -70,6 +71,8 @@ int main(int argc, char ** argv)
         testPileup();
         
         testPosList();
+
+        testCigarHelper();
     }
     else
     {

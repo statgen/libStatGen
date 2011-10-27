@@ -173,6 +173,30 @@ public:
     //
 
     /// Return true if the specified operation is found in the
+    /// reference sequence, false if not.
+    static bool foundInReference(Operation op)
+    {
+        switch(op)
+        {
+            case match:
+            case mismatch:
+            case del:
+            case skip:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+    /// Return true if the specified operation is found in the
+    /// reference sequence, false if not.
+    static bool foundInReference(const CigarOperator &op)
+    {
+        return(foundInReference(op.operation));
+    }
+
+    /// Return true if the specified operation is found in the
     /// query sequence, false if not.
     static bool foundInQuery(Operation op)
     {
@@ -191,19 +215,9 @@ public:
     
     /// Return true if the specified operation is found in the
     /// query sequence, false if not.
-    static bool foundInQuery(CigarOperator op)
+    static bool foundInQuery(const CigarOperator &op)
     {
-        switch(op.operation)
-        {
-            case match:
-            case mismatch:
-            case insert:
-            case softClip:
-                return true;
-            default:
-                return false;
-        }
-        return false;
+        return(foundInQuery(op.operation));
     }
     
     /// Return true if the specified operation is a clipping operation,
@@ -223,17 +237,9 @@ public:
 
     /// Return true if the specified operation is a clipping operation,
     /// false if not.
-    static bool isClip(CigarOperator op)
+    static bool isClip(const CigarOperator &op)
     {
-        switch(op.operation)
-        {
-            case softClip:
-            case hardClip:
-                return true;
-            default:
-                return false;
-        }
-        return false;
+        return(isClip(op.operation));
     }
 
     /// Return true if the specified operation is a match/mismatch operation,
@@ -253,17 +259,9 @@ public:
     
     /// Return true if the specified operation is a match/mismatch operation,
     /// false if not.
-    static bool isMatchOrMismatch(CigarOperator op)
+    static bool isMatchOrMismatch(const CigarOperator &op)
     {
-        switch(op.operation)
-        {
-            case match:
-            case mismatch:
-                return true;
-            default:
-                return false;
-        }
-        return false;
+        return(isMatchOrMismatch(op.operation));
     }
 
 
