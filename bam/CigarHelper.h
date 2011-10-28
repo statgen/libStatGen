@@ -24,9 +24,24 @@
 class CigarHelper
 {
 public:
-    // 
     static const int32_t NO_CLIP = -1;
 
+    /// Soft clip the cigar from the beginning of the read at the specified
+    /// reference position.  If the clip position is deleted/skipped
+    /// or is immediately followed by a deletion/skip/pad/insert, that entire 
+    /// CIGAR operation is also removed.
+    /// Nothing is clipped if the reference position does not fall within
+    /// the region spanned by the record.
+    /// \param record record to calculate the clip for.
+    /// \param refPosition0Based 0-based reference position to end the clip at
+    /// \param newCigar cigar object to set with the updated cigar.
+    /// \param new0BasedPosition new 0-based reference position of the read.
+    /// \param read position where the clip ends (last clipped position) or 
+    //         NO_CLIP if nothing is clipped.
+    static int32_t softClipBeginByRefPos(SamRecord& record, 
+                                         int32_t refPosition0Based,
+                                         CigarRoller& newCigar,
+                                         int32_t &new0BasedPosition);
 
     /// Soft clip the cigar from the back of the read at the specified
     /// reference position.  If the clip position is deleted/skipped
@@ -35,7 +50,7 @@ public:
     /// preceded by an insertion, the insertion is left in the CIGAR.
     /// Nothing is clipped if the reference position does not fall within
     /// the region spanned by the record.
-    /// \param record record to be clipped (input/output parameter).
+    /// \param record record to calculate the clip for.
     /// \param refPosition0Based 0-based reference position to start clip at
     /// \param newCigar cigar object to set with the updated cigar.
     /// \param read position where the clip starts or 

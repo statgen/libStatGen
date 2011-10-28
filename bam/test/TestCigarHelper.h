@@ -22,7 +22,8 @@ class CigarHelperTest
 {
 public:
     static void testCigarHelper();
-    
-private:
 
+private:
+    static void testSoftClipBeginByRefPos();
+    static void testSoftClipEndByRefPos();
 };
