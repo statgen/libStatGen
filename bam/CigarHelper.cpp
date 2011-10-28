@@ -34,6 +34,12 @@ int32_t CigarHelper::softClipBeginByRefPos(SamRecord& record,
         return(NO_CLIP);
     }
 
+    // No cigar or position in the record, so return no clip.
+    if((cigar->size() == 0) || (record.get0BasedPosition() == -1))
+    {
+        return(NO_CLIP);
+    }
+
     // Check to see if the reference position occurs within the record,
     // if not, do no clipping.
     if((refPosition0Based < record.get0BasedPosition()) ||
@@ -173,6 +179,12 @@ int32_t CigarHelper::softClipEndByRefPos(SamRecord& record,
     {
         // Failed to get the cigar.
         ErrorHandler::handleError("Soft clipping, but failed to read the cigar");
+        return(NO_CLIP);
+    }
+
+    // No cigar or position in the record, so return no clip.
+    if((cigar->size() == 0) || (record.get0BasedPosition() == -1))
+    {
         return(NO_CLIP);
     }
 
