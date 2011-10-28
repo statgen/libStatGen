@@ -292,12 +292,14 @@ public:
             // at the last index, read a new buffer.
             myCurrentBufferSize = readFromFile(myFileBuffer, myAllocatedBufferSize);
             myBufferIndex = 0;
-        }
-        // If the buffer index is still greater than or equal to the
-        // myCurrentBufferSize, then we failed to read the file - return EOF.
-        if (myBufferIndex >= myCurrentBufferSize)
-        {
-            return(EOF);
+            // If the buffer index is still greater than or equal to the
+            // myCurrentBufferSize, then we failed to read the file - return EOF.
+            // NB: This only needs to be checked when myCurrentBufferSize
+            // is changed.  Simplify check - readFromFile returns zero on EOF
+            if (myCurrentBufferSize == 0)
+            {
+                return(EOF);
+            }
         }
         return(myFileBuffer[myBufferIndex++]);
     }

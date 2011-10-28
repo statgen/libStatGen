@@ -675,7 +675,7 @@ int String::ReadLine(IFILE & f)
 
     while (true)
     {
-        ch = ifgetc(f);
+        ch = f->ifgetc();
 
         if (ch == EOF)
         {
