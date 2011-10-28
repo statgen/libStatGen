@@ -53,13 +53,13 @@ int32_t CigarHelper::softClipBeginByRefPos(SamRecord& record,
     // The position falls within the read, so loop through until the position
     // is found.
     int32_t readClipPosition = 0;
-    bool foundClip = false;
+    bool clipWritten = false;
     new0BasedPosition = record.get0BasedPosition();
     for(int i = 0; i < cigar->size(); i++)
     {
         const Cigar::CigarOperator* op = &(cigar->getOperator(i));
 
-        if(foundClip)
+        if(clipWritten)
         {
             // Clip point has been found, so just add everything.
             newCigar += *op;
@@ -112,6 +112,8 @@ int32_t CigarHelper::softClipBeginByRefPos(SamRecord& record,
                 // for the case of insertions.
                 if(numKeep > 0)
                 {
+                    new0BasedPosition -= numKeep;
+
                     newCigar.Add(Cigar::softClip, readClipPosition);
                     
                     // Add the clipped part of this cigar to the clip
@@ -120,7 +122,7 @@ int32_t CigarHelper::softClipBeginByRefPos(SamRecord& record,
                     
                     // Found a match after the clip point, so stop
                     // consuming cigar operations.
-                    foundClip = true;
+                    clipWritten = true;
                     continue;
                 }
             }
@@ -141,12 +143,13 @@ int32_t CigarHelper::softClipBeginByRefPos(SamRecord& record,
                 {
                     // Check whether or not the clip was ever written, and if
                     // not, write it.
-                    if(foundClip == false)
+                    if(clipWritten == false)
                     {
                         newCigar.Add(Cigar::softClip, readClipPosition);
                         // Since no match/mismatch was ever found, set
                         // the new ref position to the original one.
                         new0BasedPosition = record.get0BasedPosition();
+                        clipWritten = true;
                     }
                     // Add the hard clip.
                     newCigar += *op;
@@ -161,6 +164,16 @@ int32_t CigarHelper::softClipBeginByRefPos(SamRecord& record,
         }
     } // End loop through cigar.
 
+
+    // Check whether or not the clip was ever written, and if
+    // not, write it.
+    if(clipWritten == false)
+    {
+        newCigar.Add(Cigar::softClip, readClipPosition);
+        // Since no match/mismatch was ever found, set
+        // the new ref position to the original one.
+        new0BasedPosition = record.get0BasedPosition();
+    }
 
     // Subtract 1 since readClipPosition atually contains the first 0based 
     // position that is not clipped.
