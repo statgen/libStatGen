@@ -285,6 +285,14 @@ int32_t CigarHelper::softClipEndByRefPos(SamRecord& record,
             // pad/delete/skip
             newCigar.Remove(j);
         }
+        else if(Cigar::foundInQuery(*op) & Cigar::isClip(*op))
+        {
+            // Soft clip, so increment the clip position for the return value.
+            // Remove the softclip since the readClipPosition is used to
+            // calculate teh size of the soft clip added.
+            readClipPosition -= op->count;
+            newCigar.Remove(j);
+        }
         else
         {
             // Found a cigar operation that should not be deleted, so stop deleting.
