@@ -304,6 +304,30 @@ public:
         return(myFileBuffer[myBufferIndex++]);
     }
 
+    /// Get a line from the file.
+    /// \param buffer the buffer into which data is to be placed
+    /// \param max the maximum size of the buffer, in bytes
+    /// \return true if the last character read was an EOF
+    inline bool ifgetline(void *voidBuffer, size_t max)
+    {
+        int ch;
+        char *buffer = (char *) voidBuffer;
+
+        while( (ch=ifgetc()) != '\n' && ch != EOF) {
+            *buffer++ = ch;
+            if((--max)<2)
+            {
+                // truncate the line, so drop remainder
+                while( (ch=ifgetc()) && ch != '\n' && ch != EOF)
+                {
+                }
+                break;
+            }
+        }
+        *buffer++ = '\0';
+        return ch==EOF;
+    }
+
     /// Reset to the beginning of the file.
     inline void ifrewind()
     {
@@ -560,6 +584,21 @@ inline int ifgetc(IFILE file)
         return(EOF);
     }
     return(file->ifgetc());
+}
+
+/// Get a line from the file.
+/// \param file file to be read - IFILE is a pointer to an InputFile object
+/// \param buffer the buffer into which data is to be placed
+/// \param max the maximum size of the buffer, in bytes
+/// \return true if the last character read was an EOF
+inline bool ifgetline(IFILE file, void *buffer, size_t max)
+{
+    if(file == NULL)
+    {
+        // return eof since there is no file.
+        return(EOF);
+    }
+    return(file->ifgetline(buffer, max));
 }
 
 /// Reset to the beginning of the file (cannot be done for stdin/stdout).
