@@ -74,7 +74,6 @@ void CigarHelperTest::testSoftClipBeginByRefPos()
     ////////////////////////////////////////////////////////
     // Clip at the first position.
     assert(CigarHelper::softClipBeginByRefPos(record, 10, newCigar, newPos) == 3);
-    std::cout << newPos;
     assert(newPos == 11);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
@@ -477,7 +476,7 @@ void CigarHelperTest::testSoftClipEndByRefPos()
 
     ////////////////////////////////////////////////////////
     // Clip at the first position.
-    assert(CigarHelper::softClipEndByRefPos(record, 10, newCigar) == 3);
+    assert(CigarHelper::softClipEndByRefPos(record, 10, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
     assert(strcmp(newCigarString.c_str(), "3H24S3H") == 0);
@@ -729,25 +728,25 @@ void CigarHelperTest::testSoftClipEndByRefPos()
     assert(strcmp(newCigarString.c_str(), origCigar) == 0);
 
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipEndByRefPos(record, 10, newCigar) == 3);
+    assert(CigarHelper::softClipEndByRefPos(record, 10, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
     assert(strcmp(newCigarString.c_str(), "3H9S3H") == 0);
 
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipEndByRefPos(record, 11, newCigar) == 3);
+    assert(CigarHelper::softClipEndByRefPos(record, 11, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
     assert(strcmp(newCigarString.c_str(), "3H9S3H") == 0);
 
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipEndByRefPos(record, 12, newCigar) == 3);
+    assert(CigarHelper::softClipEndByRefPos(record, 12, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
     assert(strcmp(newCigarString.c_str(), "3H9S3H") == 0);
 
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipEndByRefPos(record, 13, newCigar) == 3);
+    assert(CigarHelper::softClipEndByRefPos(record, 13, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
     assert(strcmp(newCigarString.c_str(), "3H9S3H") == 0);
