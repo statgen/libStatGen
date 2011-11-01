@@ -91,6 +91,7 @@ void String::Grow(int newSize)
         }
 
         char * tmp = new char [size];
+        // len + 1 due to terminating NUL which is not counted in len
         memcpy(tmp, buffer, len + 1);
         delete [] buffer;
         buffer = tmp;
@@ -665,6 +666,8 @@ int String::ReadLine()
 
 #ifdef __ZLIB_AVAILABLE__
 // Read line using getc.
+
+#if defined(WIN32)
 int String::ReadLine(IFILE & f)
 {
     static int last = 0;
@@ -727,6 +730,41 @@ int String::ReadLine(IFILE & f)
     }
     return 1;
 }
+#else
+int String::ReadLine(IFILE & f)
+{
+    int ch;
+    char *ptr = buffer;
+    char *endBuffer = buffer + size;
+    len = 0;
+
+    while ( ((ch = f->ifgetc()) != EOF) && (ch != '\n'))
+    {
+        if (ptr == endBuffer)
+        {
+            // resize: 1 byte for the next character, 1 byte
+            //  for the NUL at the end.
+            Grow(len + 2);
+            endBuffer = buffer + size;
+            ptr = buffer + len;
+        }
+
+        *ptr++ = ch;
+        len++;
+    }
+
+    // NB: assumes that buffer is always allocated.
+    buffer[len] = 0;
+
+    if ((ch == EOF) && (len == 0))
+    {
+        // Indicate error/EOF if nothing was read.
+        return -1;
+    }
+    return 1;
+}
+#endif
+
 #endif
 
 void String::Write(FILE * f)
