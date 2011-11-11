@@ -23,4 +23,5 @@ diff expected/addedTagToBam.bam results/addedTagToBam.bam && \
 diff expected/testShift.sam results/testShift.sam && \
 diff expected/testShift.bam results/testShift.bam && \
 diff expected/testShift.sam results/testShiftFromBam.sam && \
-diff expected/testShift.bam results/testShiftFromSam.bam
+diff expected/testShift.bam results/testShiftFromSam.bam && \
+diff expected/TestSamCoordOutput.sam results/TestSamCoordOutput.sam

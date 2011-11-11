@@ -50,8 +50,10 @@ public:
     /// @name  Static methods for determining the contents of a flag.
     //@{
     static inline bool isMapped(uint16_t flag) {return(!(flag & UNMAPPED));}
+    static inline bool isMateMapped(uint16_t flag) {return(!(flag & MATE_UNMAPPED));}
     static inline bool isPaired(uint16_t flag) {return(flag & PAIRED);}
     static inline bool isReverse(uint16_t flag) {return(flag & REVERSE);}
+    static inline bool isMateReverse(uint16_t flag) {return(flag & MATE_REVERSED);}
     static inline bool isProperPair(uint16_t flag) {return(flag & PROPER_PAIR);}
     static inline bool isDuplicate(uint16_t flag) {return(flag & DUPLICATE);}
     static inline bool isQCFailure(uint16_t flag) {return(flag & FAILED_QUALITY);}

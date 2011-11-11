@@ -10,3 +10,4 @@ ERROR: Missing required tag: LN.
 ERROR: Missing required tag: SM.
 Can't modify the key tag, ID from rgID to rgID1
 Can't modify the key tag, ID from rgID1 to rgID111
+SamCoordOutput::flush, no output file/header is set, so records removed without being written

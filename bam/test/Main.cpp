@@ -28,6 +28,8 @@
 #include "TestPileup.h"
 #include "TestPosList.h"
 #include "TestCigarHelper.h"
+#include "TestSamRecordPool.h"
+#include "TestSamCoordOutput.h"
 
 int main(int argc, char ** argv)
 {
@@ -73,6 +75,8 @@ int main(int argc, char ** argv)
         testPosList();
 
         testCigarHelper();
+        testSamRecordPool();
+        testSamCoordOutput();
     }
     else
     {
