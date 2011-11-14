@@ -40,18 +40,17 @@ int32_t CigarHelper::softClipBeginByRefPos(SamRecord& record,
         return(NO_CLIP);
     }
 
-    // Check to see if the reference position occurs within the record,
-    // if not, do no clipping.
-    if((refPosition0Based < record.get0BasedPosition()) ||
-       (refPosition0Based > record.get0BasedAlignmentEnd()))
+    // Check to see if the reference position occurs before the record starts,
+    // if it does, do no clipping.
+    if(refPosition0Based < record.get0BasedPosition())
     {
         // Not within this read, so nothing to clip.
         newCigar.Set(record.getCigar());
         return(NO_CLIP);
     }
 
-    // The position falls within the read, so loop through until the position
-    // is found.
+    // The position falls after the read starts, so loop through until the
+    // position or the end of the read is found.
     int32_t readClipPosition = 0;
     bool clipWritten = false;
     new0BasedPosition = record.get0BasedPosition();
@@ -201,17 +200,16 @@ int32_t CigarHelper::softClipEndByRefPos(SamRecord& record,
         return(NO_CLIP);
     }
 
-    // Check to see if the reference position occurs within the record,
-    // if not, do no clipping.
-    if((refPosition0Based < record.get0BasedPosition()) ||
-       (refPosition0Based > record.get0BasedAlignmentEnd()))
+    // Check to see if the reference position occurs after the record ends,
+    // if so, do no clipping.
+    if(refPosition0Based > record.get0BasedAlignmentEnd())
     {
         // Not within this read, so nothing to clip.
         newCigar.Set(record.getCigar());
         return(NO_CLIP);
     }
 
-    // The position falls within the read, so loop through until the
+    // The position falls before the read ends, so loop through until the
     // position is found.
     int32_t currentRefPosition = record.get0BasedPosition();
     int32_t readClipPosition = 0;
@@ -234,18 +232,24 @@ int32_t CigarHelper::softClipEndByRefPos(SamRecord& record,
         {
             // If this read is also in the query (match/mismatch), 
             // write the partial op to the new cigar.
-            uint32_t numKeep = 0;
+            int32_t numKeep = 0;
             if(Cigar::foundInQuery(*op))
             {
                 numKeep = op->count - (currentRefPosition - refPosition0Based);
                 if(numKeep > 0)
                 {
                     newCigar.Add(op->operation, numKeep);
+                    readClipPosition += numKeep;
                 }
-                readClipPosition += numKeep;
+            }
+            else if(Cigar::isClip(*op))
+            {
+                // This is a hard clip, so write it.
+                newCigar.Add(op->operation, op->count);
             }
             else
             {
+
                 // Not found in the query (skip/deletion),
                 // so don't write any of the operation.
             }
@@ -262,7 +266,7 @@ int32_t CigarHelper::softClipEndByRefPos(SamRecord& record,
         }
         else
         {
-            // Not yet to the clip position, so add this opeartion/size to
+            // Not yet to the clip position, so add this operation/size to
             // the new cigar.
             newCigar += *op;
             if(Cigar::foundInQuery(*op))

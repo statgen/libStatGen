@@ -30,8 +30,8 @@ public:
     /// reference position.  If the clip position is deleted/skipped
     /// or is immediately followed by a deletion/skip/pad/insert, that entire 
     /// CIGAR operation is also removed.
-    /// Nothing is clipped if the reference position does not fall within
-    /// the region spanned by the record.
+    /// Nothing is clipped if the reference position is before the read starts,
+    /// everything is clipped if the reference position is after the read ends.
     /// \param record record to calculate the clip for.
     /// \param refPosition0Based 0-based reference position to end the clip at
     /// \param newCigar cigar object to set with the updated cigar.
@@ -48,8 +48,9 @@ public:
     /// or is immediately preceded by a deletion/skip/pad, that entire CIGAR
     /// operation is also removed.  If the clip position is immediately
     /// preceded by an insertion, the insertion is left in the CIGAR.
-    /// Nothing is clipped if the reference position does not fall within
-    /// the region spanned by the record.
+    /// Nothing is clipped if the reference position is after the read ends,
+    /// everything is clipped if the reference position is before the read
+    /// starts (including insertions).
     /// \param record record to calculate the clip for.
     /// \param refPosition0Based 0-based reference position to start clip at
     /// \param newCigar cigar object to set with the updated cigar.

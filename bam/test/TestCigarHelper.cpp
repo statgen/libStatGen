@@ -53,11 +53,10 @@ void CigarHelperTest::testSoftClipBeginByRefPos()
     record.setSequence("gggAAATTTCCCTTTGGGAAAggg");
 
     ////////////////////////////////////////////////////////
-    // Clip outside of the range (after).  Nothing should change.
-    assert(CigarHelper::softClipBeginByRefPos(record, 10000, newCigar, newPos) == 
-           CigarHelper::NO_CLIP);
+    // Clip outside of the range (after).  Everything should be clipped.
+    assert(CigarHelper::softClipBeginByRefPos(record, 10000, newCigar, newPos) == 23);
     newCigar.getCigarString(newCigarString);
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "3H24S3H") == 0);
 
     ////////////////////////////////////////////////////////
     // Clip outside of the range (before).  Nothing should change.
@@ -221,12 +220,11 @@ void CigarHelperTest::testSoftClipBeginByRefPos()
     assert(strcmp(newCigarString.c_str(), "3H24S3H") == 0);
 
     ////////////////////////////////////////////////////////
-    assert(CigarHelper::softClipBeginByRefPos(record, 31, newCigar, newPos) == 
-           CigarHelper::NO_CLIP);
+    assert(CigarHelper::softClipBeginByRefPos(record, 31, newCigar, newPos) == 23);
     assert(newPos == 10);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "3H24S3H") == 0);
 
     ////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////
@@ -312,12 +310,11 @@ void CigarHelperTest::testSoftClipBeginByRefPos()
     assert(strcmp(newCigarString.c_str(), "9S") == 0);
 
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipBeginByRefPos(record, 19, newCigar, newPos) == 
-           CigarHelper::NO_CLIP);
+    assert(CigarHelper::softClipBeginByRefPos(record, 19, newCigar, newPos) == 8);
     assert(newPos == 10);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "9S") == 0);
 
     ////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////
@@ -381,12 +378,11 @@ void CigarHelperTest::testSoftClipBeginByRefPos()
     assert(strcmp(newCigarString.c_str(), "3H9S3H") == 0);
 
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipBeginByRefPos(record, 16, newCigar, newPos) == 
-           CigarHelper::NO_CLIP);
+    assert(CigarHelper::softClipBeginByRefPos(record, 16, newCigar, newPos) == 8);
     assert(newPos == 10);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "3H9S3H") == 0);
 
     ////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////
@@ -429,12 +425,11 @@ void CigarHelperTest::testSoftClipBeginByRefPos()
     assert(strcmp(newCigarString.c_str(), "3H12S3H") == 0);
 
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipBeginByRefPos(record, 13, newCigar, newPos) == 
-           CigarHelper::NO_CLIP);
+    assert(CigarHelper::softClipBeginByRefPos(record, 13, newCigar, newPos) == 11);
     assert(newPos == 10);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "3H12S3H") == 0);
 }
 
 
@@ -463,11 +458,11 @@ void CigarHelperTest::testSoftClipEndByRefPos()
     assert(strcmp(newCigarString.c_str(), origCigar) == 0);
 
     ////////////////////////////////////////////////////////
-    // Clip outside of the range (before).  Nothing should change.
-    assert(CigarHelper::softClipEndByRefPos(record, 1, newCigar) == 
-           CigarHelper::NO_CLIP);
+    // Clip outside of the range (before).  Everything should be clipped.
+    assert(CigarHelper::softClipEndByRefPos(record, 1, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    //std::cout << newCigarString.c_str() << std::endl;
+    assert(strcmp(newCigarString.c_str(), "3H24S3H") == 0);
 
 
     ////////////////////////////////////////////////////////
@@ -642,11 +637,10 @@ void CigarHelperTest::testSoftClipEndByRefPos()
     // RefPos:  111111   111
     // RefPos:  012345   678
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipEndByRefPos(record, 9, newCigar) == 
-           CigarHelper::NO_CLIP);
+    assert(CigarHelper::softClipEndByRefPos(record, 9, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "9S") == 0);
 
     record.setCigar(origCigar);
     assert(CigarHelper::softClipEndByRefPos(record, 10, newCigar) == 0);
@@ -721,11 +715,10 @@ void CigarHelperTest::testSoftClipEndByRefPos()
     // RefPos:        111111
     // RefPos:        012345
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipEndByRefPos(record, 9, newCigar) == 
-           CigarHelper::NO_CLIP);
+    assert(CigarHelper::softClipEndByRefPos(record, 9, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "3H9S3H") == 0);
 
     record.setCigar(origCigar);
     assert(CigarHelper::softClipEndByRefPos(record, 10, newCigar) == 0);
@@ -782,11 +775,10 @@ void CigarHelperTest::testSoftClipEndByRefPos()
     // RefPos:           111
     // RefPos:           012
     record.setCigar(origCigar);
-    assert(CigarHelper::softClipEndByRefPos(record, 9, newCigar) == 
-           CigarHelper::NO_CLIP);
+    assert(CigarHelper::softClipEndByRefPos(record, 9, newCigar) == 0);
     newCigar.getCigarString(newCigarString);
     //std::cout << newCigarString.c_str() << std::endl;
-    assert(strcmp(newCigarString.c_str(), origCigar) == 0);
+    assert(strcmp(newCigarString.c_str(), "3H12S3H") == 0);
 
     record.setCigar(origCigar);
     assert(CigarHelper::softClipEndByRefPos(record, 10, newCigar) == 6);
