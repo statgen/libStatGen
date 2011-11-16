@@ -1741,6 +1741,17 @@ char SamRecord::getQuality(int index)
             // Return the unknown quality character.
             return(BaseUtilities::UNKNOWN_QUALITY_CHAR);
         }
+        else if(index >= myQuality.Length())
+        {
+            // Only get here if the index was out of range, so thow an exception.
+            // Technically the myQuality string is not guaranteed to be the same length
+            // as the sequence, so this catches that error.
+            String exceptionString = "SamRecord::getQuality(";
+            exceptionString += index;
+            exceptionString += ") is out of range. Index must be between 0 and ";
+            exceptionString += (myQuality.Length() - 1);
+            throw std::runtime_error(exceptionString.c_str());
+        }
         else
         {
             return(myQuality[index]);

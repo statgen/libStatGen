@@ -73,7 +73,7 @@ bool SamCoordOutput::flush(int32_t chromID, int32_t pos0Based)
     }
 
     while((iter != myReadBuffer.end()) &&
-          (((*iter).first < chromPos) || (chromID == -1)))
+          (((*iter).first <= chromPos) || (chromID == -1)))
     {
         if((myOutputFile != NULL) && (myHeader != NULL))
         {

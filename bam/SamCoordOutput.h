@@ -23,7 +23,7 @@
 
 /// Class for buffering up output reads to ensure that it is sorted. 
 /// They are added in almost sorted order.
-/// Flush writes any records that start before the specified position.
+/// Flush writes any records that start at/before the specified position.
 class SamCoordOutput
 {
 public:
@@ -47,7 +47,7 @@ public:
     bool add(SamRecord* record);
 
     /// Flush the buffer based on the specified chromosome id/position, writing
-    /// any records that start before the specified chromosome id/position.
+    /// any records that start at/before the specified chromosome id/position.
     /// If no output buffer is set, the files cannot be written, but the
     /// flushed records are removed/freed.
     /// A chromID of -1 will flush everything regardless of pos0Based.

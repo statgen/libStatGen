@@ -33,7 +33,7 @@ public:
     /// 64bit number by shifting the chromosome ID to the upper bits.
     static inline uint64_t combineChromPos(int32_t chromID, int32_t position)
     {
-        return(((uint64_t)chromID << 32) | position);
+        return(((uint64_t)chromID << 32) | (position & 0xFFFFFFFF));
     }
 
 private:

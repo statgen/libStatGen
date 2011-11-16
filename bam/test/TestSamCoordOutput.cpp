@@ -60,8 +60,6 @@ void SamCoordOutputTest::testSamCoordOutput()
     assert(inSam.ReadRecord(samHeader, *rec3) == true);
     validateRead3(*rec3);
     assert(pool.getRecord() == NULL);
-    
-
 
     // Add the first 3 records to the output buffer.
     // Sorted order is rec 3, 1, 2
@@ -104,18 +102,24 @@ void SamCoordOutputTest::testSamCoordOutput()
     validateRead6(*rec1);
     assert(outputBuffer.add(rec1));
 
+    // Can get another record (tests to make sure flushes up to and
+    // including the specified position).  If it did not
+    // flush the specified position, there would not be
+    // another record available.
+    rec1 = pool.getRecord();
+    assert(rec1 != NULL);
+
     // Flush out just the reads before this position.
     assert(outputBuffer.flush(0, 1012));
 
     // Read another record.
-    rec1 = pool.getRecord();
     assert(inSam.ReadRecord(samHeader, *rec1) == true);
     validateRead7(*rec1);
     assert(outputBuffer.add(rec1));
     assert(pool.getRecord() == NULL);
 
     // Flush out just the reads on chrom 1 (chrom id 0).
-    assert(outputBuffer.flush(1, 0));
+    assert(outputBuffer.flush(0, -1));
 
     // Read another record.
     rec1 = pool.getRecord();
