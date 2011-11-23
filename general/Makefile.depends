@@ -56,6 +56,7 @@ $(OBJDIR_OPT)/MemoryInfo.o: FileType.h
 $(OBJDIR_OPT)/MemoryMapArray.o: MemoryMapArray.h Generic.h MemoryMap.h
 $(OBJDIR_OPT)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_OPT)/MiniDeflate.o: MiniDeflate.h
+$(OBJDIR_OPT)/NonOverlapRegions.o: NonOverlapRegions.h
 $(OBJDIR_OPT)/Parameters.o: Parameters.h StringMap.h StringBasics.h
 $(OBJDIR_OPT)/Parameters.o: InputFile.h FileType.h Constant.h MathConstant.h
 $(OBJDIR_OPT)/Parameters.o: Error.h
@@ -199,6 +200,7 @@ $(OBJDIR_DEBUG)/MemoryInfo.o: FileType.h
 $(OBJDIR_DEBUG)/MemoryMapArray.o: MemoryMapArray.h Generic.h MemoryMap.h
 $(OBJDIR_DEBUG)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_DEBUG)/MiniDeflate.o: MiniDeflate.h
+$(OBJDIR_DEBUG)/NonOverlapRegions.o: NonOverlapRegions.h
 $(OBJDIR_DEBUG)/Parameters.o: Parameters.h StringMap.h StringBasics.h
 $(OBJDIR_DEBUG)/Parameters.o: InputFile.h FileType.h Constant.h
 $(OBJDIR_DEBUG)/Parameters.o: MathConstant.h Error.h
@@ -349,6 +351,7 @@ $(OBJDIR_PROFILE)/MemoryInfo.o: FileType.h
 $(OBJDIR_PROFILE)/MemoryMapArray.o: MemoryMapArray.h Generic.h MemoryMap.h
 $(OBJDIR_PROFILE)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_PROFILE)/MiniDeflate.o: MiniDeflate.h
+$(OBJDIR_PROFILE)/NonOverlapRegions.o: NonOverlapRegions.h
 $(OBJDIR_PROFILE)/Parameters.o: Parameters.h StringMap.h StringBasics.h
 $(OBJDIR_PROFILE)/Parameters.o: InputFile.h FileType.h Constant.h
 $(OBJDIR_PROFILE)/Parameters.o: MathConstant.h Error.h

@@ -49,6 +49,7 @@ TOOLBASE=\
 	MemoryMapArray \
 	MemoryMap \
 	MiniDeflate \
+	NonOverlapRegions \
 	Parameters \
 	PedigreeAlleleFreq \
 	Pedigree \
