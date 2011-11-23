@@ -29,7 +29,7 @@ int main(int argc, char ** argv)
 
 void NonOverlapRegionsTest::test()
 {
-    testPos();
+    //    testPos();
     testChrom();
 }
 
@@ -48,6 +48,12 @@ void NonOverlapRegionsTest::testChrom()
     }
     // The chromosomes checked for were added.
     assert(reg.myRegions.size() == 2);
+    assert(reg.myRegions["a"].myRegions.size() == 0);
+    assert(reg.myRegions["a"].myRegionIter == 
+           reg.myRegions["a"].myRegions.end());
+    assert(reg.myRegions["3"].myRegions.size() == 0);
+    assert(reg.myRegions["3"].myRegionIter == 
+           reg.myRegions["3"].myRegions.end());
 
     // Add a region.
     reg.add("3", 13, 15);
@@ -549,6 +555,7 @@ void NonOverlapRegionsTest::testPos()
             assert(reg.inRegion(i) == false);
         }
     }
+
     // Add region start outside of a region and ends at the end.
     reg.add(2,30);
     assert(reg.myRegions.size() == 1);
@@ -559,7 +566,7 @@ void NonOverlapRegionsTest::testPos()
     assert(iter->second == 30);
     ++iter;
     assert(iter == reg.myRegions.end());
-    for(int i = 0; i < 30; i++)
+    for(int i = 0; i < 50; i++)
     {
         if(((i >= 2) && (i < 30)))
         {
@@ -571,4 +578,43 @@ void NonOverlapRegionsTest::testPos()
         }
     }
 
+    // Add invalid region (start = end)
+    reg.add(40,40);
+    assert(reg.myRegions.size() == 1);
+    iter = reg.myRegions.begin();
+    assert(iter->first == 2);
+    assert(iter->second == 30);
+    ++iter;
+    assert(iter == reg.myRegions.end());
+    for(int i = 0; i < 50; i++)
+    {
+        if(((i >= 2) && (i < 30)))
+        {
+            assert(reg.inRegion(i) == true);
+        }
+        else
+        {
+            assert(reg.inRegion(i) == false);
+        }
+    }
+
+    // Add invalid region (start < end)
+    reg.add(40, 38);
+    assert(reg.myRegions.size() == 1);
+    iter = reg.myRegions.begin();
+    assert(iter->first == 2);
+    assert(iter->second == 30);
+    ++iter;
+    assert(iter == reg.myRegions.end());
+    for(int i = 0; i < 50; i++)
+    {
+        if(((i >= 2) && (i < 30)))
+        {
+            assert(reg.inRegion(i) == true);
+        }
+        else
+        {
+            assert(reg.inRegion(i) == false);
+        }
+    }
 }

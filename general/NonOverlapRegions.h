@@ -51,6 +51,9 @@ public:
     bool inRegion(const char* chrom, int32_t pos);
 
 private:
+    // Copy Constructor - unimplimented.
+    NonOverlapRegions(const NonOverlapRegions& reg);
+
     std::map<std::string, NonOverlapRegionPos> myRegions;
 };
 
@@ -65,6 +68,10 @@ class NonOverlapRegionPos
 public:
     friend class NonOverlapRegionsTest;
     NonOverlapRegionPos();
+    /// Copy constructor, does not copy, but initializes with an empty 
+    /// region list.
+    NonOverlapRegionPos(const NonOverlapRegionPos& reg);
+
     ~NonOverlapRegionPos();
 
     /// End position is not included in the region.

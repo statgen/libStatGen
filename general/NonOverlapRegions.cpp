@@ -18,6 +18,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "NonOverlapRegions.h"
+#include <iostream>
 
 NonOverlapRegions::NonOverlapRegions()
     : myRegions()
@@ -55,6 +56,14 @@ NonOverlapRegionPos::NonOverlapRegionPos()
 }
 
 
+NonOverlapRegionPos::NonOverlapRegionPos(const NonOverlapRegionPos& reg)
+    : myRegions()
+{
+    myRegionIter = myRegions.begin();
+    myTmpIter = myRegions.begin();
+}
+
+
 NonOverlapRegionPos::~NonOverlapRegionPos()
 {
     myRegionIter = myRegions.begin();
@@ -65,6 +74,15 @@ NonOverlapRegionPos::~NonOverlapRegionPos()
 
 void NonOverlapRegionPos::add(int32_t start, int32_t end)
 {
+    // Check to see if the start/end are valid in relation.
+    if(start >= end)
+    {
+        std::cerr << "NonOverlapRegionPos::add: Invalid Range,  "
+                  << "start must be < end, but " << start << " >= " << end 
+                  << std::endl;
+        return;
+    }
+
     bool added = false;
     // Locate the correct position in the region list for this start/end.
     if(inRegion(start))
