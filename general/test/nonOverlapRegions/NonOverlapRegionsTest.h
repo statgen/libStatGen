@@ -24,7 +24,8 @@ public:
     void test();
 
 private:
-    void testAddPos();
+    void testChrom();
+    void testPos();
 };
 
 #endif

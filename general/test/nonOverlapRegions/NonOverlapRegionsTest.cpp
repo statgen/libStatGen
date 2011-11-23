@@ -29,11 +29,71 @@ int main(int argc, char ** argv)
 
 void NonOverlapRegionsTest::test()
 {
-    testAddPos();
+    testPos();
+    testChrom();
 }
 
 
-void NonOverlapRegionsTest::testAddPos()
+void NonOverlapRegionsTest::testChrom()
+{
+    NonOverlapRegions reg;
+
+    // Assert that the regions are empty.
+    assert(reg.myRegions.size() == 0);
+    // Verify no regions.
+    for(int i = 0; i < 30; i++)
+    {
+        assert(reg.inRegion("a", i) == false);
+        assert(reg.inRegion("3", i) == false);
+    }
+    // The chromosomes checked for were added.
+    assert(reg.myRegions.size() == 2);
+
+    // Add a region.
+    reg.add("3", 13, 15);
+    // Verify regions.
+    assert(reg.myRegions.size() == 2);
+    for(int i = 0; i < 30; i++)
+    {
+        assert(reg.inRegion("a", i) == false);
+        if((i >= 13) && (i < 15))
+        {
+            assert(reg.inRegion("3", i) == true);
+        }
+        else
+        {
+            assert(reg.inRegion("3", i) == false);
+        }
+    }
+    
+    // Add a region.
+    reg.add("a", 1, 5);
+    // Verify regions.
+    assert(reg.myRegions.size() == 2);
+    for(int i = 0; i < 30; i++)
+    {
+        if((i >= 1) && (i < 5))
+        {
+            assert(reg.inRegion("a", i) == true);
+        }
+        else
+        {
+            assert(reg.inRegion("a", i) == false);
+        }
+        if((i >= 13) && (i < 15))
+        {
+            assert(reg.inRegion("3", i) == true);
+        }
+        else
+        {
+            assert(reg.inRegion("3", i) == false);
+        }
+    }
+    
+
+}
+
+void NonOverlapRegionsTest::testPos()
 {
     NonOverlapRegionPos reg;
     std::list< std::pair<int32_t, int32_t> >::iterator iter;
