@@ -77,7 +77,7 @@ void NonOverlapRegionPos::add(int32_t start, int32_t end)
     // Check to see if the start/end are valid in relation.
     if(start >= end)
     {
-        std::cerr << "NonOverlapRegionPos::add: Invalid Range,  "
+        std::cerr << "NonOverlapRegionPos::add: Invalid Range, "
                   << "start must be < end, but " << start << " >= " << end 
                   << std::endl;
         return;
