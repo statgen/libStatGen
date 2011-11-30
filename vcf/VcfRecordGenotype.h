@@ -100,7 +100,7 @@ private:
         SmartStringVector()
             : SmartVector<std::string>()
         {}
-        virtual ~SmartStringVector();
+        virtual ~SmartStringVector(){}
         // Does not print the starting/trailing '\t'
         bool write(IFILE filePtr);
     };
@@ -111,7 +111,7 @@ private:
         SmartVectorOfStringVectors()
             : SmartVector<SmartStringVector>()
         {}
-        virtual ~SmartVectorOfStringVectors();
+        virtual ~SmartVectorOfStringVectors(){}
         // Does not print the starting/trailing '\t'
         bool write(IFILE filePtr);
     };

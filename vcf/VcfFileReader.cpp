@@ -57,6 +57,7 @@ bool VcfFileReader::open(const char* filename, VcfHeader& header)
 
 bool VcfFileReader::readRecord(VcfRecord& record)
 {
+    myStatus = StatGenStatus::SUCCESS;
     if(!record.read(myFilePtr, mySiteOnly))
     {
         myStatus = record.getStatus();

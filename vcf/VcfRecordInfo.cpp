@@ -63,7 +63,7 @@ bool VcfRecordInfo::read(IFILE filePtr)
         {
             // Stoped at the value part, so read the value
             // associated with the key.
-            readTilChar(filePtr, valueStopChars, nextKeyVal.second);
+            stopPos = readTilChar(filePtr, valueStopChars, nextKeyVal.second);
         }
     }
 

@@ -24,6 +24,7 @@
 #include "VcfRecordInfo.h"
 #include "VcfRecordGenotype.h"
 #include "StatGenStatus.h"
+#include <stdlib.h>
 
 /// This header file provides interface to read/write VCF files.
 class VcfRecord
@@ -58,16 +59,48 @@ public:
 
 //     bool isValid();
 
+    ///////////////////////
+    /// @name  Get Vcf Fields
+    /// Get methods for record fields (do not set status).
+    //@{
     const char* getChromStr() {return(myChrom.c_str());}
     int get1BasedPosition() {return(my1BasedPosNum);}
     const char* getIDStr() {return(myID.c_str());}
     const char* getRefStr() {return(myRef.c_str());}
-
+    const char* getAltStr() {return(myAlt.c_str());}
+    float getQual() {return(myQualNum);}
+    const char* getQualStr() {return(myQual.c_str());}
+    const char* getFilterStr() {return(myFilter.c_str());}
     /// Get a reference to the information field.
     VcfRecordInfo& getRefInfo() {return myInfo;}
+    /// Get a reference to the genotype fields.
+    VcfRecordGenotype& getGenotypeInfo() {return myGenotype;}
+    //@}
 
 
+    ///////////////////////
+    /// @name  Set Vcf Fields
+    /// Set methods for record fields (do not set status).
+    //@{
+    void setChrom(const char* chrom) {myChrom = chrom;}
+    void set1BasedPosition(int pos) {my1BasedPosNum = pos;}
+    void setID(const char* id) {myID = id;}
     void setRef(const char* ref) {myRef = ref;}
+    void setAlt(const char* alt) {myAlt = alt;}
+    //    void setQual(float qual) {myQualNum = qual; }
+    void setQual(const char* qual)
+    {
+        myQual = qual; 
+        if(myQual != ".")
+        {
+            myQualNum = atof(qual);
+        }
+        else
+        {
+            myQualNum = -1;
+        }
+    }
+    void setFilter(const char* filter) {myFilter = filter;}
 
 protected: 
 

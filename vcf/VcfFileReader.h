@@ -47,6 +47,12 @@ public:
     /// Return a reference to the meta/header information.
     /// \return reference 
 
+    /// Get the Status of the last call that sets status.
+    inline StatGenStatus::Status getStatus()
+    {
+        return(myStatus.getStatus());
+    }
+
 protected: 
 
 private:

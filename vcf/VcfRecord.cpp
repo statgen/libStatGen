@@ -19,7 +19,6 @@
 
 #include "VcfRecord.h"
 
-#include <stdlib.h>
 
 VcfRecord::VcfRecord()
 {
@@ -37,6 +36,13 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly)
     // Clear out any previously set values.
     reset();
     
+    if(filePtr == NULL)
+    {
+        myStatus.setStatus(StatGenStatus::FAIL_ORDER,
+                           "Error reading VCF record before opening the file.");
+        return(false);
+    }
+
     if(ifeof(filePtr))
     {
         // End of file, just return false.
@@ -92,8 +98,15 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly)
     }
     else
     {
-        // Read the quality, so convert to an integer.
-        myQualNum = atoi(myQual.c_str());
+        if(myQual != ".")
+        {
+            // Read the quality, so convert to an integer.
+            myQualNum = atof(myQual.c_str());
+        }
+        else
+        {
+            myQualNum = -1;
+        }
     }
     // Read the Filter.
     if(!readTilTab(filePtr, myFilter))
@@ -122,6 +135,13 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly)
 
 bool VcfRecord::write(IFILE filePtr, bool siteOnly)
 {
+    if(filePtr == NULL)
+    {
+        myStatus.setStatus(StatGenStatus::FAIL_ORDER,
+                           "Error writing VCF record before opening the file.");
+        return(false);
+    }
+
     int numWritten = ifprintf(filePtr, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t", 
              myChrom.c_str(), my1BasedPos.c_str(), myID.c_str(), myRef.c_str(), myAlt.c_str(), myQual.c_str(), myFilter.c_str());
 
@@ -163,6 +183,7 @@ void VcfRecord::reset()
     myFilter.clear();
     myInfo.clear();
     myGenotype.clear();
+    myStatus = StatGenStatus::SUCCESS;
 }
 
 
