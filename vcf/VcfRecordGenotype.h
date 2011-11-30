@@ -116,7 +116,7 @@ private:
         bool write(IFILE filePtr);
     };
 
-    std::map<const std::string*, int> myTypeToPos;
+    //   std::map<const std::string*, int> myTypeToPos;
 
     // Format field indexed by position with the value
     // as the datatype.
@@ -177,7 +177,7 @@ DATA_TYPE& VcfRecordGenotype::SmartVector<DATA_TYPE>::getNextEmpty()
 template <class DATA_TYPE>
 DATA_TYPE* VcfRecordGenotype::SmartVector<DATA_TYPE>::get(unsigned int index)
 {
-    if((index < myNextEmpty) && (index > 0))
+    if((index < myNextEmpty) && (index >= 0))
     {
         // index is a valid position, so return that string.
         return(myCont[index]);

@@ -114,12 +114,15 @@ const std::string* VcfRecordGenotype::getValue(const std::string& key,
     if(samplePtr != NULL)
     {
         // the sample was found, so search for this field of the sample.
-        std::map<const std::string*, int>::iterator iter =
-            myTypeToPos.find(&key);
-        if(iter != myTypeToPos.end())
+
+        for(int i = 0; i < myPosToType.size(); i++)
         {
-            // Found the field, so get it's value.
-            return(samplePtr->get(iter->second));
+            std::string* type = myPosToType.get(i);
+            if((type != NULL) && (*type == key))
+            {
+                // Found the type.
+                return(samplePtr->get(i));
+            }
         }
     }
 
