@@ -54,7 +54,9 @@ bool VcfRecordGenotype::read(IFILE filePtr)
     while(stopPos >= contPos)
     {
         nextType = &(myPosToType.getNextEmpty());
-        stopPos = readTilChar(filePtr, fieldStopChars, *nextType);
+        stopPos = filePtr->readTilChar(fieldStopChars, *nextType);
+
+        // Store map of format to position.
     }
 
     // Done reading the format field, so read the samples.
@@ -68,7 +70,7 @@ bool VcfRecordGenotype::read(IFILE filePtr)
         while(stopPos >= contPos)
         {
             nextType = &(nextSample->getNextEmpty());
-            stopPos = readTilChar(filePtr, fieldStopChars, *nextType);
+            stopPos = filePtr->readTilChar(fieldStopChars, *nextType);
         }
     }
     

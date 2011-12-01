@@ -41,6 +41,57 @@ InputFile::InputFile(const char * filename, const char * mode,
 }
 
 
+int InputFile::readTilChar(const std::string& stopChars, std::string& stringRef)
+{
+    int charRead = 0;
+    size_t pos = std::string::npos;
+    // Loop until the character was not found in the stop characters.
+    while(pos == std::string::npos)
+    {
+        charRead = ifgetc();
+
+        // First Check for EOF.  If EOF is found, just return -1
+        if(charRead == EOF)
+        {
+            return(-1);
+        }
+        
+        // Try to find the character in the stopChars.
+        pos = stopChars.find(charRead);
+
+        if(pos == std::string::npos)
+        {
+            // Didn't find a stop character and it is not an EOF, 
+            // so add it to the string.
+            stringRef += charRead;
+        }
+    }
+    return(pos);
+}
+
+
+int InputFile::readTilChar(const std::string& stopChars)
+{
+    int charRead = 0;
+    size_t pos = std::string::npos;
+    // Loop until the character was not found in the stop characters.
+    while(pos == std::string::npos)
+    {
+        charRead = ifgetc();
+
+        // First Check for EOF.  If EOF is found, just return -1
+        if(charRead == EOF)
+        {
+            return(-1);
+        }
+        
+        // Try to find the character in the stopChars.
+        pos = stopChars.find(charRead);
+    }
+    return(pos);
+}
+
+
 #ifdef __ZLIB_AVAILABLE__
 
 // Open a file. Called by the constructor.

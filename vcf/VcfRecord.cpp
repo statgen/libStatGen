@@ -123,10 +123,17 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly)
         return(true);
     }
 
-    // Not yet at the end of the line, so read the genotype fields
-    // (format & samples)
-    myGenotype.read(filePtr);
-
+    if(siteOnly)
+    {
+        // Do not store genotypes, so just consume the rest of the line.
+        filePtr->readTilChar("\n");
+    }
+    else
+    {
+        // Not yet at the end of the line, so read the genotype fields
+        // (format & samples)
+        myGenotype.read(filePtr);
+    }
     // Found the end of the line, return true since all required fields
     // were read.
     return(true);

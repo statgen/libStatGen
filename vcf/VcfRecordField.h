@@ -45,9 +45,6 @@ public:
     /// filePtr, false if not.
     virtual bool write(IFILE filePtr) = 0;
 
-    int readTilChar(IFILE filePtr, const std::string& stopChars, 
-                    std::string& stringRef);
-
 protected: 
 
 private:

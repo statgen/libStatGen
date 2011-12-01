@@ -57,13 +57,13 @@ bool VcfRecordInfo::read(IFILE filePtr)
         // Get the next element to write the key into.
         InfoContainer::InfoKeyValue& nextKeyVal = myInfo.getNextEmpty();
         // Read the next key.
-        stopPos = readTilChar(filePtr, keyStopChars, nextKeyVal.first);
+        stopPos = filePtr->readTilChar(keyStopChars, nextKeyVal.first);
 
         if(keyStopChars[stopPos] == '=')
         {
             // Stoped at the value part, so read the value
             // associated with the key.
-            stopPos = readTilChar(filePtr, valueStopChars, nextKeyVal.second);
+            stopPos = filePtr->readTilChar(valueStopChars, nextKeyVal.second);
         }
     }
 

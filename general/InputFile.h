@@ -280,6 +280,22 @@ public:
         return(returnSize);
     }
 
+    /// Read until the specified characters, returning which character was
+    /// found causing the stop, -1 returned for EOF, storing the other read
+    /// characters into the specified string.
+    /// \param stopChars characters to stop reading when they are hit.
+    /// \param stringRef reference to a string that the read characters should
+    /// be apppended to (does not include the stopchar).
+    /// \return index of the character in stopChars that caused it to stop
+    /// reading or -1 for EOF.
+    int readTilChar(const std::string& stopChars, std::string& stringRef);
+
+    /// Read until the specified characters, returning which character was
+    /// found causing the stop, -1 returned for EOF, dropping all read chars.
+    /// \param stopChars characters to stop reading when they are hit.
+    /// \return index of the character in stopChars that caused it to stop
+    /// reading or -1 for EOF.
+    int readTilChar(const std::string& stopChars);
 
     /// Get a character from the file.  Read a character from the internal
     /// buffer, or if the end of the buffer has been reached, read from the
