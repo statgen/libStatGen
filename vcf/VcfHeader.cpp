@@ -33,16 +33,23 @@ VcfHeader::~VcfHeader()
 
 bool VcfHeader::read(IFILE filePtr)
 {
-    if(hasHeaderLine)
+    if(myHasHeaderLine)
     {
         // Already set the header line, so can't add any more lines.
         myStatus.setStatus(StatGenStatus::FAIL_ORDER, 
                            "Error reading VCF Meta/Header, Header line has already been set, so can't read more lines from a file.");
         return(false);
     }
+    if(filePtr == NULL)
+    {
+        // No file was passed in.
+        myStatus.setStatus(StatGenStatus::FAIL_ORDER, 
+                           "Need to pass in an open file ptr to VcfHeader::read.");
+        return(false);
+    }
 
     // Read until the header line has been read (after the meta lines).
-    while(!hasHeaderLine)
+    while(!myHasHeaderLine)
     {
         // Increase the size of headerlines by 1 to fit the new line.
         myHeaderLines.resize(myHeaderLines.size() + 1);
@@ -69,11 +76,13 @@ bool VcfHeader::read(IFILE filePtr)
         // Check if it is a header (first char is # and 2nd one is not).
         if((newStr[0] == '#') && (newStr[1] != '#'))
         {
-            hasHeaderLine = true;
+            myHasHeaderLine = true;
+            // Parse the header line to get the samples.
+            myParsedHeaderLine.ReplaceColumns(newStr, '\t');
         }
         else if((newStr[0] != '#') || (newStr[1] != '#'))
         {
-            // A meta line must start with "##", we expect mets lines until
+            // A meta line must start with "##", we expect meta lines until
             // the header line is found.
             myStatus.setStatus(StatGenStatus::INVALID, 
                                "Error reading VCF Meta/Header, line not starting with '##' found before the header line.");
@@ -86,9 +95,17 @@ bool VcfHeader::read(IFILE filePtr)
 
 bool VcfHeader::write(IFILE filePtr)
 {
+    if(filePtr == NULL)
+    {
+        // No file was passed in.
+        myStatus.setStatus(StatGenStatus::FAIL_ORDER, 
+                           "Need to pass in an open file ptr to VcfHeader::write.");
+        return(false);
+    }
+    
     int numWritten = 0;
     int numExpected = 0;
-    for(std::list<String>::iterator iter = myHeaderLines.begin(); 
+    for(std::vector<String>::iterator iter = myHeaderLines.begin(); 
         iter != myHeaderLines.end(); iter++)
     {
         numWritten += ifprintf(filePtr, "%s\n", iter->c_str());
@@ -96,13 +113,18 @@ bool VcfHeader::write(IFILE filePtr)
         numExpected += iter->Length();
         numExpected += 1;
     }
+    if(numWritten != numExpected)
+    {
+        myStatus.setStatus(StatGenStatus::FAIL_IO, 
+                           "Failed writing VCF Meta/Header.");
+    }
     return(numWritten == numExpected);
 }
 
 
 void VcfHeader::reset()
 {
-    hasHeaderLine = false;
+    myHasHeaderLine = false;
     myHeaderLines.clear();
 }
 
@@ -111,4 +133,79 @@ void VcfHeader::reset()
 const StatGenStatus& VcfHeader::getStatus()
 {
     return(myStatus);
+}
+
+
+int VcfHeader::getNumMetaLines()
+{
+    int numHeaderLines = myHeaderLines.size();
+    if((numHeaderLines > 1) && (myHasHeaderLine))
+    {
+        // Remove the header line from the count.
+        return(numHeaderLines-1);
+    }
+    return(numHeaderLines);
+}
+
+
+const char* VcfHeader::getMetaLine(unsigned int index)
+{
+    if(index >= myHeaderLines.size())
+    {
+        return(NULL);
+    }
+    else
+    {
+        return(myHeaderLines[index].c_str());
+    }
+    return(NULL);
+}
+
+
+const char* VcfHeader::getHeaderLine()
+{
+    if(myHasHeaderLine)
+    {
+        return(myHeaderLines.back().c_str());
+    }
+    return(NULL);
+}
+
+
+int VcfHeader::getNumSamples()
+{
+    if(!myHasHeaderLine)
+    {
+        return(0);
+    }
+    
+    int numFields = myParsedHeaderLine.Length();
+
+    if(numFields > NUM_NON_SAMPLE_HEADER_COLS)
+    {
+        // There are samples.
+        return(numFields - NUM_NON_SAMPLE_HEADER_COLS);
+    }
+
+    // No sample fields
+    return(0);
+}
+
+
+const char* VcfHeader::getSampleName(unsigned int index)
+{
+    if(!myHasHeaderLine)
+    {
+        // No header.
+        return(NULL);
+    }
+    int position = index + NUM_NON_SAMPLE_HEADER_COLS;
+
+    if(position >= myParsedHeaderLine.Length())
+    {
+        // Out of range.
+        return(NULL);
+    }
+
+    return(myParsedHeaderLine[position].c_str());
 }

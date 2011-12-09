@@ -21,7 +21,7 @@
 #define __VCF_HEADER_H__
 
 #include <list>
-#include "StringBasics.h"
+#include "StringArray.h"
 #include "StatGenStatus.h"
 
 /// This header file provides interface for dealing with VCF Meta/Header lines.
@@ -57,14 +57,36 @@ public:
     /// \return StatGenStatus of the last command that sets status.
     const StatGenStatus& getStatus();
     
+    /// Return the number of meta-lines (lines starting with ##)
+    int getNumMetaLines();
+
+    /// Return the specified meta-line (index starting at 0)
+    /// or NULL if out of range.
+    const char* getMetaLine(unsigned int index);
+
+    /// Return the header line, the line containing #chrom...
+    const char* getHeaderLine();
+
+    /// Returns the number of samples in the header line or 0 if the header
+    /// line has not yet been read.
+    int getNumSamples();
+
+    /// Returns the name of the specified sample or NULL if the sample number
+    /// is out of range (first sample is index 0).
+    const char* getSampleName(unsigned int index);
+
 protected: 
 
 private:
+    static const int NUM_NON_SAMPLE_HEADER_COLS = 9;
+
     // Is set to true once the header line has been set, false until then.
-    bool hasHeaderLine;
+    bool myHasHeaderLine;
 
-    std::list<String> myHeaderLines;
+    std::vector<String> myHeaderLines;
 
+    StringArray myParsedHeaderLine;
+    
     // The status of the last failed command.
     StatGenStatus myStatus;
 };
