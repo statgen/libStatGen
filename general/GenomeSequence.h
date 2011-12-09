@@ -458,8 +458,12 @@ public:
         bool recurse = true
         );
 
-    void getString(std::string &str, int chromosome, genomeIndex_t index, int baseCount) const;
-    void getString(String &str, int chromosome, genomeIndex_t index, int baseCount) const;
+    //
+    // get the sequence from this GenomeSequence using the specified chromosome and 0-based position.
+    // if baseCount < 0, get the reverse complement
+    // that starts at index (but do not reverse the string?)
+    void getString(std::string &str, int chromosome, uint32_t index, int baseCount) const;
+    void getString(String &str, int chromosome, uint32_t index, int baseCount) const;
     //
     // get the sequence from this GenomeSequence.
     // if baseCount < 0, get the reverse complement

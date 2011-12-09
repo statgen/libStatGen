@@ -1107,7 +1107,7 @@ void GenomeSequence::dumpHeaderTSV(std::ostream &file) const
 }
 
 
-void GenomeSequence::getString(std::string &str, int chromosome, genomeIndex_t index, int baseCount) const
+void GenomeSequence::getString(std::string &str, int chromosome, uint32_t index, int baseCount) const
 {
     //
     // calculate the genome index for the lazy caller...
@@ -1117,7 +1117,7 @@ void GenomeSequence::getString(std::string &str, int chromosome, genomeIndex_t i
     getString(str, genomeIndex, baseCount);
 }
 
-void GenomeSequence::getString(String &str, int chromosome, genomeIndex_t index, int baseCount) const
+void GenomeSequence::getString(String &str, int chromosome, uint32_t index, int baseCount) const
 {
     std::string string;
     this-> getString(string, chromosome, index, baseCount);
