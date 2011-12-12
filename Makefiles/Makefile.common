@@ -10,8 +10,6 @@ MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILES_PATH)Makefile.include
 
 MAKE_DEPENDS=Makefile.depends
-MAKE_DEPENDS=Makefile.depends
-MAKE_DEPENDS=Makefile.depends
 
 # Source File Set
 TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)

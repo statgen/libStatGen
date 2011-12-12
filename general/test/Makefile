@@ -3,7 +3,7 @@ include ../../Makefiles/Makefile.include
 
 .DEFAULT_GOAL := all
 
-SUBDIRS=inputFileTest cigar string
+SUBDIRS=inputFileTest cigar string reusableVector
 
 OPTFLAG?=-O0
 

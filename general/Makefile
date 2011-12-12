@@ -85,6 +85,7 @@ HDRONLY= \
 	LongInt.h \
 	MathConstant.h \
 	PedigreeAlleles.h \
+	ReusableVector.h \
 	SimpleStats.h
 
 include ../Makefiles/Makefile.lib
