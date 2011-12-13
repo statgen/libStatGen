@@ -18,6 +18,7 @@
  */
 
 #include <vector>
+#include <stdexcept>
 
 #ifndef __REUSABLE_VECTOR_H__
 #define __REUSABLE_VECTOR_H__
@@ -41,13 +42,13 @@ public:
     /// directly populate it rather than having to copy into it.
     DATA_TYPE& getNextEmpty();
 
-    /// Get a pointer to the data at the specified index, returning NULL if
-    /// the index is out of range.
-    DATA_TYPE* get(unsigned int index);
+    /// Get a reference to the data at the specified index.
+    /// Throws an exception if the index is out of range.
+    DATA_TYPE& get(unsigned int index);
 
     /// Return the number of populated entries in the vector.
     // The next empty position is the same as the size.
-    int size() {return(myNextEmpty);}
+    int size() const {return(myNextEmpty);}
 
 protected:
     std::vector<DATA_TYPE*> myCont;
@@ -108,16 +109,21 @@ DATA_TYPE& ReusableVector<DATA_TYPE>::getNextEmpty()
 
 
 template <class DATA_TYPE>
-DATA_TYPE* ReusableVector<DATA_TYPE>::get(unsigned int index)
+DATA_TYPE& ReusableVector<DATA_TYPE>::get(unsigned int index)
 {
     if((index < myNextEmpty) && (index >= 0))
     {
         // index is a valid position, so return that data.
-        return(myCont[index]);
+        if(myCont[index] == NULL)
+        {
+            throw(std::runtime_error("ReusableVector::get BUG, found a null pointer."));
+        }
+        return(*myCont[index]);
     }
 
-    // Not set in the vector, so return null.
-    return(NULL);
+    // Not set in the vector, so throw an exception.
+    throw(std::runtime_error("ReusableVector::get called with out of range index."));
+    // return(myCont[0]);
 }
 
 #endif

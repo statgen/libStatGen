@@ -18,7 +18,7 @@
 #include "ReusableVectorTest.h"
 #include <assert.h>
 #include <iostream>
-
+#include <string.h>
 
 int ReusableVectorTestDataType::ourValue = 0;
 int ReusableVectorTestDataType::ourNumDestructs = 0;
@@ -46,12 +46,12 @@ void ReusableVectorTest::testReuse()
     ReusableVectorTestDataType* dataPtr = NULL;
 
     assert(testVector.size() == 0);
-    assert(testVector.get(0) == NULL);
-    assert(testVector.get(1) == NULL);
+    assert(testInvalidGetIndex(testVector, 0));
+    assert(testInvalidGetIndex(testVector, 1));
     testVector.reset();
     assert(testVector.size() == 0);
-    assert(testVector.get(0) == NULL);
-    assert(testVector.get(1) == NULL);
+    assert(testInvalidGetIndex(testVector, 0));
+    assert(testInvalidGetIndex(testVector, 1));
 
     // Get three data pointers and check they are each new.
     dataPtr = &(testVector.getNextEmpty());
@@ -67,12 +67,12 @@ void ReusableVectorTest::testReuse()
 
     // Check a 2nd test vector.
     assert(testVector2.size() == 0);
-    assert(testVector2.get(0) == NULL);
-    assert(testVector2.get(1) == NULL);
+    assert(testInvalidGetIndex(testVector2, 0));
+    assert(testInvalidGetIndex(testVector2, 1));
     testVector2.reset();
     assert(testVector2.size() == 0);
-    assert(testVector2.get(0) == NULL);
-    assert(testVector2.get(1) == NULL);
+    assert(testInvalidGetIndex(testVector2, 0));
+    assert(testInvalidGetIndex(testVector2, 1));
 
     // Get data pointers and check they are each new.
     dataPtr = &(testVector2.getNextEmpty());
@@ -84,27 +84,20 @@ void ReusableVectorTest::testReuse()
     assert(testVector2.size() == 2);
     
     // Test the get accessor.
-    dataPtr = testVector2.get(1);
-    assert((dataPtr != NULL) && (dataPtr->myValue == 4));
-    dataPtr = testVector2.get(0);
-    assert((dataPtr != NULL) && (dataPtr->myValue == 3));
-    dataPtr = testVector2.get(2);
-    assert(dataPtr == NULL);
+    assert(testVector2.get(1).myValue == 4);
+    assert(testVector2.get(0).myValue == 3);
+    assert(testInvalidGetIndex(testVector2, 2));
    // Test the get accessor with the first vector.
-    dataPtr = testVector.get(1);
-    assert((dataPtr != NULL) && (dataPtr->myValue == 1));
-    dataPtr = testVector.get(0);
-    assert((dataPtr != NULL) && (dataPtr->myValue == 0));
-    dataPtr = testVector.get(2);
-    assert((dataPtr != NULL) && (dataPtr->myValue == 2));
-    dataPtr = testVector.get(3);
-    assert(dataPtr == NULL);
+    assert(testVector.get(1).myValue == 1);
+    assert(testVector.get(0).myValue == 0);
+    assert(testVector.get(2).myValue == 2);
+    assert(testInvalidGetIndex(testVector, 3));
 
     // Clear the 1st vector.
     testVector.clear();
     assert(testVector.size() == 0);
-    assert(testVector.get(0) == NULL);
-    assert(testVector.get(1) == NULL);
+    assert(testInvalidGetIndex(testVector, 0));
+    assert(testInvalidGetIndex(testVector, 1));
 
     // Check the data values are reused.
     dataPtr = &(testVector.getNextEmpty());
@@ -129,11 +122,11 @@ void ReusableVectorTest::testReuse()
     testVector2.clear();
     testVector.reset();
     assert(testVector.size() == 0);
-    assert(testVector.get(0) == NULL);
-    assert(testVector.get(1) == NULL);
+    assert(testInvalidGetIndex(testVector, 0));
+    assert(testInvalidGetIndex(testVector, 1));
     assert(testVector2.size() == 0);
-    assert(testVector2.get(0) == NULL);
-    assert(testVector2.get(1) == NULL);
+    assert(testInvalidGetIndex(testVector2, 0));
+    assert(testInvalidGetIndex(testVector2, 1));
 
     // Get values for the vectors and verify they are reused.
     dataPtr = &(testVector2.getNextEmpty());
@@ -171,11 +164,30 @@ void ReusableVectorTest::testReuse()
 }
 
 
+bool ReusableVectorTest::testInvalidGetIndex(ReusableVector<ReusableVectorTestDataType>& testVector, int index)
+{
+    bool caught = false;
+    try
+    {
+        testVector.get(index);
+    }
+    catch(std::exception& e)
+    {
+        caught = true;
+        assert(strcmp(e.what(), "ReusableVector::get called with out of range index.") == 0);
+    }
+    return(caught);
+}
+
+
 ReusableVectorTestDataType::ReusableVectorTestDataType()
 {
     myValue = ourValue++;
 }
+
+
 ReusableVectorTestDataType::~ReusableVectorTestDataType()
 {
     ++ourNumDestructs;
 }
+

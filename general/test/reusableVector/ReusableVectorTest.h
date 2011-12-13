@@ -18,6 +18,8 @@
 #ifndef __REUSABLE_VECTOR_TEST_H__
 #define __REUSABLE_VECTOR_TEST_H__
 
+class ReusableVectorTestDataType;
+
 class ReusableVectorTest
 {
 public:
@@ -25,6 +27,7 @@ public:
 
 private:
     void testReuse();
+    bool testInvalidGetIndex(ReusableVector<ReusableVectorTestDataType>& testVector, int index);
 };
 
 
