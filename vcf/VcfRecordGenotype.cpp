@@ -17,7 +17,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "VcfRecordGenotype.h"
-
+#include <stdlib.h>
 
 VcfRecordGenotype::VcfRecordGenotype()
 {
@@ -56,11 +56,12 @@ bool VcfRecordGenotype::read(IFILE filePtr)
         nextType = &(myPosToType.getNextEmpty());
         stopPos = filePtr->readTilChar(fieldStopChars, *nextType);
 
-        // Store map of format to position.
+        // Store map of format to position. 
+        // TODO
     }
 
     // Done reading the format field, so read the samples.
-    SmartStringVector* nextSample = NULL;
+    VCF_SAMPLE* nextSample = NULL;
     while(stopPos == tabPos)
     {
         // Read this sample.
@@ -70,6 +71,7 @@ bool VcfRecordGenotype::read(IFILE filePtr)
         while(stopPos >= contPos)
         {
             nextType = &(nextSample->getNextEmpty());
+
             stopPos = filePtr->readTilChar(fieldStopChars, *nextType);
         }
     }
@@ -82,20 +84,29 @@ bool VcfRecordGenotype::read(IFILE filePtr)
 bool VcfRecordGenotype::write(IFILE filePtr)
 {
     bool status = true;
-    
-    // Write the format.
-    status &= myPosToType.write(filePtr);
+    int numWritten = 0;
+    int numExpected = 0;
 
-    // Write the tab.
-    int numWritten = ifprintf(filePtr, "\t");
+    // Write the format.
+    status &= writeSample(filePtr, myPosToType);
+
+    VCF_SAMPLE* sample = NULL;
     
-    if(numWritten != 1)
+    // Loop through and write each sample.
+    for(int i = 0; i < mySamples.size(); i++)
+    {
+        // Write the tab before this sample.
+        numWritten += ifprintf(filePtr, "\t");
+        ++numExpected;
+        
+        sample = &(mySamples.get(i));
+        status &= writeSample(filePtr, *sample);
+    }
+
+    if(numWritten != numExpected)
     {
         status = false;
     }
-
-    // Write the samples.
-    status &= mySamples.write(filePtr);
     return(status);
 }
 
@@ -107,30 +118,47 @@ void VcfRecordGenotype::reset()
 }
 
 
-const std::string* VcfRecordGenotype::getValue(const std::string& key, 
-                                               int sampleNum)
+const std::string* VcfRecordGenotype::getString(const std::string& key, 
+                                                int sampleNum)
 {
     // Get this sample
-    SmartStringVector* samplePtr = mySamples.get(sampleNum);
-    // Check if the sample exists.
-    if(samplePtr != NULL)
-    {
-        // the sample was found, so search for this field of the sample.
+    VCF_SAMPLE* samplePtr = &(mySamples.get(sampleNum));
 
-        for(int i = 0; i < myPosToType.size(); i++)
+    //  Search for this field of the sample.
+    for(int i = 0; i < myPosToType.size(); i++)
+    {
+        if(myPosToType.get(i) == key)
         {
-            std::string* type = myPosToType.get(i);
-            if((type != NULL) && (*type == key))
-            {
-                // Found the type.
-                return(samplePtr->get(i));
-            }
+            // Found the type.
+            return(&(samplePtr->get(i)));
         }
     }
-
-    // field/sample was not found, so return null.
+    // field was not found, so return null.
     return(NULL);
 }
+
+
+// bool VcfRecordGenotype::setString(const std::string& key, 
+//                                   int sampleNum, 
+//                                   const std::string& value)
+// {
+//     // Get this sample
+//     VCF_SAMPLE* samplePtr = &(mySamples.get(sampleNum));
+
+//     // Search for this field of the sample.
+//     for(int i = 0; i < myPosToType.size(); i++)
+//     {
+//         if(myPosToType.get(i) == key)
+//         {
+//             // Found the type. TODO, change to be set.
+//             return(samplePtr->get(i));
+//         }
+//     }
+
+//     // field was not found, so return null.
+//     return(NULL);
+// }
+
 
 const int  VcfRecordGenotype::getNumSamples()
 {
@@ -138,52 +166,28 @@ const int  VcfRecordGenotype::getNumSamples()
 }
 
 
-/////////////////////////////////////////////////////////////
-// SmartStringVector
-bool VcfRecordGenotype::SmartStringVector::write(IFILE filePtr)
+bool VcfRecordGenotype::writeSample(IFILE filePtr, 
+                                    VCF_SAMPLE& sample)
 {
     int numWritten = 0;
     int numExpected = 0;
+    std::string* subFieldPtr = NULL;
 
-    for(unsigned int i = 0;
-        i < myNextEmpty; i++)
+    for(int i = 0; i < sample.size(); i++)
     {
+        subFieldPtr = &(sample.get(i));
         if(i == 0)
         {
             // First entry, so no ':'
-            numWritten += ifprintf(filePtr, "%s", myCont[i]->c_str());
-            numExpected += myCont[i]->size();
+            numWritten += ifprintf(filePtr, "%s", subFieldPtr->c_str());
+            numExpected += subFieldPtr->size();
         }
         else
         {
             // Not first entry, so use a ':'
-            numWritten += ifprintf(filePtr, ":%s", myCont[i]->c_str());
-            numExpected += 1 + myCont[i]->size();
+            numWritten += ifprintf(filePtr, ":%s", subFieldPtr->c_str());
+            numExpected += 1 + subFieldPtr->size();
         }
     } // End loop through entries.
     return(numWritten == numExpected);
-}
-
-
-/////////////////////////////////////////////////////////////
-// SmartVectorOfStringVectors
-bool VcfRecordGenotype::SmartVectorOfStringVectors::write(IFILE filePtr)
-{
-    int numWritten = 0;
-    int numExpected = 0;
-    bool status = true;
-    
-    for(unsigned int i = 0;
-        i < myNextEmpty; i++)
-    {
-        if(i != 0)
-        {
-            // Not first entry, so use a '\t'
-            numWritten += ifprintf(filePtr, "\t");
-            numExpected += 1;
-
-            status &= myCont[i]->write(filePtr);
-        }
-    } // End loop through entries.
-    return((numWritten == numExpected) && status);
 }

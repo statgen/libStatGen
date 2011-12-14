@@ -44,9 +44,11 @@ public:
     /// \return true if successful, false if not.
     bool readRecord(VcfRecord& record);
 
-    /// Return a reference to the meta/header information.
-    /// \return reference 
-
+    /// Returns whether or not the end of the file has been reached.
+    /// \return true = EOF; false = not eof.
+    /// If the file is not open, true is returned.
+    bool isEOF();
+   
     /// Get the Status of the last call that sets status.
     inline StatGenStatus::Status getStatus()
     {

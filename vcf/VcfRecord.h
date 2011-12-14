@@ -21,6 +21,7 @@
 #define __VCF_RECORD_H__
 
 #include <vector>
+#include "VcfRecordFilter.h"
 #include "VcfRecordInfo.h"
 #include "VcfRecordGenotype.h"
 #include "StatGenStatus.h"
@@ -70,11 +71,16 @@ public:
     const char* getAltStr() {return(myAlt.c_str());}
     float getQual() {return(myQualNum);}
     const char* getQualStr() {return(myQual.c_str());}
-    const char* getFilterStr() {return(myFilter.c_str());}
+
+    /// Return a reference to the filter information.
+    VcfRecordFilter& getFilter(){return(myFilter);}
+
     /// Get a reference to the information field.
-    VcfRecordInfo& getRefInfo() {return myInfo;}
+    VcfRecordInfo& getInfo() {return myInfo;}
+
     /// Get a reference to the genotype fields.
     VcfRecordGenotype& getGenotypeInfo() {return myGenotype;}
+
     //@}
 
 
@@ -100,7 +106,6 @@ public:
             myQualNum = -1;
         }
     }
-    void setFilter(const char* filter) {myFilter = filter;}
 
 protected: 
 
@@ -125,7 +130,7 @@ private:
     std::string myAlt;
     float myQualNum;
     std::string myQual;
-    std::string myFilter;
+    VcfRecordFilter myFilter;
     VcfRecordInfo myInfo;
     VcfRecordGenotype myGenotype;
 

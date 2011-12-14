@@ -21,11 +21,8 @@
 #ifndef __VCF_RECORD_GENOTYPE_H__
 #define __VCF_RECORD_GENOTYPE_H__
 
-#include <vector>
-#include <map>
-
 #include "VcfRecordField.h"
-
+#include "ReusableVector.h"
 
 /// This header file provides interface to read/write VCF files.
 class VcfRecordGenotype : public VcfRecordField
@@ -62,130 +59,31 @@ public:
     /// \param sampleNum which sample to get the value for (starts at 0).
     /// \return const pointer to the string value for this key, NULL if
     /// the sample or the key wer not found.
-    const std::string* getValue(const std::string& key, 
-                                int sampleNum);
+    const std::string* getString(const std::string& key, 
+                                 int sampleNum);
+
+    /// Set the string associated with the specified key for the specified
+    /// sample.
+    bool setString(const std::string& key, int sampleNum, 
+                   const std::string& value);
 
     /// Get the number of samples.
-    /// \param key to find the falue for.
-    /// \return const pointer to the string value for this key, NULL if
-    /// the key was not found, a pointer to an empty string if the key
-    /// does not have a value.
     const int getNumSamples();
 
 protected:
 
 private:
-    template <class DATA_TYPE>
-    class SmartVector
-    {
-    public:
-        SmartVector(): myCont(), myNextEmpty(0) {}
-        virtual ~SmartVector();
-        void reset();
-        void clear() {reset();}
-        DATA_TYPE& getNextEmpty();
-        DATA_TYPE* get(unsigned int index);
-        // The next empty position is the same as the size.
-        int size() {return(myNextEmpty);}
-        // Does not print the starting/trailing '\t'
-        virtual bool write(IFILE filePtr) = 0;
-    protected:
-        std::vector<DATA_TYPE*> myCont;
-        unsigned int myNextEmpty;
-    };
- 
-    class SmartStringVector : public SmartVector<std::string>
-    {
-    public:
-        SmartStringVector()
-            : SmartVector<std::string>()
-        {}
-        virtual ~SmartStringVector(){}
-        // Does not print the starting/trailing '\t'
-        bool write(IFILE filePtr);
-    };
-
-    class SmartVectorOfStringVectors : public SmartVector<SmartStringVector>
-    {
-    public:
-        SmartVectorOfStringVectors()
-            : SmartVector<SmartStringVector>()
-        {}
-        virtual ~SmartVectorOfStringVectors(){}
-        // Does not print the starting/trailing '\t'
-        bool write(IFILE filePtr);
-    };
 
     //   std::map<const std::string*, int> myTypeToPos;
 
     // Format field indexed by position with the value
     // as the datatype.
-    SmartStringVector myPosToType;
-    
-    SmartVectorOfStringVectors mySamples;
+    typedef ReusableVector<std::string> VCF_SAMPLE;
+    VCF_SAMPLE myPosToType;
+    ReusableVector<VCF_SAMPLE> mySamples;
+
+    // Can also be used for writing the format as it has the same syntax as a sample.
+    bool writeSample(IFILE filePtr, VCF_SAMPLE& sample);
 };
-
-/////////////////////////////////////////////////////////////
-// SmartVector
-template <class DATA_TYPE>
-VcfRecordGenotype::SmartVector<DATA_TYPE>::~SmartVector()
-{
-    for(unsigned int i = 0; i < myCont.size(); i++)
-    {
-        // Delete all the entries.
-        delete myCont[i];
-        myCont[i] = NULL;
-    }
-    myCont.clear();
-    myNextEmpty = 0;
-}
-template <class DATA_TYPE>
-void VcfRecordGenotype::SmartVector<DATA_TYPE>::reset()
-{
-    // Set the next empty element to be the first one on the list.
-    // That means there are none used.
-    myNextEmpty = 0;
-}
-        
-template <class DATA_TYPE>
-DATA_TYPE& VcfRecordGenotype::SmartVector<DATA_TYPE>::getNextEmpty()
-{
-    if(myNextEmpty == myCont.size())
-    {
-        // We are at the end of the available entries, so add a new one.
-        myCont.resize(myCont.size() + 1);
-
-        // Create a new string.
-        myCont[myNextEmpty] = new DATA_TYPE;
-    }
-    else
-    {
-        // myNextEmpty is an element, and not the end.
-        // So, clear out the string.
-        myCont[myNextEmpty]->clear();
-    }
-
-    DATA_TYPE* returnVal = myCont[myNextEmpty];
-
-    // Increment next empty to the next element.
-    ++myNextEmpty;
-    // return the element to be used.
-    return(*returnVal);
-}
-
-
-template <class DATA_TYPE>
-DATA_TYPE* VcfRecordGenotype::SmartVector<DATA_TYPE>::get(unsigned int index)
-{
-    if((index < myNextEmpty) && (index >= 0))
-    {
-        // index is a valid position, so return that string.
-        return(myCont[index]);
-    }
-
-    // Not set in the vector, so return null.
-    return(NULL);
-}
-
 
 #endif

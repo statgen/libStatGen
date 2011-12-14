@@ -84,9 +84,9 @@ void VcfRecordInfo::reset()
 }
 
 
-const std::string* VcfRecordInfo::getValue(const char* string)
+const std::string* VcfRecordInfo::getString(const char* key)
 {
-    InfoContainer::InfoKeyValue* pairPtr = myInfo.find(string);
+    const InfoContainer::InfoKeyValue* pairPtr = myInfo.find(key);
     if(pairPtr == NULL)
     {
         // Not found, return NULL.
@@ -94,6 +94,24 @@ const std::string* VcfRecordInfo::getValue(const char* string)
     }
     // Found, so return the value.
     return(&(pairPtr->second));
+}
+
+
+void VcfRecordInfo::setString(const char* key, const char* stringVal)
+{
+    InfoContainer::InfoKeyValue* pairPtr = myInfo.find(key);
+    if(pairPtr == NULL)
+    {
+        // Not found, so get the next element to write the key into.
+        InfoContainer::InfoKeyValue& nextKeyVal = myInfo.getNextEmpty();
+        nextKeyVal.first = key;
+        nextKeyVal.second = stringVal;
+    }
+    else
+    {
+        // Key was found, so replace the value.
+        pairPtr->second = stringVal;
+    }
 }
 
 

@@ -23,6 +23,7 @@ VcfFile::VcfFile()
 {
   myFilePtr = NULL;
   mySiteOnly = false;
+  myNumRecords = 0;
 }
 
 VcfFile::~VcfFile()
@@ -65,4 +66,5 @@ void VcfFile::resetFile()
         ifclose(myFilePtr);
         myFilePtr = NULL;
     }
+    myNumRecords = 0;
 }

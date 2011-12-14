@@ -109,7 +109,7 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly)
         }
     }
     // Read the Filter.
-    if(!readTilTab(filePtr, myFilter))
+    if(!myFilter.read(filePtr))
     {
         myStatus.setStatus(StatGenStatus::FAIL_PARSE, 
                            "Error reading VCF Record FILTER.");
@@ -149,30 +149,96 @@ bool VcfRecord::write(IFILE filePtr, bool siteOnly)
         return(false);
     }
 
-    int numWritten = ifprintf(filePtr, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t", 
-             myChrom.c_str(), my1BasedPos.c_str(), myID.c_str(), myRef.c_str(), myAlt.c_str(), myQual.c_str(), myFilter.c_str());
+    int numWritten = 0;
+    int numExpected = 0;
+    if(myChrom.length() == 0)
+    {
+        numWritten += ifprintf(filePtr, ".\t");
+        numExpected += 2;
+    }
+    else
+    {
+        numWritten += ifprintf(filePtr, "%s\t", myChrom.c_str());
+        numExpected += myChrom.length() + 1;
+    }
+    if(my1BasedPos.length() == 0)
+    {
+        numWritten += ifprintf(filePtr, ".\t");
+        numExpected += 2;
+    }
+    else
+    {
+        numWritten += ifprintf(filePtr, "%s\t", my1BasedPos.c_str());
+        numExpected += my1BasedPos.length() + 1;
+    }
+    if(myID.length() == 0)
+    {
+        numWritten += ifprintf(filePtr, ".\t");
+        numExpected += 2;
+    }
+    else
+    {
+        numWritten += ifprintf(filePtr, "%s\t", myID.c_str());
+        numExpected += myID.length() + 1;
+    }
+    if(myRef.length() == 0)
+    {
+        numWritten += ifprintf(filePtr, ".\t");
+        numExpected += 2;
+    }
+    else
+    {
+        numWritten += ifprintf(filePtr, "%s\t", myRef.c_str());
+        numExpected += myRef.length() + 1;
+    }
+    if(myAlt.length() == 0)
+    {
+        numWritten += ifprintf(filePtr, ".\t");
+        numExpected += 2;
+    }
+    else
+    {
+        numWritten += ifprintf(filePtr, "%s\t", myAlt.c_str());
+        numExpected += myAlt.length() + 1;
+    }
+    if(myQual.length() == 0)
+    {
+        numWritten += ifprintf(filePtr, ".\t");
+        numExpected += 2;
+    }
+    else
+    {
+        numWritten += ifprintf(filePtr, "%s\t", myQual.c_str());
+        numExpected += myQual.length() + 1;
+    }
+    const std::string& filterString = myFilter.getString();
+    if(filterString.length() == 0)
+    {
+        numWritten += ifprintf(filePtr, ".\t");
+        numExpected += 2;
+    }
+    else
+    {
+        numWritten += ifprintf(filePtr, "%s\t", filterString.c_str());
+        numExpected += filterString.length() + 1;
+    }
 
     // Write the info.
     bool writeSuccess = myInfo.write(filePtr);
-
-    // Add the string lengths and the tabs (7 in between these 8 values).
-    int expWritten = myChrom.length() + my1BasedPos.length() + myID.length() + 
-        myRef.length() + myAlt.length() + myQual.length() + myFilter.length()+ 
-        7;
 
     // Only write the format & genotype if we are not just writing siteOnly
     // data and there is at least one sample 
     if((!siteOnly) && (myGenotype.getNumSamples() != 0))
     {
         numWritten += ifprintf(filePtr, "\t");
-        writeSuccess += myGenotype.write(filePtr);
+        writeSuccess &= myGenotype.write(filePtr);
     }
 
     // Write the new line.
     numWritten += ifprintf(filePtr, "\n");
-    expWritten += 1;
+    numExpected += 1;
 
-    return((numWritten == expWritten) && writeSuccess);
+    return((numWritten == numExpected) && writeSuccess);
 }
 
 

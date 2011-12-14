@@ -62,5 +62,6 @@ bool VcfFileWriter::writeRecord(VcfRecord& record)
         myStatus = record.getStatus();
         return(false);
     }
+    ++myNumRecords;
     return(true);
 }

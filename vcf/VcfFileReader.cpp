@@ -63,5 +63,22 @@ bool VcfFileReader::readRecord(VcfRecord& record)
         myStatus = record.getStatus();
         return(false);
     }
+    ++myNumRecords;
     return(true);
 }
+
+
+// Returns whether or not the end of the file has been reached.
+// return: int - true = EOF; false = not eof.
+bool VcfFileReader::isEOF()
+{
+    if (myFilePtr != NULL)
+    {
+        // File Pointer is set, so return if eof.
+        return(ifeof(myFilePtr));
+    }
+    // File pointer is not set, so return true, eof.
+    return true;
+}
+
+

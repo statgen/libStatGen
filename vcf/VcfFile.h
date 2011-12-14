@@ -49,6 +49,10 @@ public:
     /// \param siteOnly process only the first 8 columns
     void setSiteOnly(bool siteOnly) {mySiteOnly = siteOnly;}
 
+    /// Get the number of VCF records that have been processed (read/written)
+    /// so far.
+    int getNumRecords() {return(myNumRecords);}
+
 protected: 
     /// Open the vcf file with the specified filename
     /// with the specified mode.
@@ -62,6 +66,9 @@ protected:
     StatGenStatus myStatus;
 
     bool mySiteOnly;
+
+    // Number of records read/written so far.  Child classes need to set this.
+    int myNumRecords;
 
 private:
     void resetFile();

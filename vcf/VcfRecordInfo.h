@@ -56,11 +56,18 @@ public:
     /// Get a pointer to the string containing the value associated with the
     /// specified key (the pointer will be invalid if the field is
     /// changed/reset).  
-    /// \param key to find the falue for.
+    /// \param key to find the value for.
     /// \return const pointer to the string value for this key, NULL if
     /// the key was not found, a pointer to an empty string if the key
-    /// does not have a value.
-    const std::string* getValue(const char* string);
+    /// was found, but does not have a value.
+    const std::string* getString(const char* key);
+
+    /// Set the string value associated with the specified key.  
+    /// \param key to set the value for.
+    /// \param const pointer to the string value for this key, NULL if
+    /// the key was not found, a pointer to an empty string if the key
+    /// was found, but does not have a value.
+    void setString(const char* key, const char* stringVal);
 
 protected:
 
