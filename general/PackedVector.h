@@ -88,12 +88,12 @@ public:
 
             if( (elementCount2BytesFunc(m_elementCount)) > m_data.capacity())
             {
-                size_t newCapacity = m_data.capacity() * m_growthRateMultiplier;
+                size_t newCapacity = (size_t) (m_data.capacity() * m_growthRateMultiplier);
 
                 // for small capacities, small fractional multipliers don't work,
                 // so we check and do a linear increase in those cases:
                 if(newCapacity == m_data.capacity()) {
-                    newCapacity = m_data.capacity() + m_growthRateAdder;
+                    newCapacity = (size_t) (m_data.capacity() + m_growthRateAdder);
                 }
 
                 m_data.reserve(newCapacity);
