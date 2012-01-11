@@ -9,6 +9,7 @@ TEST_COMMAND=	mkdir -p results && \
 	diff data/InputFileTest.gz results/gzipFile.glf && \
 	diff data/InputFileTest.txt results/InputFileTest.glf && \
 	diff data/InputFileTest.txt results/uncompressedFile.glf && \
-	diff data/textFile.gz results/textFile.gz
+	diff data/textFile.gz results/textFile.gz && \
+	diff data/textFile.gz results/textFile1.gz
 
 include ../../../Makefiles/Makefile.test
