@@ -1169,6 +1169,19 @@ void testWrite()
     
     assert(ifclose(filePtr) == 0);
 
+
+    filename = "results/textFile.gz";
+    
+    filePtr = ifopen(filename.c_str(), "wt");
+
+    (*filePtr) << "Hello\n";
+    (*filePtr) << "Hello." << "How are you";
+    (*filePtr) << "?" << "\n";
+    std::string mytext = "Bye\n";
+    (*filePtr) << mytext;
+
+    assert(ifclose(filePtr) == 0);
+
     // TODO - automatically verify that the files were written in the
     // correct format - rather than hand checking.
 }

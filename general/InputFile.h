@@ -690,5 +690,39 @@ inline IFILE operator >> (IFILE stream, std::string &str)
     return stream;
 }
 
+/// Write to a file using streaming.
+/// \param stream file to read from - IFILE is a pointer to an InputFile object
+/// \param str output string containing the line read from the file.
+inline InputFile& operator << (InputFile& stream, const std::string& str)
+{
+    unsigned int numExpected = str.length();
+    unsigned int numWritten = 
+        stream.ifwrite(str.c_str(), numExpected);
+    if(numExpected != numWritten)
+    {
+        std::cerr << "Failed to stream to IFILE, expected " 
+                  << numExpected << " but only wrote "
+                  << numWritten << std::endl;
+    }
+    return(stream);
+}
+
+/// Write to a file using streaming.
+/// \param stream file to read from - IFILE is a pointer to an InputFile object
+/// \param str output string containing the line read from the file.
+inline InputFile& operator << (InputFile& stream, const char* str)
+{
+    unsigned int numExpected = strlen(str);
+    unsigned int numWritten = 
+        stream.ifwrite(str, numExpected);
+    if(numExpected != numWritten)
+    {
+        std::cerr << "Failed to stream to IFILE, expected " 
+                  << numExpected << " but only wrote "
+                  << numWritten << std::endl;
+    }
+    return(stream);
+}
+
 #endif
 
