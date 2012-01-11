@@ -418,6 +418,24 @@ String operator + (unsigned int lhs, const String & rhs);
 
 std::ostream& operator << (std::ostream& os, const String& s);
 
+/// Write to a file using streaming.
+/// \param stream file to read from - IFILE is a pointer to an InputFile object
+/// \param str output string containing the line read from the file.
+inline InputFile& operator << (InputFile& stream, const String& str)
+{
+    unsigned int numExpected = str.Length();
+    unsigned int numWritten = 
+        stream.ifwrite(str.c_str(), numExpected);
+    if(numExpected != numWritten)
+    {
+        std::cerr << "Failed to stream to IFILE, expected " 
+                  << numExpected << " but only wrote "
+                  << numWritten << std::endl;
+    }
+    return(stream);
+}
+
+
 #endif
 
 

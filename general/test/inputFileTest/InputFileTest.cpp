@@ -17,6 +17,7 @@
 #include "InputFileTest.h"
 #include <assert.h>
 #include <iostream>
+#include "StringBasics.h"
 
 #ifdef __ZLIB_AVAILABLE__
 void testWrite();
@@ -1178,6 +1179,8 @@ void testWrite()
     (*filePtr) << "?" << "\n";
     std::string mytext = "Bye\n";
     (*filePtr) << mytext;
+    String myString = "Good Bye!\n";
+    (*filePtr) << myString;
     assert(ifclose(filePtr) == 0);
 
     filename = "results/textFile1.gz";
@@ -1185,8 +1188,8 @@ void testWrite()
     fileRef << "Hello\n";
     fileRef << "Hello." << "How are you";
     fileRef << "?" << "\n";
-    mytext = "Bye\n";
     fileRef << mytext;
+    fileRef << myString;
     assert(ifclose(&fileRef) == 0);
 
     // TODO - automatically verify that the files were written in the
