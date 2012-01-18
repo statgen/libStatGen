@@ -53,6 +53,10 @@ public:
     /// Get the reference position stored in this element.
     int32_t getRefPosition()  const { return(myRefPosition); }
 
+    /// Returns the reference base for this pileup element.
+    /// Only works if a reference has been set, otherwise, 'N' is returned.
+    char getRefBase();
+
     /// Set the reference to use for all pilepElements.
     static void setReference(GenomeSequence* reference);
 

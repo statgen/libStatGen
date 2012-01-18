@@ -71,6 +71,16 @@ void PileupElement::reset(int32_t refPosition)
 }
 
 
+char PileupElement::getRefBase()
+{
+    if(myRefPtr == NULL)
+    {
+        return(myRefPtr->getBase(myChromosome.c_str(), myRefPosition));
+    }
+    return('N');
+}
+
+
 // Resets the entry, setting the new position associated with this element.
 void PileupElement::setReference(GenomeSequence* reference)
 {
