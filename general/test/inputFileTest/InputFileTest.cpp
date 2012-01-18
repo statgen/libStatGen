@@ -1173,12 +1173,20 @@ void testWrite()
 
     filename = "results/textFile.gz";
     
+    unsigned int myuint = 99;
+    int myint = -99;
+    char mychar = 'z';
+
     filePtr = ifopen(filename.c_str(), "wt");
     (*filePtr) << "Hello\n";
-    (*filePtr) << "Hello." << "How are you";
+    (*filePtr) << "Hello." << 3 << ' ' << -2 << "How are you";
     (*filePtr) << "?" << "\n";
     std::string mytext = "Bye\n";
     (*filePtr) << mytext;
+    (*filePtr) << 3.125 << mychar;
+    (*filePtr) << myuint;
+    (*filePtr) << mychar;
+    (*filePtr) << myint;
     String myString = "Good Bye!\n";
     (*filePtr) << myString;
     assert(ifclose(filePtr) == 0);
@@ -1186,9 +1194,13 @@ void testWrite()
     filename = "results/textFile1.gz";
     InputFile& fileRef = *(ifopen(filename.c_str(), "wt"));
     fileRef << "Hello\n";
-    fileRef << "Hello." << "How are you";
+    fileRef << "Hello." << 3 << ' ' << -2 << "How are you";
     fileRef << "?" << "\n";
     fileRef << mytext;
+    fileRef << 3.125 << mychar;
+    (*filePtr) << myuint;
+    (*filePtr) << mychar;
+    (*filePtr) << myint;
     fileRef << myString;
     assert(ifclose(&fileRef) == 0);
 

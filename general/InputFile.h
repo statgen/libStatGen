@@ -691,8 +691,8 @@ inline IFILE operator >> (IFILE stream, std::string &str)
 }
 
 /// Write to a file using streaming.
-/// \param stream file to read from - IFILE is a pointer to an InputFile object
-/// \param str output string containing the line read from the file.
+/// \param stream file to write to - IFILE is a pointer to an InputFile object
+/// \param str string containing what should be written to the file.
 inline InputFile& operator << (InputFile& stream, const std::string& str)
 {
     unsigned int numExpected = str.length();
@@ -708,8 +708,8 @@ inline InputFile& operator << (InputFile& stream, const std::string& str)
 }
 
 /// Write to a file using streaming.
-/// \param stream file to read from - IFILE is a pointer to an InputFile object
-/// \param str output string containing the line read from the file.
+/// \param stream file to write to - IFILE is a pointer to an InputFile object
+/// \param str string containing what should be written to the file.
 inline InputFile& operator << (InputFile& stream, const char* str)
 {
     unsigned int numExpected = strlen(str);
@@ -719,6 +719,37 @@ inline InputFile& operator << (InputFile& stream, const char* str)
     {
         std::cerr << "Failed to stream to IFILE, expected " 
                   << numExpected << " but only wrote "
+                  << numWritten << std::endl;
+    }
+    return(stream);
+}
+
+
+/// Write to a file using streaming.
+/// \param stream file to write to - IFILE is a pointer to an InputFile object
+/// \param num number that should be written to the file.
+InputFile& operator << (InputFile& stream, double num);
+
+/// Write to a file using streaming.
+/// \param stream file to write to - IFILE is a pointer to an InputFile object
+/// \param num number that should be written to the file.
+InputFile& operator << (InputFile& stream, int num);
+
+/// Write to a file using streaming.
+/// \param stream file to write to - IFILE is a pointer to an InputFile object
+/// \param num number that should be written to the file.
+InputFile& operator << (InputFile& stream, unsigned int num);
+
+/// Write to a file using streaming.
+/// \param stream file to write to - IFILE is a pointer to an InputFile object
+/// \param ch character that should be written to the file.
+inline InputFile& operator << (InputFile& stream, char ch)
+{
+    unsigned int numWritten = 
+        stream.ifwrite(&ch, 1);
+    if(1 != numWritten)
+    {
+        std::cerr << "Failed to stream to IFILE, expected 1, but only wrote " 
                   << numWritten << std::endl;
     }
     return(stream);

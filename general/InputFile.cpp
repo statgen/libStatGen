@@ -297,3 +297,28 @@ int ifprintf(IFILE output, const char * format, ...)
 }
 
 
+InputFile& operator << (InputFile& stream, double num)
+{
+    String val;
+    val = num;
+    stream << val;
+    return(stream);
+}
+
+
+InputFile& operator << (InputFile& stream, int num)
+{
+    String val;
+    val = num;
+    stream << val;
+    return(stream);
+}
+
+
+InputFile& operator << (InputFile& stream, unsigned int num)
+{
+    String val;
+    val = num;
+    stream << val;
+    return(stream);
+}
