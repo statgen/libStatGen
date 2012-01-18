@@ -407,6 +407,20 @@ public:
         return val;
     }
 
+    inline char getBase(const char *chromosomeName,
+                        unsigned int chromosomeIndex) const
+    {
+        genomeIndex_t index = 
+            getGenomePosition(chromosomeName, chromosomeIndex);
+        if(index == INVALID_GENOME_INDEX)
+        {
+            // Invalid position, so return 'N'
+            return('N');
+        }
+        return((*this)[index]);
+    }
+
+
     inline uint8_t getInteger(genomeIndex_t index) const
     {
         return (*((genomeSequenceArray*) this))[index];
