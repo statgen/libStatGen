@@ -764,6 +764,10 @@ private:
     bool myIsTagsBufferValid;
     bool myIsBinValid;
 
+    unsigned char* myPackedSequence;
+    unsigned char* myPackedQuality;
+
+
     SamStatus myStatus;
 
     // The current translation of the sequence as it occurs in the buffer.

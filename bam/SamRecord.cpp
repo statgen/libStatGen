@@ -136,8 +136,13 @@ void SamRecord::resetRecord()
     // Set that the variable length buffer fields are valid.
     myIsReadNameBufferValid = true;
     myIsCigarBufferValid = true;
+    myPackedSequence = 
+        (unsigned char *)myRecordPtr->myData + myRecordPtr->myReadNameLength +
+        myRecordPtr->myCigarLength * sizeof(int);
     myIsSequenceBufferValid = true;
     myBufferSequenceTranslation = NONE;
+
+    myPackedQuality = myPackedSequence;
     myIsQualityBufferValid = true;
     myIsTagsBufferValid = true;
     myIsBinValid = true;
@@ -1612,16 +1617,19 @@ char SamRecord::getSequence(int index, SequenceTranslation translation)
         if(mySequence.Length() == 0)
         {
             // Parse BAM sequence.
-            // TODO - maybe store this pointer - and use that to track when
-            // valid?
-            unsigned char * packedSequence = 
-                (unsigned char *)myRecordPtr->myData + 
-                myRecordPtr->myReadNameLength +
-                myRecordPtr->myCigarLength * sizeof(int);
-            
-            return(index & 1 ?
-                   asciiBases[packedSequence[index / 2] & 0xF] :
-                   asciiBases[packedSequence[index / 2] >> 4]);
+            if(myIsSequenceBufferValid)
+            {
+                return(index & 1 ?
+                       asciiBases[myPackedSequence[index / 2] & 0xF] :
+                       asciiBases[myPackedSequence[index / 2] >> 4]);
+            }
+            else
+            {
+                String exceptionString = "SamRecord::getSequence(";
+                exceptionString += index;
+                exceptionString += ") called with no sequence set";
+                throw std::runtime_error(exceptionString.c_str());
+            }
         }
         // Already have string.
         return(mySequence[index]);
@@ -1723,15 +1731,11 @@ char SamRecord::getQuality(int index)
         throw std::runtime_error(exceptionString.c_str());
     }
 
-    if(myQuality.Length() == 0)
+    if(myQuality.Length() == 0) 
     {
         // Parse BAM Quality.
-        unsigned char * packedQuality = 
-            (unsigned char *)myRecordPtr->myData +
-            myRecordPtr->myReadNameLength + 
-            myRecordPtr->myCigarLength * sizeof(int) + 
-            (myRecordPtr->myReadLength + 1) / 2;
-        return(packedQuality[index] + 33);
+        // Know that myPackedQuality is correct since readLen != 0.
+        return(myPackedQuality[index] + 33);
     }
     else
     {
@@ -2339,6 +2343,22 @@ bool SamRecord::allocateRecordStructure(int size)
         }
         // Successfully allocated memory, so set myRecordPtr.
         myRecordPtr = tmpRecordPtr;
+
+        // Reset the pointers into the record.
+        if(myIsSequenceBufferValid)
+        {
+            myPackedSequence = (unsigned char *)myRecordPtr->myData + 
+                myRecordPtr->myReadNameLength +
+                myRecordPtr->myCigarLength * sizeof(int);
+        }
+        if(myIsQualityBufferValid)
+        {
+            myPackedQuality = (unsigned char *)myRecordPtr->myData + 
+                myRecordPtr->myReadNameLength +
+                myRecordPtr->myCigarLength * sizeof(int) + 
+                (myRecordPtr->myReadLength + 1) / 2;
+        }
+
         allocatedSize = size;
     }
     return(true);
@@ -2581,8 +2601,13 @@ bool SamRecord::fixBuffer(SequenceTranslation translation)
                 }
             }
         }
-        myIsQualityBufferValid = true;
+        myPackedSequence = (unsigned char *)myRecordPtr->myData + 
+            myRecordPtr->myReadNameLength + 
+            myRecordPtr->myCigarLength * sizeof(int);
+        myPackedQuality = myPackedSequence + 
+            (myRecordPtr->myReadLength + 1) / 2;
         myIsSequenceBufferValid = true;
+        myIsQualityBufferValid = true;
         myBufferSequenceTranslation = translation;
     }
 
@@ -2650,13 +2675,6 @@ void SamRecord::setSequenceAndQualityFromBuffer()
         myQuality.SetLength(myRecordPtr->myReadLength);
     }
    
-    unsigned char * readNameEnds = 
-        (unsigned char *)myRecordPtr->myData + myRecordPtr->myReadNameLength;
-    unsigned char * packedSequence = 
-        readNameEnds + myRecordPtr->myCigarLength * sizeof(int);
-    unsigned char * packedQuality = 
-        packedSequence + (myRecordPtr->myReadLength + 1) / 2;
-
     const char * asciiBases = "=AC.G...T......N";
 
     // Flag to see if the quality is specified - the quality contains a value
@@ -2668,19 +2686,19 @@ void SamRecord::setSequenceAndQualityFromBuffer()
         if(extractSequence)
         {
             mySequence[i] = i & 1 ?
-                asciiBases[packedSequence[i / 2] & 0xF] :
-                asciiBases[packedSequence[i / 2] >> 4];
+                asciiBases[myPackedSequence[i / 2] & 0xF] :
+                asciiBases[myPackedSequence[i / 2] >> 4];
         }
 
         if(extractQuality)
         {
-            if(packedQuality[i] != 0xFF)
+            if(myPackedQuality[i] != 0xFF)
             {
                 // Quality is specified, so mark the flag.
                 qualitySpecified = true;
             }
 
-            myQuality[i] = packedQuality[i] + 33;
+            myQuality[i] = myPackedQuality[i] + 33;
         }
     }
 
@@ -2900,14 +2918,7 @@ bool SamRecord::setTagsFromBuffer()
     // Mark false, as they are being set now.
     myNeedToSetTagsFromBuffer = false;
 
-    unsigned char * readNameEnds = 
-        (unsigned char *)myRecordPtr->myData + myRecordPtr->myReadNameLength;
-    unsigned char * packedSequence = 
-        readNameEnds + myRecordPtr->myCigarLength * sizeof(int);
-    unsigned char * packedQuality = 
-        packedSequence + (myRecordPtr->myReadLength + 1) / 2;
-
-    unsigned char * extraPtr = packedQuality + myRecordPtr->myReadLength;
+    unsigned char * extraPtr = myPackedQuality + myRecordPtr->myReadLength;
 
     // Default to success, will be changed to false on failure.
     bool status = true;
@@ -3029,14 +3040,7 @@ bool SamRecord::setTagsInBuffer()
         return(false);
     }
 
-    unsigned char * readNameEnds = (unsigned char*)(&(myRecordPtr->myData)) +
-        myRecordPtr->myReadNameLength;
-    unsigned char * packedSequence = readNameEnds + 
-        myRecordPtr->myCigarLength * sizeof(int);
-    unsigned char * packedQuality = 
-        packedSequence + bamSequenceLength;
-   
-    char * extraPtr = (char*)packedQuality + myRecordPtr->myReadLength;
+    char * extraPtr = (char*)myPackedQuality + myRecordPtr->myReadLength;
 
     bool status = true;
 
@@ -3164,8 +3168,12 @@ void SamRecord::setVariablesForNewBuffer(SamFileHeader& header)
     // Set that the variable length buffer fields are valid.
     myIsReadNameBufferValid = true;
     myIsCigarBufferValid = true;
+    myPackedSequence = (unsigned char *)myRecordPtr->myData + 
+        myRecordPtr->myReadNameLength + myRecordPtr->myCigarLength * sizeof(int);
     myIsSequenceBufferValid = true;
     myBufferSequenceTranslation = NONE;
+    myPackedQuality = myPackedSequence + 
+        (myRecordPtr->myReadLength + 1) / 2;
     myIsQualityBufferValid = true;
     myIsTagsBufferValid = true;
     myIsBinValid = true;
