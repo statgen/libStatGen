@@ -73,9 +73,10 @@ void PileupElement::reset(int32_t refPosition)
 
 char PileupElement::getRefBase()
 {
-    if(myRefPtr == NULL)
+    if(myRefPtr != NULL)
     {
-        return(myRefPtr->getBase(myChromosome.c_str(), myRefPosition));
+        // Add 1 to pos because getBase expects 1-based index.
+        return(myRefPtr->getBase(myChromosome.c_str(), myRefPosition+1));
     }
     return('N');
 }

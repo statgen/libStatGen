@@ -407,6 +407,10 @@ public:
         return val;
     }
 
+    /// given a chromosome name and 1-based position, return the reference base.
+    /// \param chromosomeName name of the chromosome - exact match only
+    /// \param chromosomeIndex 1-based chromosome position
+    /// \return reference base at the above chromosome position
     inline char getBase(const char *chromosomeName,
                         unsigned int chromosomeIndex) const
     {
