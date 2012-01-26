@@ -64,5 +64,20 @@ bool BaseUtilities::areEqual(char base1, char base2)
 // Get phred base quality from the specified ascii quality.
 uint8_t BaseUtilities::getPhredBaseQuality(char charQuality)
 {
+    if(charQuality == UNKNOWN_QUALITY_CHAR)
+    {
+        return(UNKNOWN_QUALITY_INT);
+    }
+
     return(charQuality - 33);
+}
+
+
+char BaseUtilities::getAsciiQuality(uint8_t phredQuality)
+{
+    if(phredQuality == UNKNOWN_QUALITY_INT)
+    {
+        return(UNKNOWN_QUALITY_CHAR);
+    }
+    return(phredQuality + 33);
 }

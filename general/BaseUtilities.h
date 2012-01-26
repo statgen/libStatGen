@@ -39,6 +39,9 @@ public:
     /// Get phred base quality from the specified ascii quality.
     static uint8_t getPhredBaseQuality(char charQuality);
 
+    /// Get ascii quality from the specified phred quality.
+    static char getAsciiQuality(uint8_t phredQuality);
+
     /// Character used when the quality is unknown.
     static const char UNKNOWN_QUALITY_CHAR = ' ';
     /// Int value used when the quality is unknown.
