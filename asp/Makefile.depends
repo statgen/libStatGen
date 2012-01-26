@@ -1,0 +1,147 @@
+# DO NOT DELETE
+
+$(OBJDIR_OPT)/AspFile.o: AspFile.h AspRecord.h ../include/SamFile.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamStatus.h ../include/ErrorHandler.h
+$(OBJDIR_OPT)/AspFile.o: ../include/InputFile.h ../include/FileType.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamFileHeader.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamReferenceInfo.h
+$(OBJDIR_OPT)/AspFile.o: ../include/StringArray.h ../include/StringBasics.h
+$(OBJDIR_OPT)/AspFile.o: ../include/StringHash.h ../include/Constant.h
+$(OBJDIR_OPT)/AspFile.o: ../include/Hash.h ../include/IntArray.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamHeaderHD.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamHeaderRecord.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamHeaderTag.h ../include/SamHeaderSQ.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamHeaderRG.h ../include/SamHeaderPG.h
+$(OBJDIR_OPT)/AspFile.o: ../include/SamRecord.h ../include/GenomeSequence.h
+$(OBJDIR_OPT)/AspFile.o: ../include/MemoryMapArray.h ../include/Generic.h
+$(OBJDIR_OPT)/AspFile.o: ../include/MemoryMap.h
+$(OBJDIR_OPT)/AspFile.o: ../include/GenomeSequenceHelpers.h
+$(OBJDIR_OPT)/AspFile.o: ../include/LongHash.h ../include/Error.h
+$(OBJDIR_OPT)/AspFile.o: ../include/MathVector.h ../include/CigarRoller.h
+$(OBJDIR_OPT)/AspFile.o: ../include/Cigar.h ../include/GenericSamInterface.h
+$(OBJDIR_OPT)/AspFile.o: ../include/BamIndex.h ../include/SamStatistics.h
+$(OBJDIR_OPT)/AspRecord.o: AspRecord.h ../include/SamFile.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamStatus.h ../include/ErrorHandler.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/InputFile.h ../include/FileType.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamFileHeader.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamReferenceInfo.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/StringArray.h ../include/StringBasics.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/StringHash.h ../include/Constant.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/Hash.h ../include/IntArray.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamHeaderHD.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamHeaderRecord.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamHeaderTag.h ../include/SamHeaderSQ.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamHeaderRG.h ../include/SamHeaderPG.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/SamRecord.h ../include/GenomeSequence.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/MemoryMapArray.h ../include/Generic.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/MemoryMap.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/GenomeSequenceHelpers.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/LongHash.h ../include/Error.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/MathVector.h ../include/CigarRoller.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/Cigar.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/GenericSamInterface.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/BamIndex.h ../include/SamStatistics.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/BaseAsciiMap.h
+$(OBJDIR_OPT)/AspRecord.o: ../include/BaseUtilities.h
+
+$(OBJDIR_DEBUG)/AspFile.o: AspFile.h AspRecord.h ../include/SamFile.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamStatus.h ../include/ErrorHandler.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/InputFile.h ../include/FileType.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamFileHeader.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamReferenceInfo.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/StringArray.h ../include/StringBasics.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/StringHash.h ../include/Constant.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/Hash.h ../include/IntArray.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamHeaderHD.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamHeaderRecord.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamHeaderTag.h ../include/SamHeaderSQ.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamHeaderRG.h ../include/SamHeaderPG.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/SamRecord.h ../include/GenomeSequence.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/MemoryMapArray.h ../include/Generic.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/MemoryMap.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/GenomeSequenceHelpers.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/LongHash.h ../include/Error.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/MathVector.h ../include/CigarRoller.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/Cigar.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/GenericSamInterface.h
+$(OBJDIR_DEBUG)/AspFile.o: ../include/BamIndex.h ../include/SamStatistics.h
+$(OBJDIR_DEBUG)/AspRecord.o: AspRecord.h ../include/SamFile.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamStatus.h ../include/ErrorHandler.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/InputFile.h ../include/FileType.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamFileHeader.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamReferenceInfo.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/StringArray.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/StringBasics.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/StringHash.h ../include/Constant.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/Hash.h ../include/IntArray.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamHeaderHD.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamHeaderRecord.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamHeaderTag.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamHeaderSQ.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamHeaderRG.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/SamHeaderPG.h ../include/SamRecord.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/GenomeSequence.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/MemoryMapArray.h ../include/Generic.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/MemoryMap.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/GenomeSequenceHelpers.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/LongHash.h ../include/Error.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/MathVector.h ../include/CigarRoller.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/Cigar.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/GenericSamInterface.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/BamIndex.h ../include/SamStatistics.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/BaseAsciiMap.h
+$(OBJDIR_DEBUG)/AspRecord.o: ../include/BaseUtilities.h
+
+$(OBJDIR_PROFILE)/AspFile.o: AspFile.h AspRecord.h ../include/SamFile.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamStatus.h ../include/ErrorHandler.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/InputFile.h ../include/FileType.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamFileHeader.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamReferenceInfo.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/StringArray.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/StringBasics.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/StringHash.h ../include/Constant.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/Hash.h ../include/IntArray.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamHeaderHD.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamHeaderRecord.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamHeaderTag.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamHeaderSQ.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamHeaderRG.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/SamHeaderPG.h ../include/SamRecord.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/GenomeSequence.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/MemoryMapArray.h ../include/Generic.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/MemoryMap.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/GenomeSequenceHelpers.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/LongHash.h ../include/Error.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/MathVector.h ../include/CigarRoller.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/Cigar.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/GenericSamInterface.h
+$(OBJDIR_PROFILE)/AspFile.o: ../include/BamIndex.h ../include/SamStatistics.h
+$(OBJDIR_PROFILE)/AspRecord.o: AspRecord.h ../include/SamFile.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamStatus.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/ErrorHandler.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/InputFile.h ../include/FileType.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamFileHeader.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamReferenceInfo.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/StringArray.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/StringBasics.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/StringHash.h ../include/Constant.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/Hash.h ../include/IntArray.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamHeaderHD.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamHeaderRecord.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamHeaderTag.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamHeaderSQ.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamHeaderRG.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamHeaderPG.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamRecord.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/GenomeSequence.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/MemoryMapArray.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/Generic.h ../include/MemoryMap.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/GenomeSequenceHelpers.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/LongHash.h ../include/Error.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/MathVector.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/CigarRoller.h ../include/Cigar.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/GenericSamInterface.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/BamIndex.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/SamStatistics.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/BaseAsciiMap.h
+$(OBJDIR_PROFILE)/AspRecord.o: ../include/BaseUtilities.h
