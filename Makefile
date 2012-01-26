@@ -1,4 +1,4 @@
-SUBDIRS=general bam fastq glf samtools
+SUBDIRS=general bam fastq glf samtools asp
 
 include Makefiles/Makefile.base
 
