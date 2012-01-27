@@ -268,6 +268,20 @@ int AspRecord::getGLA()
     }
 }
 
+int AspRecord::getLikelihood(char base1, char base2, char refBase)
+{
+    if(isRefOnlyType())
+    {
+        return(getRefOnlyLikelihood(base1, base2, refBase));
+    }
+    if(isDetailedType())
+    {
+        return(getDetailedLikelihood(base1, base2, refBase));
+    }
+    // Other type, does not have likelihood, so return 0.
+    return(0);
+}
+
 char AspRecord::getBaseChar(int index)
 {
     if((index >= myNumBases) || (index < 0))
@@ -508,4 +522,30 @@ void AspRecord::writeDetailed(IFILE outputFile)
     ifwrite(outputFile, myCycles, myNumBases);
     ifwrite(outputFile, myStrands, getStrandsSize());
     ifwrite(outputFile, myMQs, myNumBases);
+}
+
+
+int AspRecord::getRefOnlyLikelihood(char base1, char base2, char refBase)
+{
+    // Check if either base matches the reference.
+    if((base1 == refBase) || (base2 == refBase))
+    {
+        // If both bases match, then it is homozygous reference and
+        // return 0.
+        if(base1 == base2)
+        {
+            return(0);
+        }
+        // The bases are different, so it is Heterzygous Reference
+        return(myGLH);
+    }
+    // Neither base matches the reference, so return alternate.
+    return(myGLAi);
+}
+
+
+int AspRecord::getDetailedLikelihood(char base1, char base2, char refBase)
+{
+    // TBD
+    return(0);
 }

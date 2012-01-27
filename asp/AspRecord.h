@@ -83,6 +83,11 @@ public:
     /// Get the GLA.  0 is returned if this is not a RefOnly record.
     int getGLA();
 
+    // Get the likelihood of the genotype with the 2 specified bases.
+    // Make sure all bases are the same case (upper/lower).
+    int getLikelihood(char base1, char base2, char refBase);
+    
+
     ////////////////////////
     // Detailed Record Only
     /// Get the base at the specified index (starts at 0).
@@ -91,11 +96,12 @@ public:
     /// Get the phred quality at the specified index (starts at 0).
     /// An out of range index returns -1.  An unknown quality returns -1
     int getPhredQual(int index);
-    /// Get the phred quality at the specified index (starts at 0).
-    /// An out of range index returns ' '.  An unknown quality returns ' '
+    /// Get the quality as the character representation at the specified index
+    /// (starts at 0).  An out of range index returns ' '. 
+    /// An unknown quality returns ' '
     char getCharQual(int index);
     /// Get the cycle at the specified index (starts at 0).
-    /// An out of range index returns -1.
+    /// An out of range index/deletion returns -1.
     int getCycle(int index);
     /// Get the strand at the specified index (starts at 0).
     /// An out of range index returns false.
@@ -128,6 +134,14 @@ private:
     void writeRefOnly(IFILE outputFile);
     void writeDetailed(IFILE outputFile);
 
+    // Get the likelihood of the genotype with the 2 specified bases.
+    // Make sure all bases are the same case (upper/lower).
+    int getRefOnlyLikelihood(char base1, char base2, char refBase);
+    
+    // Get the likelihood of the genotype with the 2 specified bases.
+    // Make sure all bases are the same case (upper/lower).
+    int getDetailedLikelihood(char base1, char base2, char refBase);
+    
 
     inline int getBasesSize()
     {

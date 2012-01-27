@@ -35,7 +35,7 @@ bool AspFileReader::open(const char* fileName)
 {
     // Close any already open file.
     close();
-    
+
     myFilePtr = ifopen(fileName, "r");
     if(myFilePtr == NULL)
     {
