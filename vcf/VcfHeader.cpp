@@ -209,3 +209,24 @@ const char* VcfHeader::getSampleName(unsigned int index)
 
     return(myParsedHeaderLine[position].c_str());
 }
+
+
+int VcfHeader::getSampleIndex(const char* sampleName)
+{
+    if(!myHasHeaderLine)
+    {
+        // No header.
+        return(-1);
+    }
+    for(int index = NUM_NON_SAMPLE_HEADER_COLS; 
+        index < myParsedHeaderLine.Length(); index++)
+    {
+        if(myParsedHeaderLine[index] == sampleName)
+        {
+            // Found.
+            return(index - NUM_NON_SAMPLE_HEADER_COLS);
+        }
+    }
+    // Not found.
+    return(-1);
+}

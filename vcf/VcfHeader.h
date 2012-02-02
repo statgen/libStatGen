@@ -75,6 +75,10 @@ public:
     /// is out of range (first sample is index 0).
     const char* getSampleName(unsigned int index);
 
+    /// Returns the index of the specified sample or -1 if the sample name
+    /// is not found (first sample is index 0).
+    int getSampleIndex(const char* sampleName);
+
 protected: 
 
 private:
