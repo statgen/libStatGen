@@ -57,6 +57,10 @@ void testVcfHeader()
     assert(header.getSampleName(2) == NULL);
     assert(header.getSampleName(0) == NULL);
     assert(header.getSampleName(1) == NULL);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == -1);
+
 
     IFILE filePtr = NULL; // Input File
     IFILE outputFile = NULL; // Output File.
@@ -85,6 +89,10 @@ void testVcfHeader()
     assert(header.getSampleName(2) == SAMPLES[2]);
     assert(header.getSampleName(0) == SAMPLES[0]);
     assert(header.getSampleName(1) == SAMPLES[1]);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == 1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == 2);
+
 
     // Reset and verify it is empty.
     header.reset();
@@ -96,6 +104,9 @@ void testVcfHeader()
     assert(header.getSampleName(2) == NULL);
     assert(header.getSampleName(0) == NULL);
     assert(header.getSampleName(1) == NULL);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == -1);
 
     // Close the file and read again.
     ifclose(filePtr);
@@ -110,6 +121,9 @@ void testVcfHeader()
     assert(header.getSampleName(2) == SAMPLES[2]);
     assert(header.getSampleName(0) == SAMPLES[0]);
     assert(header.getSampleName(1) == SAMPLES[1]);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == 1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == 2);
 
     // Try writing without opening.
     caughtException = false;
