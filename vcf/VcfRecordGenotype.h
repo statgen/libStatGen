@@ -63,7 +63,7 @@ public:
                                  int sampleNum);
 
     /// Set the string associated with the specified key for the specified
-    /// sample.
+    /// sample, returns true if set, false if not.
     bool setString(const std::string& key, int sampleNum, 
                    const std::string& value);
 

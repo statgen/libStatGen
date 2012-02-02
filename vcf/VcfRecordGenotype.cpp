@@ -138,26 +138,27 @@ const std::string* VcfRecordGenotype::getString(const std::string& key,
 }
 
 
-// bool VcfRecordGenotype::setString(const std::string& key, 
-//                                   int sampleNum, 
-//                                   const std::string& value)
-// {
-//     // Get this sample
-//     VCF_SAMPLE* samplePtr = &(mySamples.get(sampleNum));
+bool VcfRecordGenotype::setString(const std::string& key, 
+                                  int sampleNum, 
+                                  const std::string& value)
+{
+    // Get this sample
+    VCF_SAMPLE* samplePtr = &(mySamples.get(sampleNum));
 
-//     // Search for this field of the sample.
-//     for(int i = 0; i < myPosToType.size(); i++)
-//     {
-//         if(myPosToType.get(i) == key)
-//         {
-//             // Found the type. TODO, change to be set.
-//             return(samplePtr->get(i));
-//         }
-//     }
+    // Search for this field of the sample.
+    for(int i = 0; i < myPosToType.size(); i++)
+    {
+        if(myPosToType.get(i) == key)
+        {
+            // Found the type, so set it.
+            samplePtr->get(i) = value;
+            return(true);
+        }
+    }
 
-//     // field was not found, so return null.
-//     return(NULL);
-// }
+    // field was not found, so return false.
+    return(false);
+}
 
 
 const int  VcfRecordGenotype::getNumSamples()
