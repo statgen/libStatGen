@@ -255,6 +255,80 @@ int32_t Cigar::getQueryIndex(int32_t refPosition, int32_t queryStartPos)
 }
 
 
+int32_t Cigar::getExpandedCigarIndexFromQueryIndex(int32_t queryIndex)
+{
+    // If the vectors aren't set, set them.
+    if ((queryToRef.size() == 0) || (refToQuery.size() == 0))
+    {
+        setQueryAndReferenceIndexes();
+    }
+    if ((queryIndex < 0) || ((uint32_t)queryIndex >= queryToCigar.size()))
+    {
+        return(INDEX_NA);
+    }
+    return(queryToCigar[queryIndex]);
+}
+
+
+int32_t Cigar::getExpandedCigarIndexFromRefOffset(int32_t refOffset)
+{
+    // If the vectors aren't set, set them.
+    if ((queryToRef.size() == 0) || (refToQuery.size() == 0))
+    {
+        setQueryAndReferenceIndexes();
+    }
+    if ((refOffset < 0) || ((uint32_t)refOffset >= refToCigar.size()))
+    {
+        return(INDEX_NA);
+    }
+    return(refToCigar[refOffset]);
+}
+
+
+int32_t Cigar::getExpandedCigarIndexFromRefPos(int32_t refPosition, 
+                                               int32_t queryStartPos)
+{
+    return(getExpandedCigarIndexFromRefOffset(refPosition - queryStartPos));
+}
+
+
+char Cigar::getCigarCharOp(int32_t expandedCigarIndex)
+{
+    // Check if the expanded cigar has been set yet
+    if ((queryToRef.size() == 0) || (refToQuery.size() == 0))
+    {
+        // Set the expanded cigar.
+        setQueryAndReferenceIndexes();
+    }
+
+    // Check to see if the index is in range.
+    if((expandedCigarIndex < 0) || 
+       ((uint32_t)expandedCigarIndex >= myExpandedCigar.length()))
+    {
+        return('?');
+    }
+    return(myExpandedCigar[expandedCigarIndex]);
+}
+
+
+char Cigar::getCigarCharOpFromQueryIndex(int32_t queryIndex)
+{
+    return(getCigarCharOp(getExpandedCigarIndexFromQueryIndex(queryIndex)));
+}
+
+
+char Cigar::getCigarCharOpFromRefOffset(int32_t refOffset)
+{
+    return(getCigarCharOp(getExpandedCigarIndexFromRefOffset(refOffset)));
+}
+
+
+char Cigar::getCigarCharOpFromRefPos(int32_t refPosition, int32_t queryStartPos)
+{
+    return(getCigarCharOp(getExpandedCigarIndexFromRefPos(refPosition, queryStartPos)));
+}
+
+
 // Return the number of bases that overlap the reference and the
 // read associated with this cigar that falls within the specified region.
 uint32_t Cigar::getNumOverlaps(int32_t start, int32_t end,
@@ -342,6 +416,9 @@ void Cigar::clearQueryAndReferenceIndexes()
 {
     queryToRef.clear();
     refToQuery.clear();
+    refToCigar.clear();
+    queryToCigar.clear();
+    myExpandedCigar.clear();
 }
 
 
@@ -366,6 +443,8 @@ void Cigar::setQueryAndReferenceIndexes()
     // First ensure that the vectors are clear by clearing them.
     clearQueryAndReferenceIndexes();
 
+    int extPos = 0;
+
     // Process each cigar index.
     for (uint32_t cigarIndex = 0; cigarIndex < cigarOperations.size(); cigarIndex++)
     {
@@ -384,6 +463,9 @@ void Cigar::setQueryAndReferenceIndexes()
                     int32_t refToQueryLen = refToQuery.size();
                     queryToRef.push_back(refToQueryLen);
                     refToQuery.push_back(queryToRefLen);
+                    refToCigar.push_back(extPos);
+                    queryToCigar.push_back(extPos++);
+                    myExpandedCigar.push_back(cigarOperations[cigarIndex].getChar());
                 }
                 break;
             case insert:
@@ -393,6 +475,8 @@ void Cigar::setQueryAndReferenceIndexes()
                 for (uint32_t i = 0; i < cigarOperations[cigarIndex].count; i++)
                 {
                     queryToRef.push_back(INDEX_NA);
+                    queryToCigar.push_back(extPos++);
+                    myExpandedCigar.push_back(cigarOperations[cigarIndex].getChar());
                 }
                 break;
             case del:
@@ -402,11 +486,18 @@ void Cigar::setQueryAndReferenceIndexes()
                 for (uint32_t i = 0; i < cigarOperations[cigarIndex].count; i++)
                 {
                     refToQuery.push_back(INDEX_NA);
+                    refToCigar.push_back(extPos++);
+                    myExpandedCigar.push_back(cigarOperations[cigarIndex].getChar());
                 }
                 break;
             case hardClip:
             case pad:
             case none:
+                for (uint32_t i = 0; i < cigarOperations[cigarIndex].count; i++)
+                {
+                    myExpandedCigar.push_back(cigarOperations[cigarIndex].getChar());
+                    ++extPos;
+                }
                 break;
         };
     }

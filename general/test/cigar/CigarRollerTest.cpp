@@ -269,6 +269,250 @@ int CigarRollerTest::test(void)
     cigar.getCigarString(cigarString);
     check(failures, ++testNum, "getCigarString", expectedResult, cigarString);
 
+    // 4M10N4M3I2M4D3M
+    //                     11111111112222222222
+    // ExtIndex: 012345678901234567890123456789
+    // ExtCigar: MMMMNNNNNNNNNNMMMMIIIMMDDDDMMM
+    //                               111    111
+    // QueryIndx:0123          456789012    345
+    //                     11111111   112222222
+    // RefOffset:012345678901234567   890123456
+    //                1111111111222   222222233
+    // RefPos:   567890123456789012   345678901
+
+    // Test getExpandedCigarIndex & getCigar op
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(0, 5)", -1, cigar.getExpandedCigarIndexFromRefPos(0,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(1, 5)", -1, cigar.getExpandedCigarIndexFromRefPos(1,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(2, 5)", -1, cigar.getExpandedCigarIndexFromRefPos(2,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(3, 5)", -1, cigar.getExpandedCigarIndexFromRefPos(3,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(4, 5)", -1, cigar.getExpandedCigarIndexFromRefPos(4,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(5, 5)", 0, cigar.getExpandedCigarIndexFromRefPos(5,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(6, 5)", 1, cigar.getExpandedCigarIndexFromRefPos(6,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(7, 5)", 2, cigar.getExpandedCigarIndexFromRefPos(7,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(8, 5)", 3, cigar.getExpandedCigarIndexFromRefPos(8,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(9, 5)", 4, cigar.getExpandedCigarIndexFromRefPos(9,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(10, 5)", 5, cigar.getExpandedCigarIndexFromRefPos(10,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(11, 5)", 6, cigar.getExpandedCigarIndexFromRefPos(11,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(12, 5)", 7, cigar.getExpandedCigarIndexFromRefPos(12,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(13, 5)", 8, cigar.getExpandedCigarIndexFromRefPos(13,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(14, 5)", 9, cigar.getExpandedCigarIndexFromRefPos(14,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(15, 5)", 10, cigar.getExpandedCigarIndexFromRefPos(15,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(16, 5)", 11, cigar.getExpandedCigarIndexFromRefPos(16,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(17, 5)", 12, cigar.getExpandedCigarIndexFromRefPos(17,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(18, 5)", 13, cigar.getExpandedCigarIndexFromRefPos(18,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(19, 5)", 14, cigar.getExpandedCigarIndexFromRefPos(19,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(20, 5)", 15, cigar.getExpandedCigarIndexFromRefPos(20,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(21, 5)", 16, cigar.getExpandedCigarIndexFromRefPos(21,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(22, 5)", 17, cigar.getExpandedCigarIndexFromRefPos(22,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(23, 5)", 21, cigar.getExpandedCigarIndexFromRefPos(23,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(24, 5)", 22, cigar.getExpandedCigarIndexFromRefPos(24,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(25, 5)", 23, cigar.getExpandedCigarIndexFromRefPos(25,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(26, 5)", 24, cigar.getExpandedCigarIndexFromRefPos(26,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(27, 5)", 25, cigar.getExpandedCigarIndexFromRefPos(27,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(28, 5)", 26, cigar.getExpandedCigarIndexFromRefPos(28,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(29, 5)", 27, cigar.getExpandedCigarIndexFromRefPos(29,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(30, 5)", 28, cigar.getExpandedCigarIndexFromRefPos(30,5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefPos(31, 5)", 29, cigar.getExpandedCigarIndexFromRefPos(31,5));
+
+    // 
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(0)", 0, cigar.getExpandedCigarIndexFromRefOffset(0));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(1)", 1, cigar.getExpandedCigarIndexFromRefOffset(1));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(2)", 2, cigar.getExpandedCigarIndexFromRefOffset(2));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(3)", 3, cigar.getExpandedCigarIndexFromRefOffset(3));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(4)", 4, cigar.getExpandedCigarIndexFromRefOffset(4));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(5)", 5, cigar.getExpandedCigarIndexFromRefOffset(5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(6)", 6, cigar.getExpandedCigarIndexFromRefOffset(6));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(7)", 7, cigar.getExpandedCigarIndexFromRefOffset(7));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(8)", 8, cigar.getExpandedCigarIndexFromRefOffset(8));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(9)", 9, cigar.getExpandedCigarIndexFromRefOffset(9));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(10)", 10, cigar.getExpandedCigarIndexFromRefOffset(10));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(11)", 11, cigar.getExpandedCigarIndexFromRefOffset(11));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(12)", 12, cigar.getExpandedCigarIndexFromRefOffset(12));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(13)", 13, cigar.getExpandedCigarIndexFromRefOffset(13));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(14)", 14, cigar.getExpandedCigarIndexFromRefOffset(14));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(15)", 15, cigar.getExpandedCigarIndexFromRefOffset(15));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(16)", 16, cigar.getExpandedCigarIndexFromRefOffset(16));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(17)", 17, cigar.getExpandedCigarIndexFromRefOffset(17));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(18)", 21, cigar.getExpandedCigarIndexFromRefOffset(18));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(19)", 22, cigar.getExpandedCigarIndexFromRefOffset(19));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(20)", 23, cigar.getExpandedCigarIndexFromRefOffset(20));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(21)", 24, cigar.getExpandedCigarIndexFromRefOffset(21));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(22)", 25, cigar.getExpandedCigarIndexFromRefOffset(22));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(23)", 26, cigar.getExpandedCigarIndexFromRefOffset(23));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(24)", 27, cigar.getExpandedCigarIndexFromRefOffset(24));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(25)", 28, cigar.getExpandedCigarIndexFromRefOffset(25));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(26)", 29, cigar.getExpandedCigarIndexFromRefOffset(26));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(27)", -1, cigar.getExpandedCigarIndexFromRefOffset(27));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(28)", -1, cigar.getExpandedCigarIndexFromRefOffset(28));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(29)", -1, cigar.getExpandedCigarIndexFromRefOffset(29));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(30)", -1, cigar.getExpandedCigarIndexFromRefOffset(30));
+    check(failures, ++testNum, "getExpandedCigarIndexFromRefOffset(31)", -1, cigar.getExpandedCigarIndexFromRefOffset(31));
+
+    // 
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(0)", 0, cigar.getExpandedCigarIndexFromQueryIndex(0));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(1)", 1, cigar.getExpandedCigarIndexFromQueryIndex(1));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(2)", 2, cigar.getExpandedCigarIndexFromQueryIndex(2));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(3)", 3, cigar.getExpandedCigarIndexFromQueryIndex(3));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(4)", 14, cigar.getExpandedCigarIndexFromQueryIndex(4));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(5)", 15, cigar.getExpandedCigarIndexFromQueryIndex(5));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(6)", 16, cigar.getExpandedCigarIndexFromQueryIndex(6));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(7)", 17, cigar.getExpandedCigarIndexFromQueryIndex(7));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(8)", 18, cigar.getExpandedCigarIndexFromQueryIndex(8));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(9)", 19, cigar.getExpandedCigarIndexFromQueryIndex(9));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(10)", 20, cigar.getExpandedCigarIndexFromQueryIndex(10));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(11)", 21, cigar.getExpandedCigarIndexFromQueryIndex(11));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(12)", 22, cigar.getExpandedCigarIndexFromQueryIndex(12));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(13)", 27, cigar.getExpandedCigarIndexFromQueryIndex(13));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(14)", 28, cigar.getExpandedCigarIndexFromQueryIndex(14));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(15)", 29, cigar.getExpandedCigarIndexFromQueryIndex(15));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(16)", -1, cigar.getExpandedCigarIndexFromQueryIndex(16));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(17)", -1, cigar.getExpandedCigarIndexFromQueryIndex(17));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(18)", -1, cigar.getExpandedCigarIndexFromQueryIndex(18));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(19)", -1, cigar.getExpandedCigarIndexFromQueryIndex(19));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(20)", -1, cigar.getExpandedCigarIndexFromQueryIndex(20));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(21)", -1, cigar.getExpandedCigarIndexFromQueryIndex(21));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(22)", -1, cigar.getExpandedCigarIndexFromQueryIndex(22));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(23)", -1, cigar.getExpandedCigarIndexFromQueryIndex(23));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(24)", -1, cigar.getExpandedCigarIndexFromQueryIndex(24));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(25)", -1, cigar.getExpandedCigarIndexFromQueryIndex(25));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(26)", -1, cigar.getExpandedCigarIndexFromQueryIndex(26));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(27)", -1, cigar.getExpandedCigarIndexFromQueryIndex(27));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(28)", -1, cigar.getExpandedCigarIndexFromQueryIndex(28));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(29)", -1, cigar.getExpandedCigarIndexFromQueryIndex(29));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(30)", -1, cigar.getExpandedCigarIndexFromQueryIndex(30));
+    check(failures, ++testNum, "getExpandedCigarIndexFromQueryIndex(31)", -1, cigar.getExpandedCigarIndexFromQueryIndex(31));
+
+    // Test getCigarCharOp.
+    check(failures, ++testNum, "getCigarCharOp(-1)", '?', cigar.getCigarCharOp(-1));
+    check(failures, ++testNum, "getCigarCharOp(0)", 'M', cigar.getCigarCharOp(0));
+    check(failures, ++testNum, "getCigarCharOp(1)", 'M', cigar.getCigarCharOp(1));
+    check(failures, ++testNum, "getCigarCharOp(2)", 'M', cigar.getCigarCharOp(2));
+    check(failures, ++testNum, "getCigarCharOp(3)", 'M', cigar.getCigarCharOp(3));
+    check(failures, ++testNum, "getCigarCharOp(4)", 'N', cigar.getCigarCharOp(4));
+    check(failures, ++testNum, "getCigarCharOp(5)", 'N', cigar.getCigarCharOp(5));
+    check(failures, ++testNum, "getCigarCharOp(6)", 'N', cigar.getCigarCharOp(6));
+    check(failures, ++testNum, "getCigarCharOp(7)", 'N', cigar.getCigarCharOp(7));
+    check(failures, ++testNum, "getCigarCharOp(8)", 'N', cigar.getCigarCharOp(8));
+    check(failures, ++testNum, "getCigarCharOp(9)", 'N', cigar.getCigarCharOp(9));
+    check(failures, ++testNum, "getCigarCharOp(10)", 'N', cigar.getCigarCharOp(10));
+    check(failures, ++testNum, "getCigarCharOp(11)", 'N', cigar.getCigarCharOp(11));
+    check(failures, ++testNum, "getCigarCharOp(12)", 'N', cigar.getCigarCharOp(12));
+    check(failures, ++testNum, "getCigarCharOp(13)", 'N', cigar.getCigarCharOp(13));
+    check(failures, ++testNum, "getCigarCharOp(14)", 'M', cigar.getCigarCharOp(14));
+    check(failures, ++testNum, "getCigarCharOp(15)", 'M', cigar.getCigarCharOp(15));
+    check(failures, ++testNum, "getCigarCharOp(16)", 'M', cigar.getCigarCharOp(16));
+    check(failures, ++testNum, "getCigarCharOp(17)", 'M', cigar.getCigarCharOp(17));
+    check(failures, ++testNum, "getCigarCharOp(18)", 'I', cigar.getCigarCharOp(18));
+    check(failures, ++testNum, "getCigarCharOp(19)", 'I', cigar.getCigarCharOp(19));
+    check(failures, ++testNum, "getCigarCharOp(20)", 'I', cigar.getCigarCharOp(20));
+    check(failures, ++testNum, "getCigarCharOp(21)", 'M', cigar.getCigarCharOp(21));
+    check(failures, ++testNum, "getCigarCharOp(22)", 'M', cigar.getCigarCharOp(22));
+    check(failures, ++testNum, "getCigarCharOp(23)", 'D', cigar.getCigarCharOp(23));
+    check(failures, ++testNum, "getCigarCharOp(24)", 'D', cigar.getCigarCharOp(24));
+    check(failures, ++testNum, "getCigarCharOp(25)", 'D', cigar.getCigarCharOp(25));
+    check(failures, ++testNum, "getCigarCharOp(26)", 'D', cigar.getCigarCharOp(26));
+    check(failures, ++testNum, "getCigarCharOp(27)", 'M', cigar.getCigarCharOp(27));
+    check(failures, ++testNum, "getCigarCharOp(28)", 'M', cigar.getCigarCharOp(28));
+    check(failures, ++testNum, "getCigarCharOp(29)", 'M', cigar.getCigarCharOp(29));
+    check(failures, ++testNum, "getCigarCharOp(30)", '?', cigar.getCigarCharOp(30));
+
+
+    // Test getCigarCharOpFromQueryIndex.
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(-1)", '?', cigar.getCigarCharOpFromQueryIndex(-1));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(0)", 'M', cigar.getCigarCharOpFromQueryIndex(0));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(1)", 'M', cigar.getCigarCharOpFromQueryIndex(1));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(2)", 'M', cigar.getCigarCharOpFromQueryIndex(2));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(3)", 'M', cigar.getCigarCharOpFromQueryIndex(3));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(4)", 'M', cigar.getCigarCharOpFromQueryIndex(4));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(5)", 'M', cigar.getCigarCharOpFromQueryIndex(5));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(6)", 'M', cigar.getCigarCharOpFromQueryIndex(6));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(7)", 'M', cigar.getCigarCharOpFromQueryIndex(7));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(8)", 'I', cigar.getCigarCharOpFromQueryIndex(8));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(9)", 'I', cigar.getCigarCharOpFromQueryIndex(9));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(10)", 'I', cigar.getCigarCharOpFromQueryIndex(10));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(11)", 'M', cigar.getCigarCharOpFromQueryIndex(11));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(12)", 'M', cigar.getCigarCharOpFromQueryIndex(12));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(13)", 'M', cigar.getCigarCharOpFromQueryIndex(13));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(14)", 'M', cigar.getCigarCharOpFromQueryIndex(14));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(15)", 'M', cigar.getCigarCharOpFromQueryIndex(15));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(16)", '?', cigar.getCigarCharOpFromQueryIndex(16));
+    check(failures, ++testNum, "getCigarCharOpFromQueryIndex(17)", '?', cigar.getCigarCharOpFromQueryIndex(17));
+
+    // Test getCigarCharOpFromRefOffset.
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(-1)", '?', cigar.getCigarCharOpFromRefOffset(-1));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(0)", 'M', cigar.getCigarCharOpFromRefOffset(0));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(1)", 'M', cigar.getCigarCharOpFromRefOffset(1));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(2)", 'M', cigar.getCigarCharOpFromRefOffset(2));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(3)", 'M', cigar.getCigarCharOpFromRefOffset(3));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(4)", 'N', cigar.getCigarCharOpFromRefOffset(4));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(5)", 'N', cigar.getCigarCharOpFromRefOffset(5));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(6)", 'N', cigar.getCigarCharOpFromRefOffset(6));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(7)", 'N', cigar.getCigarCharOpFromRefOffset(7));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(8)", 'N', cigar.getCigarCharOpFromRefOffset(8));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(9)", 'N', cigar.getCigarCharOpFromRefOffset(9));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(10)", 'N', cigar.getCigarCharOpFromRefOffset(10));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(11)", 'N', cigar.getCigarCharOpFromRefOffset(11));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(12)", 'N', cigar.getCigarCharOpFromRefOffset(12));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(13)", 'N', cigar.getCigarCharOpFromRefOffset(13));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(14)", 'M', cigar.getCigarCharOpFromRefOffset(14));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(15)", 'M', cigar.getCigarCharOpFromRefOffset(15));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(16)", 'M', cigar.getCigarCharOpFromRefOffset(16));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(17)", 'M', cigar.getCigarCharOpFromRefOffset(17));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(18)", 'M', cigar.getCigarCharOpFromRefOffset(18));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(19)", 'M', cigar.getCigarCharOpFromRefOffset(19));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(20)", 'D', cigar.getCigarCharOpFromRefOffset(20));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(21)", 'D', cigar.getCigarCharOpFromRefOffset(21));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(22)", 'D', cigar.getCigarCharOpFromRefOffset(22));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(23)", 'D', cigar.getCigarCharOpFromRefOffset(23));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(24)", 'M', cigar.getCigarCharOpFromRefOffset(24));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(25)", 'M', cigar.getCigarCharOpFromRefOffset(25));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(26)", 'M', cigar.getCigarCharOpFromRefOffset(26));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(27)", '?', cigar.getCigarCharOpFromRefOffset(27));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(28)", '?', cigar.getCigarCharOpFromRefOffset(28));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(29)", '?', cigar.getCigarCharOpFromRefOffset(29));
+    check(failures, ++testNum, "getCigarCharOpFromRefOffset(30)", '?', cigar.getCigarCharOpFromRefOffset(30));
+
+
+    // Test getCigarCharOpFromRefPos.
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(-1, 5)", '?', cigar.getCigarCharOpFromRefPos(-1,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(0, 5)", '?', cigar.getCigarCharOpFromRefPos(0,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(1, 5)", '?', cigar.getCigarCharOpFromRefPos(1,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(2, 5)", '?', cigar.getCigarCharOpFromRefPos(2,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(3, 5)", '?', cigar.getCigarCharOpFromRefPos(3,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(4, 5)", '?', cigar.getCigarCharOpFromRefPos(4,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(5, 5)", 'M', cigar.getCigarCharOpFromRefPos(5,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(6, 5)", 'M', cigar.getCigarCharOpFromRefPos(6,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(7, 5)", 'M', cigar.getCigarCharOpFromRefPos(7,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(8, 5)", 'M', cigar.getCigarCharOpFromRefPos(8,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(9, 5)", 'N', cigar.getCigarCharOpFromRefPos(9,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(10, 5)", 'N', cigar.getCigarCharOpFromRefPos(10,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(11, 5)", 'N', cigar.getCigarCharOpFromRefPos(11,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(12, 5)", 'N', cigar.getCigarCharOpFromRefPos(12,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(13, 5)", 'N', cigar.getCigarCharOpFromRefPos(13,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(14, 5)", 'N', cigar.getCigarCharOpFromRefPos(14,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(15, 5)", 'N', cigar.getCigarCharOpFromRefPos(15,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(16, 5)", 'N', cigar.getCigarCharOpFromRefPos(16,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(17, 5)", 'N', cigar.getCigarCharOpFromRefPos(17,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(18, 5)", 'N', cigar.getCigarCharOpFromRefPos(18,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(19, 5)", 'M', cigar.getCigarCharOpFromRefPos(19,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(20, 5)", 'M', cigar.getCigarCharOpFromRefPos(20,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(21, 5)", 'M', cigar.getCigarCharOpFromRefPos(21,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(22, 5)", 'M', cigar.getCigarCharOpFromRefPos(22,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(23, 5)", 'M', cigar.getCigarCharOpFromRefPos(23,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(24, 5)", 'M', cigar.getCigarCharOpFromRefPos(24,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(25, 5)", 'D', cigar.getCigarCharOpFromRefPos(25,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(26, 5)", 'D', cigar.getCigarCharOpFromRefPos(26,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(27, 5)", 'D', cigar.getCigarCharOpFromRefPos(27,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(28, 5)", 'D', cigar.getCigarCharOpFromRefPos(28,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(29, 5)", 'M', cigar.getCigarCharOpFromRefPos(29,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(30, 5)", 'M', cigar.getCigarCharOpFromRefPos(30,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(31, 5)", 'M', cigar.getCigarCharOpFromRefPos(31,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(32, 5)", '?', cigar.getCigarCharOpFromRefPos(32,5));
+    check(failures, ++testNum, "getCigarCharOpFromRefPos(33, 5)", '?', cigar.getCigarCharOpFromRefPos(33,5));
+
+
+
+
     ////////////////////////
     // Test getNumOverlaps.
     check(failures, ++testNum, "getNumOverlaps(5,32,5)", (uint32_t)13, cigar.getNumOverlaps(5,32,5));

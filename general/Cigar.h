@@ -385,6 +385,40 @@ public:
     /// position.
     int32_t getQueryIndex(int32_t refPosition, int32_t queryStartPos);
 
+    /// Returns the index into the expanded cigar for the cigar 
+    /// associated with the specified queryIndex.
+    /// INDEX_NA returned if the index is out of range.
+    int32_t getExpandedCigarIndexFromQueryIndex(int32_t queryIndex);
+
+    /// Returns the index into the expanded cigar for the cigar 
+    /// associated with the specified reference offset.
+    /// INDEX_NA returned if the offset is out of range.
+    int32_t getExpandedCigarIndexFromRefOffset(int32_t refOffset);
+
+    /// Returns the index into the expanded cigar for the cigar 
+    /// associated with the specified reference position and queryStartPos.
+    /// INDEX_NA returned if the position is out of range.
+    int32_t getExpandedCigarIndexFromRefPos(int32_t refPosition, 
+                                            int32_t queryStartPos);
+
+    /// Return the character code of the cigar operator associated with the
+    /// specified expanded CIGAR index.  '?' is returned for an out of range
+    /// index.
+    char getCigarCharOp(int32_t expandedCigarIndex);
+
+    /// Return the character code of the cigar operator associated with
+    /// the specified queryIndex.  '?' is returned for an out of range index.
+    char getCigarCharOpFromQueryIndex(int32_t queryIndex);
+
+    /// Return the character code of the cigar operator associated with
+    /// the specified reference offset.  '?' is returned for an out of range offset.
+    char getCigarCharOpFromRefOffset(int32_t refOffset);
+
+    /// Return the character code of the cigar operator associated with
+    /// the specified reference position.  '?' is returned for an out of
+    /// range reference position.
+    char getCigarCharOpFromRefPos(int32_t refPosition, int32_t queryStartPos);
+
     /// Return the number of bases that overlap the reference and the
     /// read associated with this cigar that falls within the specified region.
     /// \param start : inclusive 0-based start position (reference position) of
@@ -428,6 +462,20 @@ private:
     // The vector is reset each time a new cigar operation is added, and
     // is calculated when accessed if it is not already set.
     std::vector<int32_t> refToQuery;
+
+    // The vector is indexed by reference offset and contains the offset into
+    // the expanded cigar associated with that reference offset.
+    // The vector is reset each time a new cigar operation is added, and
+    // is calculated when accessed if it is not already set.
+    std::vector<int32_t> refToCigar;
+
+    // The vector is indexed by query index and contains the offset into
+    // the expanded cigar associated with that query index.
+    // The vector is reset each time a new cigar operation is added, and
+    // is calculated when accessed if it is not already set.
+    std::vector<int32_t> queryToCigar;
+
+    std::string myExpandedCigar;
 };
 
 /// Writes the specified cigar operation to the specified stream as <count><char> (3M).
