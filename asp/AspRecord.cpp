@@ -47,13 +47,12 @@ AspRecord::~AspRecord()
 
 
 // Add an entry
-void AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
+bool AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
 {
     // If se are already at the max number of bases, just return.
     if(myNumBases >= MAX_NUM_BASES)
     {
-        std::cerr << "Hit the maximum number of records at a position.";
-        return;
+        return(false);
     }
 
     // Have not yet incremented myNumBases so as an example:
@@ -139,6 +138,7 @@ void AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
         myGLAd += phredQual;
         myGLAi = (uint8_t) myGLAd;
     }
+    return(true);
 }
 
 

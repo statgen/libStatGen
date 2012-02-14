@@ -40,7 +40,9 @@ public:
     // The record defaults to detailed.
 
     // Qual is the character quality.
-    void add(char base, char qual, int cycle, bool strand, int mq);
+    // Returns true if the information got added.  Returns false
+    // if it did not get added (already hit max number of entries). 
+    bool add(char base, char qual, int cycle, bool strand, int mq);
 
     // Sets this record to an empty record type.
     void setEmptyType();
