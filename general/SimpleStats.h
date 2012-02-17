@@ -44,6 +44,8 @@ public:
         {
             m_oldM = x;
             m_oldS = 0.0;
+            m_newM = x;
+            m_newS = 0.0;
         }
         else
         {
