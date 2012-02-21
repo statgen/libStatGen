@@ -30,6 +30,7 @@
 #include "TestCigarHelper.h"
 #include "TestSamRecordPool.h"
 #include "TestSamCoordOutput.h"
+#include "TestSamRecordHelper.h"
 
 int main(int argc, char ** argv)
 {
@@ -77,6 +78,7 @@ int main(int argc, char ** argv)
         testCigarHelper();
         testSamRecordPool();
         testSamCoordOutput();
+        testSamRecordHelper();
     }
     else
     {
