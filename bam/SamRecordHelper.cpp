@@ -18,7 +18,7 @@
 #include "SamRecordHelper.h"
 #include <stdexcept>
 
-bool SamRecordHelper::checkSequence(SamRecord& record, int32_t pos0Based, 
+int SamRecordHelper::checkSequence(SamRecord& record, int32_t pos0Based, 
                                     const char* sequence)
 {
     const char* readSeq = record.getSequence();
@@ -43,7 +43,11 @@ bool SamRecordHelper::checkSequence(SamRecord& record, int32_t pos0Based,
 
     // Increment the readSeq start to where this position is found.
     readSeq += readStartIndex;
-    int cmpReturn = strncmp(readSeq, sequence, strlen(sequence));
-    // cmpReturn is 0 if the strings match.
-    return(cmpReturn == 0);
+    if(strncmp(readSeq, sequence, strlen(sequence)) == 0)
+    {
+        // Match, so return the readStartIndex (cycle).
+        return(readStartIndex);
+    }
+    // Did not match.
+    return(-1);
 }

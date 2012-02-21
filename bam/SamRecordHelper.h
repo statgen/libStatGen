@@ -28,7 +28,9 @@ public:
     /// Helper method that checks if the record's read sequence starting
     /// at the specified 0-based reference position matches the passed in
     /// sequence.
-    static bool checkSequence(SamRecord& record, int32_t pos0Based, 
+    /// \return returns -1 if it does not match,
+    /// returns the cycle (read position) of pos0Based if it does match.
+    static int checkSequence(SamRecord& record, int32_t pos0Based, 
                               const char* sequence);
 
 private:
