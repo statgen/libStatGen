@@ -109,6 +109,7 @@ bool SortedChunkList::mergeOverlapping()
             ++nextPos;
         }
     }
+
     return(true);
 }
 
@@ -159,6 +160,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
     if(ifread(indexFile, magic, 4) != 4)
     {
         // Failed to read the magic
+        ifclose(indexFile);
         return(SamStatus::FAIL_IO);
     }
 
@@ -166,6 +168,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
     if (magic[0] != 'B' || magic[1] != 'A' || magic[2] != 'I' || magic[3] != 1)
     {
         // Not a BAM Index file.
+        ifclose(indexFile);
         return(SamStatus::FAIL_PARSE);
     }
 
@@ -174,6 +177,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
     if(ifread(indexFile, &n_ref, 4) != 4)
     {
         // Failed to read.
+        ifclose(indexFile);
         return(SamStatus::FAIL_IO);
     }
 
@@ -193,6 +197,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
         {
             // Failed to read the number of bins.
             // Return failure.
+            ifclose(indexFile);
             return(SamStatus::FAIL_PARSE);
         }
 
@@ -214,6 +219,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
             {
                 // Failed to read the bin number.
                 // Return failure.
+                ifclose(indexFile);
                 return(SamStatus::FAIL_IO);
             }
 
@@ -227,6 +233,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
             {
                 // Failed to read number of chunks.
                 // Return failure.
+                ifclose(indexFile);
                 return(SamStatus::FAIL_IO);
             }
 
@@ -238,6 +245,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
             {
                 // Failed to read the chunks.
                 // Return failure.
+                ifclose(indexFile);
                 return(SamStatus::FAIL_IO);
             }
 
@@ -275,6 +283,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
             // Failed to read, set to 0.
             ref->n_intv = 0;
             // Return failure.
+            ifclose(indexFile);
             return(SamStatus::FAIL_IO);
         }
 
@@ -285,6 +294,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
         {
             // Failed to read the linear index.
             // Return failure.
+            ifclose(indexFile);
             return(SamStatus::FAIL_IO);
         }
     }
@@ -295,7 +305,8 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
         myUnMappedNumReads = numUnmapped;
     }
 
-    // Successfully read teh bam index file.
+    // Successfully read the bam index file.
+    ifclose(indexFile);
     return(SamStatus::SUCCESS);
 }
 
