@@ -191,6 +191,24 @@ public:
 
     /// Return true if the specified operation is found in the
     /// reference sequence, false if not.
+    static bool foundInReference(char op)
+    {
+        switch(op)
+        {
+            case 'M':
+            case '=':
+            case 'X':
+            case 'D':
+            case 'N':
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+    /// Return true if the specified operation is found in the
+    /// reference sequence, false if not.
     static bool foundInReference(const CigarOperator &op)
     {
         return(foundInReference(op.operation));
@@ -215,6 +233,24 @@ public:
     
     /// Return true if the specified operation is found in the
     /// query sequence, false if not.
+    static bool foundInQuery(char op)
+    {
+        switch(op)
+        {
+            case 'M':
+            case '=':
+            case 'X':
+            case 'I':
+            case 'S':
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+    /// Return true if the specified operation is found in the
+    /// query sequence, false if not.
     static bool foundInQuery(const CigarOperator &op)
     {
         return(foundInQuery(op.operation));
@@ -228,6 +264,21 @@ public:
         {
             case softClip:
             case hardClip:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
+    /// Return true if the specified operation is a clipping operation,
+    /// false if not.
+    static bool isClip(char op)
+    {
+        switch(op)
+        {
+            case 'S':
+            case 'H':
                 return true;
             default:
                 return false;

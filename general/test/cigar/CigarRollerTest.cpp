@@ -31,10 +31,239 @@
 //
 int CigarRollerTest::test(void)
 {
+    int failures = 0, testNum = 0;
+    Cigar::CigarOperator op;
+
+    //   const char *str;
+    ////////////////////////////////////
+    // Test foundInReference static methods.
+    check(failures, ++testNum, "foundInReference(none)", false,
+          Cigar::foundInReference(Cigar::none));
+    check(failures, ++testNum, "foundInReference(match)", true, 
+          Cigar::foundInReference(Cigar::match));
+    check(failures, ++testNum, "foundInReference(mismatch)", true, 
+          Cigar::foundInReference(Cigar::mismatch));
+    check(failures, ++testNum, "foundInReference(insert)", false, 
+          Cigar::foundInReference(Cigar::insert));
+    check(failures, ++testNum, "foundInReference(del)", true, 
+          Cigar::foundInReference(Cigar::del));
+    check(failures, ++testNum, "foundInReference(skip)", true, 
+          Cigar::foundInReference(Cigar::skip));
+    check(failures, ++testNum, "foundInReference(softClip)", false, 
+          Cigar::foundInReference(Cigar::softClip));
+    check(failures, ++testNum, "foundInReference(hardClip)", false, 
+          Cigar::foundInReference(Cigar::hardClip));
+    check(failures, ++testNum, "foundInReference(pad)", false, 
+          Cigar::foundInReference(Cigar::pad));
+
+    check(failures, ++testNum, 
+          "foundInReference('?')", false, Cigar::foundInReference('?'));
+    check(failures, ++testNum, 
+          "foundInReference('z')", false, Cigar::foundInReference('z'));
+    check(failures, ++testNum, 
+          "foundInReference('M')", true, Cigar::foundInReference('M'));
+    check(failures, ++testNum, 
+          "foundInReference('X')", true, Cigar::foundInReference('X'));
+    check(failures, ++testNum, 
+          "foundInReference('=')", true, Cigar::foundInReference('='));
+    check(failures, ++testNum, 
+          "foundInReference('I')", false, Cigar::foundInReference('I'));
+    check(failures, ++testNum, 
+          "foundInReference('D')", true, Cigar::foundInReference('D'));
+    check(failures, ++testNum, 
+          "foundInReference('N')", true, Cigar::foundInReference('N'));
+    check(failures, ++testNum, 
+          "foundInReference('S')", false, Cigar::foundInReference('S'));
+    check(failures, ++testNum, 
+          "foundInReference('H')", false, Cigar::foundInReference('H'));
+    check(failures, ++testNum, 
+          "foundInReference('P')", false, Cigar::foundInReference('P'));
+
+    op.count = 3;
+    op.operation = Cigar::none;
+    check(failures, ++testNum, "foundInReference(none)", false,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::match;
+    check(failures, ++testNum, "foundInReference(match)", true,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::mismatch;
+    check(failures, ++testNum, "foundInReference(mismatch)", true,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::insert;
+    check(failures, ++testNum, "foundInReference(insert)", false,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::del;
+    check(failures, ++testNum, "foundInReference(del)", true,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::skip;
+    check(failures, ++testNum, "foundInReference(skip)", true,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::softClip;
+    check(failures, ++testNum, "foundInReference(softClip)", false,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::hardClip;
+    check(failures, ++testNum, "foundInReference(hardClip)", false,
+          Cigar::foundInReference(op));
+    op.operation = Cigar::pad;
+    check(failures, ++testNum, "foundInReference(pad)", false,
+          Cigar::foundInReference(op));
+
+    ////////////////////////////////////
+    // Test foundInQuery static methods.
+    check(failures, ++testNum, "foundInQuery(none)", false,
+          Cigar::foundInQuery(Cigar::none));
+    check(failures, ++testNum, "foundInQuery(match)", true, 
+          Cigar::foundInQuery(Cigar::match));
+    check(failures, ++testNum, "foundInQuery(mismatch)", true, 
+          Cigar::foundInQuery(Cigar::mismatch));
+    check(failures, ++testNum, "foundInQuery(insert)", true, 
+          Cigar::foundInQuery(Cigar::insert));
+    check(failures, ++testNum, "foundInQuery(del)", false, 
+          Cigar::foundInQuery(Cigar::del));
+    check(failures, ++testNum, "foundInQuery(skip)", false, 
+          Cigar::foundInQuery(Cigar::skip));
+    check(failures, ++testNum, "foundInQuery(softClip)", true, 
+          Cigar::foundInQuery(Cigar::softClip));
+    check(failures, ++testNum, "foundInQuery(hardClip)", false, 
+          Cigar::foundInQuery(Cigar::hardClip));
+    check(failures, ++testNum, "foundInQuery(pad)", false, 
+          Cigar::foundInQuery(Cigar::pad));
+
+    check(failures, ++testNum, 
+          "foundInQuery('?')", false, Cigar::foundInQuery('?'));
+    check(failures, ++testNum, 
+          "foundInQuery('z')", false, Cigar::foundInQuery('z'));
+    check(failures, ++testNum, 
+          "foundInQuery('M')", true, Cigar::foundInQuery('M'));
+    check(failures, ++testNum, 
+          "foundInQuery('X')", true, Cigar::foundInQuery('X'));
+    check(failures, ++testNum, 
+          "foundInQuery('=')", true, Cigar::foundInQuery('='));
+    check(failures, ++testNum, 
+          "foundInQuery('I')", true, Cigar::foundInQuery('I'));
+    check(failures, ++testNum, 
+          "foundInQuery('D')", false, Cigar::foundInQuery('D'));
+    check(failures, ++testNum, 
+          "foundInQuery('N')", false, Cigar::foundInQuery('N'));
+    check(failures, ++testNum, 
+          "foundInQuery('S')", true, Cigar::foundInQuery('S'));
+    check(failures, ++testNum, 
+          "foundInQuery('H')", false, Cigar::foundInQuery('H'));
+    check(failures, ++testNum, 
+          "foundInQuery('P')", false, Cigar::foundInQuery('P'));
+
+    op.count = 3;
+    op.operation = Cigar::none;
+    check(failures, ++testNum, "foundInQuery(none)", false,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::match;
+    check(failures, ++testNum, "foundInQuery(match)", true,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::mismatch;
+    check(failures, ++testNum, "foundInQuery(mismatch)", true,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::insert;
+    check(failures, ++testNum, "foundInQuery(insert)", true,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::del;
+    check(failures, ++testNum, "foundInQuery(del)", false,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::skip;
+    check(failures, ++testNum, "foundInQuery(skip)", false,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::softClip;
+    check(failures, ++testNum, "foundInQuery(softClip)", true,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::hardClip;
+    check(failures, ++testNum, "foundInQuery(hardClip)", false,
+          Cigar::foundInQuery(op));
+    op.operation = Cigar::pad;
+    check(failures, ++testNum, "foundInQuery(pad)", false,
+          Cigar::foundInQuery(op));
+
+
+    ////////////////////////////////////
+    // Test isClip static methods.
+    check(failures, ++testNum, "isClip(none)", false,
+          Cigar::isClip(Cigar::none));
+    check(failures, ++testNum, "isClip(match)", false, 
+          Cigar::isClip(Cigar::match));
+    check(failures, ++testNum, "isClip(mismatch)", false, 
+          Cigar::isClip(Cigar::mismatch));
+    check(failures, ++testNum, "isClip(insert)", false, 
+          Cigar::isClip(Cigar::insert));
+    check(failures, ++testNum, "isClip(del)", false, 
+          Cigar::isClip(Cigar::del));
+    check(failures, ++testNum, "isClip(skip)", false, 
+          Cigar::isClip(Cigar::skip));
+    check(failures, ++testNum, "isClip(softClip)", true, 
+          Cigar::isClip(Cigar::softClip));
+    check(failures, ++testNum, "isClip(hardClip)", true, 
+          Cigar::isClip(Cigar::hardClip));
+    check(failures, ++testNum, "isClip(pad)", false, 
+          Cigar::isClip(Cigar::pad));
+
+    check(failures, ++testNum, 
+          "isClip('?')", false, Cigar::isClip('?'));
+    check(failures, ++testNum, 
+          "isClip('z')", false, Cigar::isClip('z'));
+    check(failures, ++testNum, 
+          "isClip('M')", false, Cigar::isClip('M'));
+    check(failures, ++testNum, 
+          "isClip('X')", false, Cigar::isClip('X'));
+    check(failures, ++testNum, 
+          "isClip('=')", false, Cigar::isClip('='));
+    check(failures, ++testNum, 
+          "isClip('I')", false, Cigar::isClip('I'));
+    check(failures, ++testNum, 
+          "isClip('D')", false, Cigar::isClip('D'));
+    check(failures, ++testNum, 
+          "isClip('N')", false, Cigar::isClip('N'));
+    check(failures, ++testNum, 
+          "isClip('S')", true, Cigar::isClip('S'));
+    check(failures, ++testNum, 
+          "isClip('H')", true, Cigar::isClip('H'));
+    check(failures, ++testNum, 
+          "isClip('P')", false, Cigar::isClip('P'));
+
+    op.count = 3;
+    op.operation = Cigar::none;
+    check(failures, ++testNum, "isClip(none)", false,
+          Cigar::isClip(op));
+    op.operation = Cigar::match;
+    check(failures, ++testNum, "isClip(match)", false,
+          Cigar::isClip(op));
+    op.operation = Cigar::mismatch;
+    check(failures, ++testNum, "isClip(mismatch)", false,
+          Cigar::isClip(op));
+    op.operation = Cigar::insert;
+    check(failures, ++testNum, "isClip(insert)", false,
+          Cigar::isClip(op));
+    op.operation = Cigar::del;
+    check(failures, ++testNum, "isClip(del)", false,
+          Cigar::isClip(op));
+    op.operation = Cigar::skip;
+    check(failures, ++testNum, "isClip(skip)", false,
+          Cigar::isClip(op));
+    op.operation = Cigar::softClip;
+    check(failures, ++testNum, "isClip(softClip)", true,
+          Cigar::isClip(op));
+    op.operation = Cigar::hardClip;
+    check(failures, ++testNum, "isClip(hardClip)", true,
+          Cigar::isClip(op));
+    op.operation = Cigar::pad;
+    check(failures, ++testNum, "isClip(pad)", false,
+          Cigar::isClip(op));
+
+
+
+
+
+
+    ///////////////////////////////
+
     // Create the CigarRoller.
     CigarRoller cigar;
-
-    int failures = 0, testNum = 0;
 
     //   const char *str;
     String str;
@@ -45,8 +274,6 @@ int CigarRollerTest::test(void)
     //    result = str = cigar.getString(); delete str;
 
     check(failures, ++testNum, "constructor", result, "");    // test empty case
-
-    CigarRoller::CigarOperator op;
 
     op.operation = CigarRoller::match;
     op.count = 10;
