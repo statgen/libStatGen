@@ -31,7 +31,27 @@
 #include "knetfile.h"
 #endif
 
-//typedef int8_t bool;
+typedef int8_t bgzf_byte_t;
+
+#define DEFAULT_BLOCK_SIZE 64 * 1024
+#define MAX_BLOCK_SIZE 64 * 1024
+
+#define BLOCK_HEADER_LENGTH 18
+#define BLOCK_FOOTER_LENGTH 8
+
+#define GZIP_ID1 31
+#define GZIP_ID2 139
+#define CM_DEFLATE 8
+#define FLG_FEXTRA 4
+#define OS_UNKNOWN 255
+#define BGZF_ID1 66 // 'B'
+#define BGZF_ID2 67 // 'C'
+#define BGZF_LEN 2
+#define BGZF_XLEN 6 // BGZF_LEN+4
+
+#define GZIP_WINDOW_BITS -15 // no zlib header
+#define Z_DEFAULT_MEM_LEVEL 8
+
 
 typedef struct {
     int file_descriptor;
@@ -98,6 +118,7 @@ int bgzf_read(BGZF* fp, void* data, int length);
  */
 int bgzf_write(BGZF* fp, const void* data, int length);
 
+
 /*
  * Return a virtual file pointer to the current location in the file.
  * No interpetation of the value should be made, other than a subsequent
@@ -130,6 +151,15 @@ int bgzf_flush(BGZF* fp);
 int bgzf_flush_try(BGZF *fp, int size);
 int bgzf_check_bgzf(const char *fn);
 
+inline void
+packInt16(uint8_t* buffer, uint16_t value);
+inline int
+unpackInt16(const uint8_t* buffer);
+inline void
+packInt32(uint8_t* buffer, uint32_t value);
+int
+bgzf_check_header(const bgzf_byte_t* header);
+
 #ifdef __cplusplus
 }
 #endif
@@ -146,11 +176,7 @@ static inline int bgzf_getc(BGZF *fp)
 #ifdef _USE_KNETFILE
         fp->block_address = knet_tell(fp->x.fpr);
 #else
-#if defined(_WIN32) || defined(_MSC_VER)
-       fp->block_address = ftell(fp->file);
-#else
-       fp->block_address = ftello(fp->file);
-#endif
+        fp->block_address = ftello(fp->file);
 #endif
         fp->block_offset = 0;
         fp->block_length = 0;

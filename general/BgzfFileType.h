@@ -20,20 +20,21 @@
 
 #include <stdexcept> // stdexcept header file
 #include "bgzf.h"
+#include "pbgzf.h"
 #include "FileType.h"
 
 class BgzfFileType : public FileType
 {
 public:
     BgzfFileType()
-    {
-        bgzfHandle = NULL;
-        myEOF = false;
-    }
+        : bgzfHandle(NULL),
+          pbgzfHandle(NULL),
+          myEOF(false)
+    {}
 
     virtual ~BgzfFileType()
     {
-        bgzfHandle = NULL;
+        close();
     }
 
     BgzfFileType(const char * filename, const char * mode);
@@ -44,7 +45,8 @@ public:
         // the two pointers are different (false).
         if (rhs != NULL)
             return false;
-        return (bgzfHandle == rhs);
+        // Also, both file handles must be null.
+        return ((bgzfHandle == rhs) && (pbgzfHandle == rhs));
     }
 
     virtual bool operator != (void * rhs)
@@ -53,14 +55,24 @@ public:
         // the two pointers are different (true).
         if (rhs != NULL)
             return true;
-        return (bgzfHandle != rhs);
+        // If either file handle is not null, then they are different.
+        return ((bgzfHandle != rhs) || (pbgzfHandle != rhs));
     }
 
     // Close the file.
     virtual inline int close()
     {
-        int result = bgzf_close(bgzfHandle);
-        bgzfHandle = NULL;
+        int result = 0;
+        // Only one of the two handles can be non-NULL
+        if(bgzfHandle != NULL)
+        {
+            result = bgzf_close(bgzfHandle);
+            bgzfHandle = NULL;
+        } else if(pbgzfHandle != NULL)
+        {
+            result = pbgzf_close(pbgzfHandle);
+            pbgzfHandle = NULL;
+        }
         return result;
     }
 
@@ -82,9 +94,9 @@ public:
     // Check to see if the file is open.
     virtual inline bool isOpen()
     {
-        if (bgzfHandle != NULL)
+        if((bgzfHandle != NULL)|| (pbgzfHandle != NULL))
         {
-            // bgzfHandle is not null, so the file is open.
+            // One of the two handles is not null, so the file is open.
             return(true);
         }
         return(false);
@@ -93,7 +105,16 @@ public:
     // Write to the file
     virtual inline unsigned int write(const void * buffer, unsigned int size)
     {
-        return bgzf_write(bgzfHandle, buffer, size);
+        if(bgzfHandle != NULL)
+        {
+            return bgzf_write(bgzfHandle, buffer, size);
+        }
+        if(pbgzfHandle != NULL)
+        {
+            return pbgzf_write(pbgzfHandle, buffer, size);
+        }
+        // Neither file is open so return 0 written.
+        return(0);
     }
 
     // Read into a buffer from the file.  Since the buffer is passed in and
@@ -101,7 +122,16 @@ public:
     // be protected.
     virtual inline int read(void * buffer, unsigned int size)
     {
-        int bytesRead = bgzf_read(bgzfHandle, buffer, size);
+        int bytesRead = 0;
+
+        if(bgzfHandle != NULL)
+        {
+            bytesRead = bgzf_read(bgzfHandle, buffer, size);
+        }
+        else if(pbgzfHandle != NULL)
+        {
+            bytesRead = pbgzf_read(pbgzfHandle, buffer, size);
+        }
         if ((bytesRead == 0) && (size != 0))
         {
             myEOF = true;
@@ -128,7 +158,16 @@ public:
         {
             throw std::runtime_error("IFILE: CANNOT use buffered reads and tell for BGZF files");
         }
-        return bgzf_tell(bgzfHandle);
+        if(bgzfHandle != NULL)
+        {
+            return bgzf_tell(bgzfHandle);
+        }
+        if(pbgzfHandle != NULL)
+        {
+            return pbgzf_tell(pbgzfHandle);
+        }
+        // Can't call tell without an open file.
+        return(-1);
     }
 
 
@@ -141,7 +180,15 @@ public:
     // Returns true on successful seek and false on a failed seek.
     virtual inline bool seek(int64_t offset, int origin)
     {
-        int64_t returnVal = bgzf_seek(bgzfHandle, offset, origin);
+        int64_t returnVal = 0;
+        if(bgzfHandle != NULL)
+        {
+            returnVal = bgzf_seek(bgzfHandle, offset, origin);
+        }
+        else if(pbgzfHandle != NULL)
+        {
+            returnVal = pbgzf_seek(pbgzfHandle, offset, origin);
+        }
         // Check for failure.
         if (returnVal == -1)
         {
@@ -154,13 +201,20 @@ public:
         return true;
     }
 
-    // Set whether or not to require the EOF block at the end of the
-    // file.  True - require the block.  False - do not require the block.
+    /// Set whether or not to require the EOF block at the end of the
+    /// file.  True - require the block.  False - do not require the block.
     static void setRequireEofBlock(bool requireEofBlock);
 
+    /// Set whether or not to use PBGZF instead of BGZF for multi-threaded
+    /// compression/decompression.  
+    /// file.  True - use PBGZF, False - use BGZF (default).
+    static void setUsePgzf(bool usePbgzf);
+
 protected:
+
     // A bgzfFile is used.
     BGZF* bgzfHandle;
+    PBGZF* pbgzfHandle;
 
     // Flag indicating EOF since there isn't one on the handle.
     bool myEOF;
@@ -171,6 +225,8 @@ protected:
     // at the end of the file.  If the block is required, but not on the file,
     // the constructor fails to open the file.
     static bool ourRequireEofBlock;
+
+    static bool ourUsePbgzf;
 };
 
 #endif

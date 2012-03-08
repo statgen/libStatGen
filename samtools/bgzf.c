@@ -51,28 +51,6 @@ extern off_t ftello(FILE *stream);
 extern int fseeko(FILE *stream, off_t offset, int whence);
 #endif
 
-typedef int8_t bgzf_byte_t;
-
-static const int DEFAULT_BLOCK_SIZE = 64 * 1024;
-static const int MAX_BLOCK_SIZE = 64 * 1024;
-
-static const int BLOCK_HEADER_LENGTH = 18;
-static const int BLOCK_FOOTER_LENGTH = 8;
-
-static const int GZIP_ID1 = 31;
-static const int GZIP_ID2 = 139;
-static const int CM_DEFLATE = 8;
-static const int FLG_FEXTRA = 4;
-static const int OS_UNKNOWN = 255;
-static const int BGZF_ID1 = 66; // 'B'
-static const int BGZF_ID2 = 67; // 'C'
-static const int BGZF_LEN = 2;
-static const int BGZF_XLEN = 6; // BGZF_LEN+4
-
-static const int GZIP_WINDOW_BITS = -15; // no zlib header
-static const int Z_DEFAULT_MEM_LEVEL = 8;
-
-
 inline
 void
 packInt16(uint8_t* buffer, uint16_t value)
@@ -105,8 +83,7 @@ bgzf_min(int x, int y)
     return (x < y) ? x : y;
 }
 
-static
-void
+static void
 report_error(BGZF* fp, const char* message) {
     fp->error = message;
 }
@@ -172,8 +149,7 @@ open_read(int fd)
     return fp;
 }
 
-static
-BGZF*
+static BGZF*
 open_write(int fd, int compress_level) // compress_level==-1 for the default level
 {
     FILE* file = fdopen(fd, "w");
@@ -245,19 +221,22 @@ bgzf_open(const char* __restrict path, const char* __restrict mode)
 BGZF*
 bgzf_fdopen(int fd, const char * __restrict mode)
 {
-	if (fd == -1) return 0;
+    BGZF* fp = NULL;
+    if (fd == -1) return 0;
     if (mode[0] == 'r' || mode[0] == 'R') {
-        return open_read(fd);
+        fp = open_read(fd);
     } else if (mode[0] == 'w' || mode[0] == 'W') {
 		int i, compress_level = -1;
 		for (i = 0; mode[i]; ++i)
 			if (mode[i] >= '0' && mode[i] <= '9') break;
 		if (mode[i]) compress_level = (int)mode[i] - '0';
 		if (strchr(mode, 'u')) compress_level = 0;
-        return open_write(fd, compress_level);
+        fp = open_write(fd, compress_level);
     } else {
         return NULL;
     }
+    if (fp != NULL) fp->owned_file = 1;
+    return fp;
 }
 
 static
@@ -396,9 +375,8 @@ inflate_block(BGZF* fp, int block_length)
     return zs.total_out;
 }
 
-static
 int
-check_header(const bgzf_byte_t* header)
+bgzf_check_header(const bgzf_byte_t* header)
 {
     return (header[0] == GZIP_ID1 &&
             header[1] == (bgzf_byte_t) GZIP_ID2 &&
@@ -490,7 +468,7 @@ bgzf_read_block(BGZF* fp)
         report_error(fp, "read failed");
         return -1;
     }
-    if (!check_header(header)) {
+    if (!bgzf_check_header(header)) {
         report_error(fp, "invalid block header");
         return -1;
     }
@@ -568,7 +546,7 @@ int bgzf_flush(BGZF* fp)
 {
     while (fp->block_offset > 0) {
         int count, block_length;
-		block_length = deflate_block(fp, fp->block_offset);
+        block_length = deflate_block(fp, fp->block_offset);
         if (block_length < 0) return -1;
 #ifdef _USE_KNETFILE
         count = fwrite(fp->compressed_block, 1, block_length, fp->x.fpw);
@@ -668,9 +646,6 @@ void bgzf_set_cache_size(BGZF *fp, int cache_size)
 int bgzf_check_EOF(BGZF *fp)
 {
 	static uint8_t magic[28] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0\033\0\3\0\0\0\0\0\0\0\0\0";
-        // Last 28 bytes of an uncompressed bgzf file which are different
-        // from the last 28 bytes of compressed bgzf files.
-	static uint8_t magic2[28] = "\4\0\0\0\0\0\377\6\0\102\103\2\0\036\0\1\0\0\377\377\0\0\0\0\0\0\0\0";
 	uint8_t buf[28];
 	off_t offset;
 #ifdef _USE_KNETFILE
@@ -684,11 +659,7 @@ int bgzf_check_EOF(BGZF *fp)
 	fread(buf, 1, 28, fp->file);
 	fseeko(fp->file, offset, SEEK_SET);
 #endif
-	if((memcmp(magic, buf, 28) == 0) || (memcmp(magic2, buf, 28) == 0))
-        {
-            return(1);
-        }
-        return(0);
+	return (memcmp(magic, buf, 28) == 0)? 1 : 0;
 }
 
 int64_t bgzf_seek(BGZF* fp, int64_t pos, int where)

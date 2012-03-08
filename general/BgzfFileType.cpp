@@ -22,29 +22,55 @@
 
 // Default to require the EOF block at the end of the file.
 bool BgzfFileType::ourRequireEofBlock = true;
+// By default use BGZF instead of PBGZF.
+bool BgzfFileType::ourUsePbgzf = false;
 
 BgzfFileType::BgzfFileType(const char * filename, const char * mode)
+    : bgzfHandle(NULL),
+      pbgzfHandle(NULL),
+      myEOF(false)
 {
     // If the file is for write and is '-', then write to stdout.
     if(((mode[0] == 'w') || (mode[0] == 'W')) && 
        (strcmp(filename, "-") == 0))
     {
         // Write to stdout.
-        bgzfHandle = bgzf_fdopen(fileno(stdout), mode);
+        if(!ourUsePbgzf)
+        {
+            bgzfHandle = bgzf_fdopen(fileno(stdout), mode);
+        }
+        else
+        {
+            pbgzfHandle = pbgzf_fdopen(fileno(stdout), mode);
+        }
     }
     else if(((mode[0] == 'r') || (mode[0] == 'R')) && 
        (strcmp(filename, "-") == 0))
     {
         // read from stdin
-        bgzfHandle = bgzf_fdopen(fileno(stdin), mode);
+        if(!ourUsePbgzf)
+        {
+            bgzfHandle = bgzf_fdopen(fileno(stdin), mode);
+        }
+        else
+        {
+            pbgzfHandle = pbgzf_fdopen(fileno(stdin), mode);
+        }
     }
     else
     {
-        bgzfHandle = bgzf_open(filename, mode);
+        if(!ourUsePbgzf)
+        {
+            bgzfHandle = bgzf_open(filename, mode);
+        }
+        else
+        {
+            pbgzfHandle = pbgzf_open(filename, mode);
+        }
     }
 
     myStartPos = 0;
-    if (bgzfHandle != NULL)
+    if(bgzfHandle != NULL)
     {
         // Check to see if the file is being opened for read, if the eof block
         // is required, and if it is, if it is there.
@@ -62,6 +88,24 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
             myStartPos = bgzf_tell(bgzfHandle);
         }
     }
+    else if(pbgzfHandle != NULL)
+    {
+        // Check to see if the file is being opened for read, if the eof block
+        // is required, and if it is, if it is there.
+        if ((mode[0] == 'r' || mode[0] == 'R') && ourRequireEofBlock &&
+                (pbgzf_check_EOF(pbgzfHandle) == 0))
+        {
+            std::cerr << "BGZF EOF marker is missing in " << filename << std::endl;
+            // the block is supposed to be there, but isn't, so close the file.
+            close();
+        }
+        else
+        {
+            // Successfully opened a properly formatted file, so get the start
+            // position.
+            myStartPos = pbgzf_tell(pbgzfHandle);
+        }
+    }
 
     myEOF = false;
 }
@@ -74,3 +118,7 @@ void BgzfFileType::setRequireEofBlock(bool requireEofBlock)
     ourRequireEofBlock = requireEofBlock;
 }
 
+void BgzfFileType::setUsePgzf(bool usePbgzf)
+{
+    ourUsePbgzf = usePbgzf;
+}

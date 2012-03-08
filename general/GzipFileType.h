@@ -45,6 +45,10 @@ public:
 
     virtual ~GzipFileType()
     {
+        if (gzHandle != NULL)
+        {
+            close();
+        }
     }
 
     GzipFileType(const char * filename, const char * mode);
