@@ -492,6 +492,7 @@ pbgzf_seek(PBGZF* fp, int64_t pos, int where)
   if(NULL != fp->block) block_destroy(fp->block);
   fp->block = queue_get(fp->output, 1);
   if(NULL == fp->block) fp->eof = 1; // must be EOF
+  else fp->eof = 0;
 
   // reset block offset/address
   fp->block_offset = pos & 0xFFFF;

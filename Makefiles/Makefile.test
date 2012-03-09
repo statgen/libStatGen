@@ -53,7 +53,7 @@ test : all
 	$(TEST_COMMAND)
 
 $(OBJDIR)/%.o: %.c
-	$(CXX) $(CFLAGS) -o $@ -c $*.c 
+	$(CC) $(CFLAGS) -o $@ -c $*.c 
 
 $(OBJDIR)/%.o: %.cpp 
 	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""

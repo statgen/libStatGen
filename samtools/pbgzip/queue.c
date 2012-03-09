@@ -303,6 +303,9 @@ void
 queue_wake_all(queue_t *q)
 {
   safe_mutex_lock(q->mut);
+  if(0 == q->num_getters || (0 == q->num_adders && 0 == q->n)) {
+      q->state = QUEUE_STATE_EOF;
+  }
   pthread_cond_signal(q->not_full);
   pthread_cond_signal(q->not_empty);
   pthread_cond_signal(q->is_empty);

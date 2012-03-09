@@ -41,29 +41,29 @@ const std::string IFILE_Test::TEST_FILE_CONTENTS = "ABCDabcd1234\nEFGefg567\nhij
 
 void IFILE_Test::test()
 {
-//    std::cout << "\nUncompressedFileType Tests:" << std::endl;
-//    test_readFromFile("txt");
-//    test_ifeof_ifrewind("txt");
-//    test_ifread_ifgetc("txt");
-//    test_ifclose("txt");
-//    test_ifseek("txt");
-//    test_noExistRead("txt");
+   std::cout << "\nUncompressedFileType Tests:" << std::endl;
+   test_readFromFile("txt");
+   test_ifeof_ifrewind("txt");
+   test_ifread_ifgetc("txt");
+   test_ifclose("txt");
+   test_ifseek("txt");
+   test_noExistRead("txt");
 
-//    std::cout << "\nGzipFileType Tests:" << std::endl;
-//    test_readFromFile("gz");
-//    test_ifeof_ifrewind("gz");
-//    test_ifread_ifgetc("gz");
-//    test_ifclose("gz");
-//    test_ifseek("gz");
-//    test_noExistRead("gz");
+   std::cout << "\nGzipFileType Tests:" << std::endl;
+   test_readFromFile("gz");
+   test_ifeof_ifrewind("gz");
+   test_ifread_ifgetc("gz");
+   test_ifclose("gz");
+   test_ifseek("gz");
+   test_noExistRead("gz");
 
-//    std::cout << "\nBgzfFileType Tests:" << std::endl;
-//    test_readFromFile("bam");
-//    test_ifeof_ifrewind("bam");
-//    test_ifread_ifgetc("bam");
-//    test_ifclose("bam");
-//    test_ifseek("bam");
-//    test_noExistRead("bam");
+   std::cout << "\nBgzfFileType Tests:" << std::endl;
+   test_readFromFile("bam");
+   test_ifeof_ifrewind("bam");
+   test_ifread_ifgetc("bam");
+   test_ifclose("bam");
+   test_ifseek("bam");
+   test_noExistRead("bam");
 
    BgzfFileType::setUsePgzf(true);
    std::cout << "\nPbgzfFileType Tests:" << std::endl;
