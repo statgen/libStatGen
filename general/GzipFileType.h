@@ -39,46 +39,17 @@ class GzipFileType : public FileType
 {
 public:
     GzipFileType()
-    {
-        gzHandle = NULL;
-    }
+        : FileType(),
+          gzHandle()
+    {}
 
     virtual ~GzipFileType()
     {
-        if (gzHandle != NULL)
+        if(isHandleOpen())
         {
-            close();
+            closeHandle();
         }
     }
-
-    GzipFileType(const char * filename, const char * mode);
-
-    bool operator == (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (false).
-        if (rhs != NULL)
-            return false;
-        return (gzHandle == rhs);
-    }
-
-    bool operator != (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (true).
-        if (rhs != NULL)
-            return true;
-        return (gzHandle != rhs);
-    }
-
-    // Close the file.
-    inline int close()
-    {
-        int result = gzclose(gzHandle);
-        gzHandle = NULL;
-        return result;
-    }
-
 
     // Reset to the beginning of the file.
     inline void rewind()
@@ -94,37 +65,12 @@ public:
         return gzeof(gzHandle);
     }
 
-    // Check to see if the file is open.
-    virtual inline bool isOpen()
-    {
-        if (gzHandle != NULL)
-        {
-            // gzHandle is not null, so the file is open.
-            return(true);
-        }
-        return(false);
-    }
-
-    // Write to the file
-    inline unsigned int write(const void * buffer, unsigned int size)
-    {
-        return gzwrite(gzHandle, buffer, size);
-    }
-
     // Read into a buffer from the file.  Since the buffer is passed in and
     // this would bypass the fileBuffer used by this class, this method must
     // be protected.
     inline int read(void * buffer, unsigned int size)
     {
-        unsigned int numBytes = gzread(gzHandle, buffer, size);
-//       if(numBytes != size)
-//       {
-//          std::cerr << "Error reading.  Read "<< numBytes << " instead of "<< size<<std::endl;
-//          int error_code = 0;
-//          const char* errorMsg = gzerror(gzHandle, &error_code);
-//          std::cerr << "ERROR Code: " << error_code << ";  Error Msg: " << errorMsg << std::endl;
-//       }
-        return numBytes;
+        return(gzread(gzHandle, buffer, size));
     }
 
     // Get current position in the file.
@@ -152,6 +98,44 @@ public:
         }
         // Successful.
         return true;
+    }
+
+protected:
+    virtual inline void openHandleFromFilePtr(FILE* filePtr, const char* mode)
+    {
+        gzHandle = gzdopen(fileno(filePtr), mode);
+    }
+
+    virtual inline void openHandleFromName(const char* filename, 
+                                           const char* mode)
+    {
+        gzHandle = gzopen(filename, mode);
+    }
+
+    virtual inline bool isHandleNull()
+    {
+        return(gzHandle == NULL);
+    }
+    
+    // Check to see if the file is open.
+    virtual inline bool isHandleOpen()
+    {
+        return(!isHandleNull());
+    }
+
+    // Close the file.
+    virtual inline int closeHandle()
+    {
+        int result = 0;
+        result = gzclose(gzHandle);
+        gzHandle = NULL;
+        return result;
+    }
+
+    // Write to the file
+    virtual inline unsigned int writeToHandle(const void * buffer, unsigned int size)
+    {
+        return gzwrite(gzHandle, buffer, size);
     }
 
 

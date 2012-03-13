@@ -32,7 +32,6 @@ TOOLBASE=\
 	GenomeSequence \
 	GenotypeLists \
 	glfHandler \
-	GzipFileType \
 	GzipHeader \
 	Hash \
 	Input \
@@ -69,7 +68,6 @@ TOOLBASE=\
 	StringHash \
 	StringMap \
 	TrimSequence \
-	UncompressedFileType \
 	WindowsHelper
 
 SRCONLY=\
@@ -79,9 +77,12 @@ SRCONLY=\
 
 HDRONLY= \
 	Constant.h \
+	BgzfFileTypeBgzf.h \
+	BgzfFileTypePbgzf.h \
 	Generic.h \
 	GenomeSequenceHelpers.h \
 	GreedyTupleAligner.h \
+	GzipFileType.h \
 	InplaceMerge.h \
 	LongInt.h \
 	MathConstant.h \
@@ -89,6 +90,7 @@ HDRONLY= \
 	PedigreeAlleles.h \
 	Performance.h \
 	SimpleStats.h \
+	UncompressedFileType.h \
 	UnitTest.h
 
 include ../Makefiles/Makefile.lib

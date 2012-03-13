@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,8 @@
 #include "InputFile.h"
 #include "StringBasics.h"
 #include "GzipHeader.h"
-#include "BgzfFileType.h"
+#include "BgzfFileTypeBgzf.h"
+#include "BgzfFileTypePbgzf.h"
 #include "BgzfFileTypeRecovery.h"
 #include "GzipFileType.h"
 #include "UncompressedFileType.h"
@@ -60,7 +61,7 @@ bool InputFile::openFile(const char * filename, const char * mode,
     // If a file is for write, just open a new file.
     if (mode[0] == 'w' || mode[0] == 'W')
     {
-        openFileUsingMode(filename, mode, compressionMode);
+        createFileTypeUsingMode(filename, mode, compressionMode);
     }
     else
     {
@@ -69,7 +70,7 @@ bool InputFile::openFile(const char * filename, const char * mode,
         {
             // Reading from stdin, open it based on the 
             // compression mode.
-            openFileUsingMode(filename, mode, compressionMode);
+            createFileTypeUsingMode(filename, mode, compressionMode);
         }
         else
         {
@@ -97,7 +98,7 @@ bool InputFile::openFile(const char * filename, const char * mode,
                 }
                 else
                 {
-                    openFileUsingMode(filename, mode, compressionMode);
+                    createFileTypeUsingMode(filename, mode, compressionMode);
                 }
             }
             else
@@ -120,25 +121,33 @@ bool InputFile::openFile(const char * filename, const char * mode,
                     {
                         // This file has BGZF Compression, so set the file
                         // pointer.
-                        if(myAttemptRecovery) {
+                        if(myAttemptRecovery) 
+                        {
                             // NB: this reader will throw std::runtime_error when it recovers
-                            myFileTypePtr = new BgzfFileTypeRecovery(filename, mode);
-                        } else {
+                            myFileTypePtr = new BgzfFileTypeRecovery();
+                        } 
+                        else if(!BgzfFileType::usePbgzf())
+                        {
                             // use the standard bgzf reader (samtools)
-                            myFileTypePtr = new BgzfFileType(filename, mode);
+                            myFileTypePtr = new BgzfFileTypeBgzf();
+                        }
+                        else
+                        {
+                            // use the pbgzf reader
+                            myFileTypePtr = new BgzfFileTypePbgzf();
                         }
                     }
                     else
                     {
                         // Not BGZF, just a normal gzip.
-                        myFileTypePtr = new GzipFileType(filename, mode);
+                        myFileTypePtr = new GzipFileType();
                    }
                 }
                 else
                 {
                     // The file is a uncompressed, uncompressed file,
                     // so set the myFileTypePtr accordingly.
-                    myFileTypePtr = new UncompressedFileType(filename, mode);
+                    myFileTypePtr = new UncompressedFileType();
                 }
             }
         }
@@ -147,6 +156,10 @@ bool InputFile::openFile(const char * filename, const char * mode,
     {
         return(false);
     }
+
+    // Open the file type.
+    myFileTypePtr->open(filename, mode);
+
     if (!myFileTypePtr->isOpen())
     {
         // The file was not opened, so delete the pointer and set to null.
@@ -168,16 +181,17 @@ bool InputFile::openFile(const char * filename, const char * mode,
 }
 
 
-// Open a file.  This method will open a file with the specified name and
-// mode with the fileTypePtr associated with the specified compressionMode.
-void InputFile::openFileUsingMode(const char * filename, const char * mode,
+// Only necessary with zlib to determine what file type on a new
+// file.  Without zlib, there are only uncompressed files, so a special
+// method is not needed to determine the type of file pointer to create.
+void InputFile::createFileTypeUsingMode(const char * filename, const char * mode,
                                   ifileCompression compressionMode)
 {
     switch (compressionMode)
     {
         case GZIP:
             // Gzipped.
-            myFileTypePtr = new GzipFileType(filename, mode);
+            myFileTypePtr = new GzipFileType();
             break;
         case BGZF:
             //
@@ -187,15 +201,21 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
             if(myAttemptRecovery && ((mode[0] == 'r') || (mode[0] == 'R')))
             {
                 // NB: this reader will throw std::runtime_error when it recovers
-                myFileTypePtr = new BgzfFileTypeRecovery(filename, mode);
+                myFileTypePtr = new BgzfFileTypeRecovery();
+            }
+            else if(!BgzfFileType::usePbgzf())
+            {
+                // use the standard bgzf reader (samtools)
+                myFileTypePtr = new BgzfFileTypeBgzf();
             }
             else
             {
-                myFileTypePtr = new BgzfFileType(filename, mode);
+                // use the pbgzf reader
+                myFileTypePtr = new BgzfFileTypePbgzf();
             }
             break;
         case UNCOMPRESSED:
-            myFileTypePtr = new UncompressedFileType(filename, mode);
+            myFileTypePtr = new UncompressedFileType();
             break;
         case InputFile::DEFAULT:
         default:
@@ -209,27 +229,14 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
                     filename[lastchar - 1] == 'z'))
             {
                 // .gz files files should be gzipped.
-                myFileTypePtr = new GzipFileType(filename, mode);
+                myFileTypePtr = new GzipFileType();
             }
             else
             {
                 // Create an uncompressed file.
-                myFileTypePtr = new UncompressedFileType(filename, mode);
+                myFileTypePtr = new UncompressedFileType();
             }
             break;
-    }
-
-    if(myFileTypePtr == NULL)
-    {
-        return;
-    }
-    if(myAllocatedBufferSize == 1)
-    {
-        myFileTypePtr->setBuffered(false);
-    }
-    else
-    {
-        myFileTypePtr->setBuffered(true);
     }
 }
 
@@ -241,12 +248,16 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
 bool InputFile::openFile(const char * filename, const char * mode)
 {
     //  No zlib, so it is a uncompressed, uncompressed file.
-    myFileTypePtr = new UncompressedFileType(filename, mode);
+    myFileTypePtr = new UncompressedFileType();
 
     if(myFileTypePtr == NULL)
     {
         return(false);
     }
+
+    // Open the file type.
+    myFileTypePtr->open(filename, mode);
+
     if (!myFileTypePtr->isOpen())
     {
         // The file was not opened, so delete the pointer and set to null.

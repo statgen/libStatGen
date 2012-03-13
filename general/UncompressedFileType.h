@@ -19,88 +19,36 @@
 #define __UNCOMPRESSEDFILETYPE_H__
 
 #include <iostream>
-#include <stdio.h>
 #include "FileType.h"
 
 class UncompressedFileType : public FileType
 {
 public:
     UncompressedFileType()
-    {
-        filePtr = NULL;
-    }
+        : FileType(),
+          fileHandle(NULL)
+    {}
 
-    virtual ~UncompressedFileType()
+    virtual ~UncompressedFileType() 
     {
-        if (filePtr != NULL)
+        if(isHandleOpen())
         {
-            close();
+            closeHandle();
         }
     }
-
-    UncompressedFileType(const char * filename, const char * mode);
-
-    bool operator == (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (false).
-        if (rhs != NULL)
-            return false;
-        return (filePtr == rhs);
-    }
-
-    bool operator != (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (true).
-        if (rhs != NULL)
-            return true;
-        return (filePtr != rhs);
-    }
-
-    // Close the file.
-    inline int close()
-    {
-        if((filePtr != stdout) && (filePtr != stdin))
-        {
-            int result = fclose(filePtr);
-            filePtr = NULL;
-            return result;
-        }
-        filePtr = NULL;
-        return 0;
-    }
-
 
     // Reset to the beginning of the file.
     inline void rewind()
     {
         // Just call rewind to move to the beginning of the file.
-        ::rewind(filePtr);
+        ::rewind(fileHandle);
     }
 
     // Check to see if we have reached the EOF.
     inline int eof()
     {
         //  check the file for eof.
-        return feof(filePtr);
-    }
-
-    // Check to see if the file is open.
-    virtual inline bool isOpen()
-    {
-        if (filePtr != NULL)
-        {
-            // filePtr is not null, so the file is open.
-            return(true);
-        }
-        return(false);
-    }
-
-    // Write to the file
-    inline unsigned int write(const void * buffer, unsigned int size)
-    {
-        return fwrite(buffer, 1, size, filePtr);
+        return feof(fileHandle);
     }
 
     // Read into a buffer from the file.  Since the buffer is passed in and
@@ -108,7 +56,7 @@ public:
     // be protected.
     inline int read(void * buffer, unsigned int size)
     {
-        return fread(buffer, 1, size, filePtr);
+        return fread(buffer, 1, size, fileHandle);
     }
 
 
@@ -116,9 +64,8 @@ public:
     // -1 return value indicates an error.
     virtual inline int64_t tell()
     {
-        return ftell(filePtr);
+        return ftell(fileHandle);
     }
-
 
     // Seek to the specified offset from the origin.
     // origin can be any of the following:
@@ -129,7 +76,7 @@ public:
     // Returns true on successful seek and false on a failed seek.
     virtual inline bool seek(int64_t offset, int origin)
     {
-        int64_t returnVal = fseek(filePtr, offset, origin);
+        int64_t returnVal = fseek(fileHandle, offset, origin);
         // Check for success - 0 return value.
         if (returnVal == 0)
         {
@@ -141,8 +88,52 @@ public:
 
 
 protected:
+    virtual inline void openHandleFromFilePtr(FILE* filePtr, const char* mode)
+    {
+        fileHandle = filePtr;
+    }
+
+    virtual inline void openHandleFromName(const char* filename, 
+                                           const char* mode)
+    {
+        fileHandle = fopen(filename, mode);
+    }
+
+    virtual inline bool isHandleNull()
+    {
+        return(fileHandle == NULL);
+    }
+    
+    // Check to see if the file is open.
+    virtual inline bool isHandleOpen()
+    {
+        return(!isHandleNull());
+    }
+
+    // Close the file.
+    virtual inline int closeHandle()
+    {
+        // Do not close stdout or stdin.
+        if((fileHandle != stdout) && (fileHandle != stdin))
+        {
+            int result = fclose(fileHandle);
+            fileHandle = NULL;
+            return result;
+        }
+        fileHandle = NULL;
+        return 0;
+    }
+
+    // Write to the file
+    virtual inline unsigned int writeToHandle(const void * buffer, unsigned int size)
+    {
+        return fwrite(buffer, 1, size, fileHandle);
+    }
+
+
+protected:
     // A FILE Pointer is used.
-    FILE* filePtr;
+    FILE* fileHandle;
 };
 
 #endif

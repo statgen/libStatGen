@@ -36,45 +36,30 @@ public:
         close();
     }
 
-    BgzfFileTypeRecovery(const char * filename, const char * mode);
-
     // these methods should not be used.  They are
     // misleading because the rhs could be anything,
     // (specifically not a BgzfFileTypeRecover object).
-    bool operator == (void * rhs);
-
-    bool operator != (void * rhs);
-
-    // Close the file.
-    int close();
+    virtual bool operator == (void * rhs);
+    virtual bool operator != (void * rhs);
 
     // Reset to the beginning of the file.
-    inline void rewind()
+    virtual inline void rewind()
     {
         // Just call rewind to move to the beginning of the file.
         seek(0LL, SEEK_SET);
     }
 
     // Check to see if we have reached the EOF.
-    int eof();
-
-    // Check to see if the file is open.
-    bool isOpen()
-    {
-        return (bgzfReader != NULL);
-    }
-
-    // Write to the file
-    unsigned int write(const void * buffer, unsigned int size);
+    virtual int eof();
 
     // Read into a buffer from the file.  Since the buffer is passed in and
     // this would bypass the fileBuffer used by this class, this method must
     // be protected.
-    int read(void * buffer, unsigned int size);
+    virtual int read(void * buffer, unsigned int size);
 
     // Get current position in the file.
     // -1 return value indicates an error.
-    int64_t tell();
+    virtual int64_t tell();
 
     // Seek to the specified offset from the origin.
     // origin can be any of the following:
@@ -83,11 +68,23 @@ public:
     //   SEEK_CUR - Current position of the file pointer
     //   SEEK_END - End of file
     // Returns true on successful seek and false on a failed seek.
-    bool seek(int64_t offset, int origin);
+    virtual bool seek(int64_t offset, int origin);
 
     bool attemptRecoverySync(bool (*checkSignature)(void *data) , int length);
 
 protected:
+
+    virtual void openHandleFromFilePtr(FILE* filePtr, const char* mode);
+    virtual void openHandleFromName(const char* filename, const char* mode);
+    virtual bool isHandleNull() {return(bgzfReader == NULL);}
+    virtual bool isHandleOpen() {return(bgzfReader != NULL);}
+    // The following methods do not check that the file was open, it is
+    // assumed that the calling method checked that prior to calling.
+    virtual int closeHandle();
+    // write is unsupported, so return 0 - nothing written.
+    virtual unsigned int writeToHandle(const void * buffer,
+                                       unsigned int size) {return 0;}
+
     // Read via BGZFReader
     BGZFReader* bgzfReader;
 

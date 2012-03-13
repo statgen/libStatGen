@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,14 +17,29 @@
 
 #include "FileType.h"
 
-FileType::FileType()
+void FileType::open(const char * filename, const char * mode)
 {
-};
+    // close any already opened file.
+    close();
 
-
-FileType::~FileType()
-{
-};
+    // If the file is for write and is '-', then write to stdout.
+    if(((mode[0] == 'w') || (mode[0] == 'W')) && 
+       (strcmp(filename, "-") == 0))
+    {
+        // Write to stdout.
+        openHandleFromFilePtr(stdout, mode);
+    }
+    else if(((mode[0] == 'r') || (mode[0] == 'R')) && 
+       (strcmp(filename, "-") == 0))
+    {
+        // read from stdin
+        openHandleFromFilePtr(stdin, mode);
+    }
+    else
+    {
+        openHandleFromName(filename, mode);
+    }
+}
 
 
 // Set by the InputFile to inform this class if buffering

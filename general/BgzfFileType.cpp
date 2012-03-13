@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,66 +16,25 @@
  */
 
 #include <iostream>
-#include <string.h>
 
 #include "BgzfFileType.h"
 
 // Default to require the EOF block at the end of the file.
 bool BgzfFileType::ourRequireEofBlock = true;
-// By default use BGZF instead of PBGZF.
-bool BgzfFileType::ourUsePbgzf = false;
+// By default use BGZF instead of PBGZF (multithreaded = 0).
+int BgzfFileType::ourMultiThreaded = 0;
 
-BgzfFileType::BgzfFileType(const char * filename, const char * mode)
-    : bgzfHandle(NULL),
-      pbgzfHandle(NULL),
-      myEOF(false)
+
+void BgzfFileType::open(const char * filename, const char * mode)
 {
-    // If the file is for write and is '-', then write to stdout.
-    if(((mode[0] == 'w') || (mode[0] == 'W')) && 
-       (strcmp(filename, "-") == 0))
-    {
-        // Write to stdout.
-        if(!ourUsePbgzf)
-        {
-            bgzfHandle = bgzf_fdopen(fileno(stdout), mode);
-        }
-        else
-        {
-            pbgzfHandle = pbgzf_fdopen(fileno(stdout), mode);
-        }
-    }
-    else if(((mode[0] == 'r') || (mode[0] == 'R')) && 
-       (strcmp(filename, "-") == 0))
-    {
-        // read from stdin
-        if(!ourUsePbgzf)
-        {
-            bgzfHandle = bgzf_fdopen(fileno(stdin), mode);
-        }
-        else
-        {
-            pbgzfHandle = pbgzf_fdopen(fileno(stdin), mode);
-        }
-    }
-    else
-    {
-        if(!ourUsePbgzf)
-        {
-            bgzfHandle = bgzf_open(filename, mode);
-        }
-        else
-        {
-            pbgzfHandle = pbgzf_open(filename, mode);
-        }
-    }
-
+    FileType::open(filename, mode);
     myStartPos = 0;
-    if(bgzfHandle != NULL)
+    if(isHandleOpen())
     {
         // Check to see if the file is being opened for read, if the eof block
         // is required, and if it is, if it is there.
         if ((mode[0] == 'r' || mode[0] == 'R') && ourRequireEofBlock &&
-                (bgzf_check_EOF(bgzfHandle) == 0))
+            checkEofBlock())
         {
             std::cerr << "BGZF EOF marker is missing in " << filename << std::endl;
             // the block is supposed to be there, but isn't, so close the file.
@@ -85,25 +44,7 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
         {
             // Successfully opened a properly formatted file, so get the start
             // position.
-            myStartPos = bgzf_tell(bgzfHandle);
-        }
-    }
-    else if(pbgzfHandle != NULL)
-    {
-        // Check to see if the file is being opened for read, if the eof block
-        // is required, and if it is, if it is there.
-        if ((mode[0] == 'r' || mode[0] == 'R') && ourRequireEofBlock &&
-                (pbgzf_check_EOF(pbgzfHandle) == 0))
-        {
-            std::cerr << "BGZF EOF marker is missing in " << filename << std::endl;
-            // the block is supposed to be there, but isn't, so close the file.
-            close();
-        }
-        else
-        {
-            // Successfully opened a properly formatted file, so get the start
-            // position.
-            myStartPos = pbgzf_tell(pbgzfHandle);
+            myStartPos = tellHandle();
         }
     }
 
@@ -118,7 +59,7 @@ void BgzfFileType::setRequireEofBlock(bool requireEofBlock)
     ourRequireEofBlock = requireEofBlock;
 }
 
-void BgzfFileType::setUsePgzf(bool usePbgzf)
+void BgzfFileType::setMultiThreaded(int numThreads)
 {
-    ourUsePbgzf = usePbgzf;
+    ourMultiThreaded = numThreads;
 }

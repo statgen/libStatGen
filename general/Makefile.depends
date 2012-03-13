@@ -5,7 +5,7 @@ $(OBJDIR_OPT)/BaseAsciiMap.o: FileType.h
 $(OBJDIR_OPT)/BaseQualityHelper.o: BaseQualityHelper.h
 $(OBJDIR_OPT)/BaseUtilities.o: BaseUtilities.h
 $(OBJDIR_OPT)/BasicHash.o: BasicHash.h Error.h
-$(OBJDIR_OPT)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
+$(OBJDIR_OPT)/BgzfFileType.o: BgzfFileType.h FileType.h
 $(OBJDIR_OPT)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_OPT)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_OPT)/Chromosome.o: Chromosome.h GenomeSequence.h MemoryMapArray.h
@@ -32,14 +32,17 @@ $(OBJDIR_OPT)/GenotypeLists.o: IntArray.h MathVector.h PedigreeFamily.h
 $(OBJDIR_OPT)/GenotypeLists.o: PedigreeDescription.h PedigreeAlleleFreq.h
 $(OBJDIR_OPT)/glfHandler.o: glfHandler.h InputFile.h FileType.h
 $(OBJDIR_OPT)/glfHandler.o: StringBasics.h BaseQualityHelper.h
-$(OBJDIR_OPT)/GzipFileType.o: GzipFileType.h FileType.h
 $(OBJDIR_OPT)/GzipHeader.o: GzipHeader.h
 $(OBJDIR_OPT)/Hash.o: Hash.h
 $(OBJDIR_OPT)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_OPT)/InputFile.o: InputFile.h FileType.h StringBasics.h GzipHeader.h
-$(OBJDIR_OPT)/InputFile.o: BgzfFileType.h ../include/bgzf.h
-$(OBJDIR_OPT)/InputFile.o: BgzfFileTypeRecovery.h GzipFileType.h
-$(OBJDIR_OPT)/InputFile.o: UncompressedFileType.h
+$(OBJDIR_OPT)/InputFile.o: BgzfFileTypeBgzf.h ../include/bgzf.h
+$(OBJDIR_OPT)/InputFile.o: BgzfFileType.h BgzfFileTypePbgzf.h
+$(OBJDIR_OPT)/InputFile.o: ../include/pbgzf.h ../include/block.h
+$(OBJDIR_OPT)/InputFile.o: ../include/queue.h ../include/reader.h
+$(OBJDIR_OPT)/InputFile.o: ../include/consumer.h ../include/writer.h
+$(OBJDIR_OPT)/InputFile.o: ../include/util.h BgzfFileTypeRecovery.h
+$(OBJDIR_OPT)/InputFile.o: GzipFileType.h UncompressedFileType.h
 $(OBJDIR_OPT)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
 $(OBJDIR_OPT)/IntHash.o: IntHash.h Error.h
 $(OBJDIR_OPT)/LongLongCounter.o: LongLongCounter.h LongHash.h Error.h
@@ -120,7 +123,6 @@ $(OBJDIR_OPT)/StringHash.o: StringHash.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_OPT)/StringMap.o: StringMap.h StringBasics.h InputFile.h FileType.h
 $(OBJDIR_OPT)/TrimSequence.o: TrimSequence.h
-$(OBJDIR_OPT)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_OPT)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_OPT)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
 $(OBJDIR_OPT)/PedigreeLoader.o: LongInt.h PedigreePerson.h PedigreeGlobals.h
@@ -148,7 +150,7 @@ $(OBJDIR_DEBUG)/BaseAsciiMap.o: FileType.h
 $(OBJDIR_DEBUG)/BaseQualityHelper.o: BaseQualityHelper.h
 $(OBJDIR_DEBUG)/BaseUtilities.o: BaseUtilities.h
 $(OBJDIR_DEBUG)/BasicHash.o: BasicHash.h Error.h
-$(OBJDIR_DEBUG)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
+$(OBJDIR_DEBUG)/BgzfFileType.o: BgzfFileType.h FileType.h
 $(OBJDIR_DEBUG)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_DEBUG)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/Chromosome.o: Chromosome.h GenomeSequence.h MemoryMapArray.h
@@ -176,12 +178,16 @@ $(OBJDIR_DEBUG)/GenotypeLists.o: PedigreeFamily.h PedigreeDescription.h
 $(OBJDIR_DEBUG)/GenotypeLists.o: PedigreeAlleleFreq.h
 $(OBJDIR_DEBUG)/glfHandler.o: glfHandler.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/glfHandler.o: StringBasics.h BaseQualityHelper.h
-$(OBJDIR_DEBUG)/GzipFileType.o: GzipFileType.h FileType.h
 $(OBJDIR_DEBUG)/GzipHeader.o: GzipHeader.h
 $(OBJDIR_DEBUG)/Hash.o: Hash.h
 $(OBJDIR_DEBUG)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_DEBUG)/InputFile.o: InputFile.h FileType.h StringBasics.h
-$(OBJDIR_DEBUG)/InputFile.o: GzipHeader.h BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_DEBUG)/InputFile.o: GzipHeader.h BgzfFileTypeBgzf.h
+$(OBJDIR_DEBUG)/InputFile.o: ../include/bgzf.h BgzfFileType.h
+$(OBJDIR_DEBUG)/InputFile.o: BgzfFileTypePbgzf.h ../include/pbgzf.h
+$(OBJDIR_DEBUG)/InputFile.o: ../include/block.h ../include/queue.h
+$(OBJDIR_DEBUG)/InputFile.o: ../include/reader.h ../include/consumer.h
+$(OBJDIR_DEBUG)/InputFile.o: ../include/writer.h ../include/util.h
 $(OBJDIR_DEBUG)/InputFile.o: BgzfFileTypeRecovery.h GzipFileType.h
 $(OBJDIR_DEBUG)/InputFile.o: UncompressedFileType.h
 $(OBJDIR_DEBUG)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
@@ -269,7 +275,6 @@ $(OBJDIR_DEBUG)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_DEBUG)/StringMap.o: StringMap.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/StringMap.o: FileType.h
 $(OBJDIR_DEBUG)/TrimSequence.o: TrimSequence.h
-$(OBJDIR_DEBUG)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_DEBUG)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_DEBUG)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
 $(OBJDIR_DEBUG)/PedigreeLoader.o: LongInt.h PedigreePerson.h
@@ -298,7 +303,7 @@ $(OBJDIR_PROFILE)/BaseAsciiMap.o: FileType.h
 $(OBJDIR_PROFILE)/BaseQualityHelper.o: BaseQualityHelper.h
 $(OBJDIR_PROFILE)/BaseUtilities.o: BaseUtilities.h
 $(OBJDIR_PROFILE)/BasicHash.o: BasicHash.h Error.h
-$(OBJDIR_PROFILE)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
+$(OBJDIR_PROFILE)/BgzfFileType.o: BgzfFileType.h FileType.h
 $(OBJDIR_PROFILE)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_PROFILE)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/Chromosome.o: Chromosome.h GenomeSequence.h
@@ -327,12 +332,16 @@ $(OBJDIR_PROFILE)/GenotypeLists.o: MathVector.h PedigreeFamily.h
 $(OBJDIR_PROFILE)/GenotypeLists.o: PedigreeDescription.h PedigreeAlleleFreq.h
 $(OBJDIR_PROFILE)/glfHandler.o: glfHandler.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/glfHandler.o: StringBasics.h BaseQualityHelper.h
-$(OBJDIR_PROFILE)/GzipFileType.o: GzipFileType.h FileType.h
 $(OBJDIR_PROFILE)/GzipHeader.o: GzipHeader.h
 $(OBJDIR_PROFILE)/Hash.o: Hash.h
 $(OBJDIR_PROFILE)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_PROFILE)/InputFile.o: InputFile.h FileType.h StringBasics.h
-$(OBJDIR_PROFILE)/InputFile.o: GzipHeader.h BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_PROFILE)/InputFile.o: GzipHeader.h BgzfFileTypeBgzf.h
+$(OBJDIR_PROFILE)/InputFile.o: ../include/bgzf.h BgzfFileType.h
+$(OBJDIR_PROFILE)/InputFile.o: BgzfFileTypePbgzf.h ../include/pbgzf.h
+$(OBJDIR_PROFILE)/InputFile.o: ../include/block.h ../include/queue.h
+$(OBJDIR_PROFILE)/InputFile.o: ../include/reader.h ../include/consumer.h
+$(OBJDIR_PROFILE)/InputFile.o: ../include/writer.h ../include/util.h
 $(OBJDIR_PROFILE)/InputFile.o: BgzfFileTypeRecovery.h GzipFileType.h
 $(OBJDIR_PROFILE)/InputFile.o: UncompressedFileType.h
 $(OBJDIR_PROFILE)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
@@ -423,7 +432,6 @@ $(OBJDIR_PROFILE)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_PROFILE)/StringMap.o: StringMap.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/StringMap.o: FileType.h
 $(OBJDIR_PROFILE)/TrimSequence.o: TrimSequence.h
-$(OBJDIR_PROFILE)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_PROFILE)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_PROFILE)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
 $(OBJDIR_PROFILE)/PedigreeLoader.o: LongInt.h PedigreePerson.h

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,63 +19,21 @@
 #define __BGZFFILETYPE_H__
 
 #include <stdexcept> // stdexcept header file
-#include "bgzf.h"
-#include "pbgzf.h"
 #include "FileType.h"
 
 class BgzfFileType : public FileType
 {
 public:
     BgzfFileType()
-        : bgzfHandle(NULL),
-          pbgzfHandle(NULL),
-          myEOF(false)
+        : FileType(),
+          myEOF(false),
+          myStartPos(0)
     {}
 
     virtual ~BgzfFileType()
-    {
-        close();
-    }
+    {}
 
-    BgzfFileType(const char * filename, const char * mode);
-
-    virtual bool operator == (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (false).
-        if (rhs != NULL)
-            return false;
-        // Also, both file handles must be null.
-        return ((bgzfHandle == rhs) && (pbgzfHandle == rhs));
-    }
-
-    virtual bool operator != (void * rhs)
-    {
-        // No two file pointers are the same, so if rhs is not NULL, then
-        // the two pointers are different (true).
-        if (rhs != NULL)
-            return true;
-        // If either file handle is not null, then they are different.
-        return ((bgzfHandle != rhs) || (pbgzfHandle != rhs));
-    }
-
-    // Close the file.
-    virtual inline int close()
-    {
-        int result = 0;
-        // Only one of the two handles can be non-NULL
-        if(bgzfHandle != NULL)
-        {
-            result = bgzf_close(bgzfHandle);
-            bgzfHandle = NULL;
-        } else if(pbgzfHandle != NULL)
-        {
-            result = pbgzf_close(pbgzfHandle);
-            pbgzfHandle = NULL;
-        }
-        return result;
-    }
-
+    virtual void open(const char * filename, const char * mode);
 
     // Reset to the beginning of the file.
     virtual inline void rewind()
@@ -91,47 +49,15 @@ public:
         return myEOF;
     }
 
-    // Check to see if the file is open.
-    virtual inline bool isOpen()
-    {
-        if((bgzfHandle != NULL)|| (pbgzfHandle != NULL))
-        {
-            // One of the two handles is not null, so the file is open.
-            return(true);
-        }
-        return(false);
-    }
-
-    // Write to the file
-    virtual inline unsigned int write(const void * buffer, unsigned int size)
-    {
-        if(bgzfHandle != NULL)
-        {
-            return bgzf_write(bgzfHandle, buffer, size);
-        }
-        if(pbgzfHandle != NULL)
-        {
-            return pbgzf_write(pbgzfHandle, buffer, size);
-        }
-        // Neither file is open so return 0 written.
-        return(0);
-    }
-
-    // Read into a buffer from the file.  Since the buffer is passed in and
-    // this would bypass the fileBuffer used by this class, this method must
-    // be protected.
+    // Read into a buffer from the file.
     virtual inline int read(void * buffer, unsigned int size)
     {
         int bytesRead = 0;
+        if(isHandleOpen())
+        {
+            bytesRead = readFromHandle(buffer, size);
+        }
 
-        if(bgzfHandle != NULL)
-        {
-            bytesRead = bgzf_read(bgzfHandle, buffer, size);
-        }
-        else if(pbgzfHandle != NULL)
-        {
-            bytesRead = pbgzf_read(pbgzfHandle, buffer, size);
-        }
         if ((bytesRead == 0) && (size != 0))
         {
             myEOF = true;
@@ -150,23 +76,18 @@ public:
     }
 
 
-    // Get current position in the file.
-    // -1 return value indicates an error.
+    // Get current position in the file. -1 return value indicates an error.
     virtual inline int64_t tell()
     {
         if(myUsingBuffer)
         {
             throw std::runtime_error("IFILE: CANNOT use buffered reads and tell for BGZF files");
         }
-        if(bgzfHandle != NULL)
+        if(isHandleOpen())
         {
-            return bgzf_tell(bgzfHandle);
+            return(tellHandle());
         }
-        if(pbgzfHandle != NULL)
-        {
-            return pbgzf_tell(pbgzfHandle);
-        }
-        // Can't call tell without an open file.
+        // Can't tell without an open file.
         return(-1);
     }
 
@@ -181,13 +102,9 @@ public:
     virtual inline bool seek(int64_t offset, int origin)
     {
         int64_t returnVal = 0;
-        if(bgzfHandle != NULL)
+        if(isHandleOpen())
         {
-            returnVal = bgzf_seek(bgzfHandle, offset, origin);
-        }
-        else if(pbgzfHandle != NULL)
-        {
-            returnVal = pbgzf_seek(pbgzfHandle, offset, origin);
+            returnVal = seekHandle(offset, origin);
         }
         // Check for failure.
         if (returnVal == -1)
@@ -205,16 +122,24 @@ public:
     /// file.  True - require the block.  False - do not require the block.
     static void setRequireEofBlock(bool requireEofBlock);
 
-    /// Set whether or not to use PBGZF instead of BGZF for multi-threaded
-    /// compression/decompression.  
-    /// file.  True - use PBGZF, False - use BGZF (default).
-    static void setUsePgzf(bool usePbgzf);
+    /// Get which type of threading to use - pbgzf or bgzf.
+    /// True = use pbgzf (multi-threaded)
+    /// False = use bgzf (single-threaded)
+    static inline bool usePbgzf()
+    {
+        return(ourMultiThreaded != 0);
+    }
+
+    /// Set the type of compression to use.
+    /// If it is non-zero, use PBGZF with that many threads.
+    /// If it is 0, use BGZF compression/decompression.  
+    static void setMultiThreaded(int numThreads);
 
 protected:
-
-    // A bgzfFile is used.
-    BGZF* bgzfHandle;
-    PBGZF* pbgzfHandle;
+    virtual int readFromHandle(void * buffer, unsigned int size) = 0;
+    virtual int64_t tellHandle() = 0;
+    virtual bool seekHandle(int64_t offset, int origin) = 0;
+    virtual bool checkEofBlock() = 0;
 
     // Flag indicating EOF since there isn't one on the handle.
     bool myEOF;
@@ -226,7 +151,7 @@ protected:
     // the constructor fails to open the file.
     static bool ourRequireEofBlock;
 
-    static bool ourUsePbgzf;
+    static int ourMultiThreaded;
 };
 
 #endif

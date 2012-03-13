@@ -470,26 +470,6 @@ int main(int argc, const char **argv)
 
 
 
-int BgzfFileTypeRecovery::close()
-{
-    if(bgzfReader) delete bgzfReader;
-    bgzfReader = NULL;
-    return true;
-}
-
-
-BgzfFileTypeRecovery::BgzfFileTypeRecovery(const char * filename, const char * mode)
-{
-    if(tolower(mode[0])=='r') {
-        FILE *f = fopen(filename,"r");
-        bgzfReader = new BGZFReader(f);
-    } else {
-        // die for now
-        if(debug) std::cerr << "Unable to open " << filename << " in mode " << mode << ".\n";
-        close();
-    }
-}
-
 //
 // Why is this ever called?
 //
@@ -508,12 +488,6 @@ bool BgzfFileTypeRecovery::operator != (void * rhs)
 int BgzfFileTypeRecovery::eof()
 {
     return bgzfReader->eof();
-}
-
-unsigned int BgzfFileTypeRecovery::write(const void * buffer, unsigned int size)
-{
-    // currently unsupported
-    return 0;
 }
 
 int BgzfFileTypeRecovery::read(void * buffer, unsigned int size)
@@ -586,4 +560,33 @@ bool BgzfFileTypeRecovery::attemptRecoverySync(bool (*checkSignature)(void *data
 
     return false;
 }
+
+
+void BgzfFileTypeRecovery::openHandleFromFilePtr(FILE* filePtr, const char* mode)
+{
+    throw std::logic_error("BgzfFileTypeRecovery::openHandleFromFilePtr - do not use");
+    return;
+}
+
+
+void BgzfFileTypeRecovery::openHandleFromName(const char * filename, const char * mode)
+{
+    if(tolower(mode[0])=='r') {
+        FILE *f = fopen(filename,"r");
+        bgzfReader = new BGZFReader(f);
+    } else {
+        // die for now
+        if(debug) std::cerr << "Unable to open " << filename << " in mode " << mode << ".\n";
+        close();
+    }
+}
+
+
+int BgzfFileTypeRecovery::closeHandle()
+{
+    delete bgzfReader;
+    bgzfReader = NULL;
+    return true;
+}
+
 

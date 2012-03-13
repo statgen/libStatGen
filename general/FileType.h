@@ -19,19 +19,55 @@
 #define __FILETYPE_H__
 
 #include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 
 class FileType
 {
 public:
-    FileType();
-    virtual ~FileType();
+    FileType()
+        : myUsingBuffer(true)
+    {}
 
-    virtual bool operator == (void * rhs) = 0;
+    virtual ~FileType()
+    {
+        // The child classes should close, because
+        // a close call would call into virtual methods
+        // which is bad when it is destructing.
+    }
 
-    virtual bool operator != (void * rhs) = 0;
+    virtual void open(const char * filename, const char * mode);
+
+    virtual bool operator == (void * rhs)
+    {
+        // No two file pointers are the same, so if rhs is not NULL, then
+        // the two pointers are different (false).
+        if(rhs != NULL)
+            return false;
+        // Return true if the file handle is also null.
+        return(isHandleNull());
+    }
+
+    virtual bool operator != (void * rhs)
+    {
+        // No two file pointers are the same, so if rhs is not NULL, then
+        // the two pointers are different (true).
+        if (rhs != NULL)
+            return true;
+        // If the file handle is not null, then they are different.
+        return (!isHandleNull());
+    }
 
     // Close the file.
-    virtual int close() = 0;
+    virtual inline int close()
+    {
+        if(isHandleOpen())
+        {
+            return closeHandle();
+        }
+        // Not open, so just return 0.
+        return(0);
+    }
 
     // Reset to the beginning of the file.
     virtual void rewind() = 0;
@@ -40,10 +76,21 @@ public:
     virtual int eof() = 0;
 
     // Check to see if the file is open.
-    virtual bool isOpen() = 0;
+    virtual inline bool isOpen()
+    {
+        return(isHandleOpen());
+    }
 
-    // Write to the file.
-    virtual unsigned int write(const void * buffer, unsigned int size) = 0;
+    // Write to the file
+    virtual inline unsigned int write(const void * buffer, unsigned int size)
+    {
+        if(isHandleOpen())
+        {
+            return(writeToHandle(buffer, size));
+        }
+        // Not open, so return that nothing is written.
+        return(0);
+    }
 
     // Read into a buffer from the file.
     virtual int read(void * buffer, unsigned int size) = 0;
@@ -74,6 +121,20 @@ public:
     virtual bool attemptRecoverySync(bool (*checkSignature)(void *data) , int length);
 
 protected:
+
+    virtual void openHandleFromFilePtr(FILE* filePtr, const char* mode) = 0;
+    virtual void openHandleFromName(const char* filename, const char* mode) = 0;
+    virtual bool isHandleNull() = 0;
+    virtual bool isHandleOpen() = 0;
+    // The following methods do not check that the file was open, it is
+    // assumed that the calling method checked that prior to calling.
+    virtual int closeHandle() = 0;
+    virtual unsigned int writeToHandle(const void * buffer,
+                                              unsigned int size) = 0;
+
+
+
+
     // Set by the InputFile to inform this class if buffering
     // is used.  Maybe used by child clases (bgzf) to disable 
     // tell.

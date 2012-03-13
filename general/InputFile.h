@@ -479,11 +479,9 @@ protected:
 #ifdef __ZLIB_AVAILABLE__
     // Only necessary with zlib to determine what file type on a new
     // file.  Without zlib, there are only uncompressed files, so a special
-    // method is not needed to determine the type of file to open.
-    // Open a file.  This method will open a file with the specified name and
-    // mode with the fileTypePtr associated with the specified compressionMode.
-    void openFileUsingMode(const char* filename, const char* mode,
-                           InputFile::ifileCompression compressionMode);
+    // method is not needed to determine the type of file pointer to create.
+    void createFileTypeUsingMode(const char* filename, const char* mode,
+                                 InputFile::ifileCompression compressionMode);
 #endif
 
     // The size of the buffer used by this class.

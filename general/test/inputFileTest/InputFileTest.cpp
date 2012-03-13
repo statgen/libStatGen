@@ -65,7 +65,7 @@ void IFILE_Test::test()
    test_ifseek("bam");
    test_noExistRead("bam");
 
-   BgzfFileType::setUsePgzf(true);
+   BgzfFileType::setMultiThreaded(2);
    std::cout << "\nPbgzfFileType Tests:" << std::endl;
    test_readFromFile("bam");
    test_ifeof_ifrewind("bam");
@@ -73,7 +73,7 @@ void IFILE_Test::test()
    test_ifclose("bam");
    test_ifseek("bam");
    test_noExistRead("bam");
-   BgzfFileType::setUsePgzf(false);
+   BgzfFileType::setMultiThreaded(0);
 
    std::cout << "\n .glf file Tests:" << std::endl;
    test_readFromFile("glf");
