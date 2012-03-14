@@ -21,7 +21,7 @@
 
 // Default to require the EOF block at the end of the file.
 bool BgzfFileType::ourRequireEofBlock = true;
-// By default use BGZF instead of PBGZF (multithreaded = 0).
+// By default use BGZF instead of PBGZF (for BGZF, set multithreaded = 0).
 int BgzfFileType::ourMultiThreaded = 0;
 
 
