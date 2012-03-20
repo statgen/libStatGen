@@ -39,6 +39,12 @@ public:
     /// \return true = open; false = not open.
     bool isOpen();
 
+    inline int getNumPosRecs() { return(myNumPosRecs); }
+    inline int getNumEmptyRecs() { return(myNumEmptyRecs); }
+    inline int getNumRefOnlyRecs() { return(myNumRefOnlyRecs); }
+    inline int getNumDetailedRecs() { return(myNumDetailedRecs); }
+    inline int getNumUnknownRecs() { return(myNumUnknownRecs); }
+
 protected:
     /// Open the file
     /// \param  filename the file to open.
@@ -48,10 +54,18 @@ protected:
 
     virtual void reset();
 
+    void updateRecordCount(AspRecord& record);
+
     IFILE myFilePtr;
 
     // Stores the header of mapping chromosome name to id.
     AspHeader myHeader;
+
+    int myNumPosRecs;
+    int myNumEmptyRecs;
+    int myNumRefOnlyRecs;
+    int myNumDetailedRecs;
+    int myNumUnknownRecs;
 private:
     AspFile(const AspFile& file);
 };

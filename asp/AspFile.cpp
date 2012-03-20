@@ -60,7 +60,7 @@ bool AspFile::open(const char* fileName, const char* mode)
     // Close any already open file.
     close();
 
-    myFilePtr = ifopen(fileName, mode);
+    myFilePtr = ifopen(fileName, mode, InputFile::BGZF);
     if(myFilePtr == NULL)
     {
         std::string errorMessage = "Failed to Open ";
@@ -77,6 +77,36 @@ void AspFile::reset()
 {
     // Close the file.
     close();
+    myNumPosRecs = 0;
+    myNumEmptyRecs = 0;
+    myNumRefOnlyRecs = 0;
+    myNumDetailedRecs = 0;
+    myNumUnknownRecs = 0;
+}
+
+
+void AspFile::updateRecordCount(AspRecord& record)
+{
+    if(record.isEmptyType())
+    {
+        ++myNumEmptyRecs;
+    }
+    else if(record.isPosType())
+    {
+        ++myNumPosRecs;
+    }
+    else if(record.isRefOnlyType())
+    {
+        ++myNumRefOnlyRecs;
+    }
+    else if(record.isDetailedType())
+    {
+        ++myNumDetailedRecs;
+    }
+    else
+    {
+        ++myNumUnknownRecs;
+    }
 }
 
 
@@ -118,7 +148,15 @@ bool AspFileReader::isEof()
 
 bool AspFileReader::getNextRecord(AspRecord& rec)
 {
-    return(rec.read(myFilePtr, prevChrom, prevPos));
+    if(!rec.read(myFilePtr, prevChrom, prevPos))
+    {
+        return(false);
+    }
+
+    // Update the record count.
+    updateRecordCount(rec);
+
+    return(true);
 }
 
 
@@ -128,6 +166,9 @@ bool AspFileReader::getNextDataRecord(AspRecord& rec)
     // The loop will be stopped when a data record is found.
     while(!isEof() && (rec.read(myFilePtr, prevChrom, prevPos)))
     {
+        // Update the record count.
+        updateRecordCount(rec);
+
         if(rec.isRefOnlyType() || rec.isDetailedType())
         {
             // Found a data record.
@@ -227,6 +268,8 @@ bool AspFileReader::advanceToPos(const char* chromName, int32_t pos0Based)
             // failed to read, so return that the likelihood is unknown.
             return(false);
         }
+        // Update the record count.
+        updateRecordCount(myStoredRecord);
     }
 
     // Read until a data record is found.
@@ -237,6 +280,8 @@ bool AspFileReader::advanceToPos(const char* chromName, int32_t pos0Based)
             // failed to read, so return that the likelihood is unknown.
             return(false);
         }
+        // Update the record count.
+        updateRecordCount(myStoredRecord);
     }
 
     // Check if the position was found.
@@ -306,6 +351,7 @@ bool AspFileWriter::write(AspRecord& record,
     {
         // Write a new position record.
         AspRecord::writePos(chromID, pos0Based, myFilePtr);
+        ++myNumPosRecs;
     }
     else if(posDiff < 0)
     {
@@ -320,11 +366,25 @@ bool AspFileWriter::write(AspRecord& record,
         {
             AspRecord::writeEmpty(myFilePtr);
             --posDiff;
+            ++myNumEmptyRecs;
         }
     }
 
     // Write this record.
-   record.write(myFilePtr);
+    record.write(myFilePtr);
+    
+    if(record.isRefOnlyType())
+    {
+        ++myNumRefOnlyRecs;
+    }
+    else if(record.isDetailedType())
+    {
+        ++myNumDetailedRecs;
+    }
+    else
+    {
+        ++myNumUnknownRecs;
+    }
 
    if(chromID != myPrevChromID)
    {

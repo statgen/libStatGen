@@ -66,10 +66,10 @@ public:
     /// first record is not a position record.
     bool read(IFILE filePtr, int32_t& chromID, int32_t& pos);
 
-    bool isEmptyType();
-    bool isPosType();
-    bool isRefOnlyType();
-    bool isDetailedType();
+    inline bool isEmptyType() { return(myType == EMPTY_REC); }
+    inline bool isPosType() { return(myType == POS_REC); }
+    inline bool isRefOnlyType() { return(myType == REF_ONLY_REC); }
+    inline bool isDetailedType() { return(myType == DETAILED_REC); }
 
     /////////////////////////////////
     // Accessor methods
@@ -80,6 +80,11 @@ public:
 
     /// Get the number of bases in this record.
     inline int getNumBases() {return(myNumBases);}
+
+    /// Get the number of bases that could not be represented because
+    /// it went over the maximum number allowed.
+    inline int32_t getNumOverMaxBases() {return(myOverMaxNumBases);}
+
     /// Get the GLH.  0 is returned if this is not a RefOnly record.
     int getGLH();
     /// Get the GLA.  0 is returned if this is not a RefOnly record.
@@ -175,6 +180,11 @@ private:
     uint8_t myType;
 
     uint8_t myNumBases;
+
+    // This allows a count of additional bases that could
+    // not be represented because the maximum number 
+    // allowed was hit.
+    uint32_t myOverMaxNumBases;
 
     uint8_t myGLH;
     double myGLAd;

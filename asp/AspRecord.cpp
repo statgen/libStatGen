@@ -52,6 +52,7 @@ bool AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
     // If se are already at the max number of bases, just return.
     if(myNumBases >= MAX_NUM_BASES)
     {
+        ++myOverMaxNumBases;
         return(false);
     }
 
@@ -171,6 +172,7 @@ void AspRecord::reset()
 {
     myType = DETAILED_REC;
     myNumBases = 0;
+    myOverMaxNumBases = 0;
     myChromID = INVALID_CHROMOSOME_INDEX;
     my0BasedPos = -1;
     myGLH = 0;
@@ -226,24 +228,6 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
             break;
     }
     return(returnVal);
-}
-
-
-bool AspRecord::isEmptyType()
-{
-    return(myType == EMPTY_REC);
-}
-bool AspRecord::isPosType()
-{
-    return(myType == POS_REC);
-}
-bool AspRecord::isRefOnlyType()
-{
-    return(myType == REF_ONLY_REC);
-}
-bool AspRecord::isDetailedType()
-{
-    return(myType == DETAILED_REC);
 }
 
 
