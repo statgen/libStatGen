@@ -51,7 +51,7 @@ public:
     // Sets this record to a ref only type.
     void setRefOnlyType();
     // Sets this record to a detailed type.
-    void setsDetailedType();
+    void setDetailedType();
 
     void reset();
 
@@ -121,6 +121,8 @@ public:
     void write(IFILE outputFile);
 
 private:
+    AspRecord(const AspRecord & rec);
+
     static IFILE ourOutput;
     static const unsigned int REC_TYPE_LEN;
     static const uint8_t EMPTY_REC;
@@ -145,7 +147,7 @@ private:
     int getDetailedLikelihood(char base1, char base2, char refBase);
     
 
-    inline int getBasesSize()
+    inline unsigned int getBasesSize()
     {
         // The number of bytes used for the bases array is the
         // (number of bases + 1) divided by 2.
@@ -157,7 +159,7 @@ private:
         return((myNumBases+1)/2);
     }
     
-    inline int getStrandsSize()
+    inline unsigned int getStrandsSize()
     {
         // The number of bytes used for the strands array is the
         // (number of bases + 7) divided by 8.

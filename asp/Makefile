@@ -1,3 +1,3 @@
-TOOLBASE = AspFile AspRecord
+TOOLBASE = AspFile AspHeader AspRecord
 
 include ../Makefiles/Makefile.lib

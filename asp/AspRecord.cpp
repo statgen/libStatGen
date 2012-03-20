@@ -161,6 +161,12 @@ void AspRecord::setRefOnlyType()
 }
 
 
+void AspRecord::setDetailedType()
+{
+    myType = DETAILED_REC;
+}
+
+
 void AspRecord::reset()
 {
     myType = DETAILED_REC;
@@ -177,7 +183,7 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
 {
     reset();
 
-    if(filePtr->ifeof())
+    if(ifeof(filePtr))
     {
         // End of file, so just return false.
         return(false);
@@ -186,7 +192,7 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
     // Read the first byte that contains the type.
     if(ifread(filePtr, &myType, REC_TYPE_LEN) != REC_TYPE_LEN)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the record type."));
+        throw(std::runtime_error("AspRecord: Failed reading the record type."));
         return(false);
     }
 
@@ -215,7 +221,7 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
             returnVal = readDetailedRecord(filePtr);
             break;
         default:
-            throw(std::runtime_error("BamInfoRecord: Invalid record type."));
+            throw(std::runtime_error("AspRecord: Invalid record type."));
             returnVal = false;
             break;
     }
@@ -369,15 +375,27 @@ int AspRecord::getMQ(int index)
 
 void AspRecord::writeEmpty(IFILE outputFile)
 {
-    ifwrite(outputFile, &EMPTY_REC, REC_TYPE_LEN);
+    if(ifwrite(outputFile, &EMPTY_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing an empty record."));
+    }
 }
 
 
 void AspRecord::writePos(int32_t chrom, int32_t pos, IFILE outputFile)
 {
-    ifwrite(outputFile, &POS_REC, REC_TYPE_LEN);
-    ifwrite(outputFile, &chrom, sizeof(int32_t));
-    ifwrite(outputFile, &pos, sizeof(int32_t));
+    if(ifwrite(outputFile, &POS_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing a position record."));
+    };
+    if(ifwrite(outputFile, &chrom, sizeof(int32_t)) != sizeof(int32_t))
+    {
+        throw(std::runtime_error("AspRecord: Failed writing the chromID to a position record."));
+    };
+    if(ifwrite(outputFile, &pos, sizeof(int32_t)) != sizeof(int32_t))
+    {
+        throw(std::runtime_error("AspRecord: Failed writing the position to a position record."));
+    };
 }
 
 
@@ -398,7 +416,7 @@ void AspRecord::write(IFILE outputFile)
             writeDetailed(outputFile);
             break;
         default:
-            throw(std::runtime_error("BamInfoRecord::write, Invalid record type."));
+            throw(std::runtime_error("AspRecord::write, Invalid record type."));
             break;
     }
 }
@@ -410,7 +428,7 @@ bool AspRecord::readPosRecord(IFILE filePtr)
     unsigned int readSize = sizeof(myChromID);
     if(ifread(filePtr, &myChromID, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the chromID from a position record."));
+        throw(std::runtime_error("AspRecord: Failed reading the chromID from a position record."));
         return(false);
     }
 
@@ -418,7 +436,7 @@ bool AspRecord::readPosRecord(IFILE filePtr)
     readSize = sizeof(my0BasedPos);
     if(ifread(filePtr, &my0BasedPos, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the position from a position record."));
+        throw(std::runtime_error("AspRecord: Failed reading the position from a position record."));
         return(false);
     }
     return(true);
@@ -431,7 +449,7 @@ bool AspRecord::readRefOnlyRecord(IFILE filePtr)
     unsigned int readSize = sizeof(myNumBases);
     if(ifread(filePtr, &myNumBases, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the number of bases from a reference only record."));
+        throw(std::runtime_error("AspRecord: Failed reading the number of bases from a reference only record."));
         return(false);
     }
 
@@ -439,14 +457,14 @@ bool AspRecord::readRefOnlyRecord(IFILE filePtr)
     readSize = 1;
     if(ifread(filePtr, &myGLH, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the GLH from a reference only record."));
+        throw(std::runtime_error("AspRecord: Failed reading the GLH from a reference only record."));
         return(false);
     }
 
     // Read GLA
     if(ifread(filePtr, &myGLAi, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the GLA from a reference only record."));
+        throw(std::runtime_error("AspRecord: Failed reading the GLA from a reference only record."));
         return(false);
     }
     return(true);
@@ -459,7 +477,7 @@ bool AspRecord::readDetailedRecord(IFILE filePtr)
     unsigned int readSize = sizeof(myNumBases);
     if(ifread(filePtr, &myNumBases, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the number of bases from a detailed record."));
+        throw(std::runtime_error("AspRecord: Failed reading the number of bases from a detailed record."));
         return(false);
     }
 
@@ -467,31 +485,31 @@ bool AspRecord::readDetailedRecord(IFILE filePtr)
     readSize = getBasesSize();
     if(ifread(filePtr, &myBases, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the bases from a detailed record."));
+        throw(std::runtime_error("AspRecord: Failed reading the bases from a detailed record."));
         return(false);
     }
     
     readSize = myNumBases;
     if(ifread(filePtr, &myQuals, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the qualities from a detailed record."));
+        throw(std::runtime_error("AspRecord: Failed reading the qualities from a detailed record."));
         return(false);
     }
     if(ifread(filePtr, &myCycles, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the cycles from a detailed record."));
+        throw(std::runtime_error("AspRecord: Failed reading the cycles from a detailed record."));
         return(false);
     }
     readSize = getStrandsSize();
     if(ifread(filePtr, &myStrands, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the strands from a detailed record."));
+        throw(std::runtime_error("AspRecord: Failed reading the strands from a detailed record."));
         return(false);
     }
     readSize = myNumBases;
     if(ifread(filePtr, &myMQs, readSize) != readSize)
     {
-        throw(std::runtime_error("BamInfoRecord: Failed reading the MQs from a detailed record."));
+        throw(std::runtime_error("AspRecord: Failed reading the MQs from a detailed record."));
         return(false);
     }
     return(true);
@@ -500,28 +518,62 @@ bool AspRecord::readDetailedRecord(IFILE filePtr)
 
 void AspRecord::writeRefOnly(IFILE outputFile)
 {
-    ifwrite(outputFile, &REF_ONLY_REC, REC_TYPE_LEN);
+    if(ifwrite(outputFile, &REF_ONLY_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing a reference only record."));
+    }
 
-    ifwrite(outputFile, &myNumBases, sizeof(myNumBases));
+    if(ifwrite(outputFile, &myNumBases, sizeof(myNumBases)) != 
+       sizeof(myNumBases))
+    {
+        throw(std::runtime_error("AspRecord: Failed writing numBases to a reference only record."));
+    }
     uint8_t val = (uint8_t)myGLH;
-    ifwrite(outputFile, &val, 1);
-    ifwrite(outputFile, &myGLAi, 1);
+    if(ifwrite(outputFile, &val, 1) != 1)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing GLH to a reference only record."));
+    }
+    if(ifwrite(outputFile, &myGLAi, 1) != 1)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing GLA to a reference only record."));
+    }
 }
 
 
 void AspRecord::writeDetailed(IFILE outputFile)
 {
-    ifwrite(outputFile, &DETAILED_REC, REC_TYPE_LEN);
+    if(ifwrite(outputFile, &DETAILED_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing a detailed record."));
+    }
 
     // Write the number of bases.
-    ifwrite(outputFile, &myNumBases, sizeof(myNumBases));
-    int basesSize = getBasesSize();
-    ifwrite(outputFile, myBases, basesSize);
+    if(ifwrite(outputFile, &myNumBases, sizeof(myNumBases)) != REC_TYPE_LEN)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing num bases to a detailed record."));
+    }
+    unsigned int basesSize = getBasesSize();
+    if(ifwrite(outputFile, myBases, basesSize) != basesSize)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing bases to a detailed record."));
+    }
 
-    ifwrite(outputFile, myQuals, myNumBases);
-    ifwrite(outputFile, myCycles, myNumBases);
-    ifwrite(outputFile, myStrands, getStrandsSize());
-    ifwrite(outputFile, myMQs, myNumBases);
+    if(ifwrite(outputFile, myQuals, myNumBases) != myNumBases)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing qualities to a detailed record."));
+    }
+    if(ifwrite(outputFile, myCycles, myNumBases) != myNumBases)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing cycles to a detailed record."));
+    }
+    if(ifwrite(outputFile, myStrands, getStrandsSize()) != getStrandsSize())
+    {
+        throw(std::runtime_error("AspRecord: Failed writing strands to a detailed record."));
+    }
+    if(ifwrite(outputFile, myMQs, myNumBases) != myNumBases)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing MQs to a detailed record."));
+    }
 }
 
 
