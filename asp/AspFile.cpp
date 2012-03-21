@@ -179,6 +179,49 @@ bool AspFileReader::getNextDataRecord(AspRecord& rec)
 }
 
 
+bool AspFileReader::advanceToNextChromosome(std::string& nextChrom)
+{
+    int32_t startingChrom = prevChrom;
+    // Keep reading until the end of the file.
+    // The loop will be broken if the next chromosme is found.
+    while(myStoredRecord.read(myFilePtr, prevChrom, prevPos))
+    {
+        // Update the record count.
+        updateRecordCount(myStoredRecord);
+
+        // Check if the chromosome has changed.
+        if(prevChrom != startingChrom)
+        {
+            // Found a new chromosome, so return whether or not
+            // the chromosome name was found.
+            bool status = myHeader.getChromName(prevChrom, nextChrom);
+            if(!status)
+            {
+                std::cerr << "Failed to identify the chromosome name for id "
+                          << prevChrom << "\n";
+            }
+            return(status);
+        }
+    }
+    // Failed to find a new chromosome before the end of the file,
+    // so return failure.
+    return(false);
+}
+
+
+const AspRecord* AspFileReader::getDataRecord(const char* chromName,
+                                              int32_t pos0Based)
+{
+    if(!advanceToPos(chromName, pos0Based))
+    {
+        // Position does not have data, so return NULL.
+        return(NULL);
+    }
+    // A data record was found.
+    return(&myStoredRecord);
+}
+
+
 const AspRecord* AspFileReader::getRefOnlyRecord(const char* chromName,
                                                  int32_t pos0Based)
 {
@@ -265,7 +308,8 @@ bool AspFileReader::advanceToPos(const char* chromName, int32_t pos0Based)
     {
         if(!myStoredRecord.read(myFilePtr, prevChrom, prevPos))
         {
-            // failed to read, so return that the likelihood is unknown.
+            // failed to read, so return that a data record was not found
+            // at the specified position.
             return(false);
         }
         // Update the record count.
@@ -277,7 +321,8 @@ bool AspFileReader::advanceToPos(const char* chromName, int32_t pos0Based)
     {
         if(!myStoredRecord.read(myFilePtr, prevChrom, prevPos))
         {
-            // failed to read, so return that the likelihood is unknown.
+            // failed to read, so return that a data record was not found
+            // at the specified position.
             return(false);
         }
         // Update the record count.

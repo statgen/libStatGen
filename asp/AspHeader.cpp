@@ -137,7 +137,7 @@ int32_t AspHeader::getChromID(const char* chromName)
     return((*chromIter).second);
 }
 
-bool AspHeader::getChromName(int32_t chromID, std::string chromName)
+bool AspHeader::getChromName(int32_t chromID, std::string& chromName)
 {
     if((chromID < 0) || ((uint32_t)chromID >= myIDToName.size()))
     {

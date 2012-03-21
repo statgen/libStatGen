@@ -47,7 +47,7 @@ public:
 
     /// Get the chromosome name for the specified chromosome id.
     /// False is returned if the chromosome ID was not found, true if it was.
-    bool getChromName(int32_t chromID, std::string chromName);
+    bool getChromName(int32_t chromID, std::string& chromName);
     
     void reset();
 

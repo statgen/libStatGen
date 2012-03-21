@@ -98,6 +98,15 @@ public:
     /// \return true if a record was successfully found, false if not.
     bool getNextDataRecord(AspRecord& rec);
 
+    /// Advance the file to the next chromosome, which is returned in the
+    /// passed in parameter.
+    /// If there are no more chormosome, the file is advanced to the end of the
+    /// file.
+    /// \param nextChrom output parameter set to the next chromosome that 
+    /// was found in the file (where it was advanced to).
+    /// \return true if there was another chromosome, false if eof.
+    bool advanceToNextChromosome(std::string& nextChrom);
+
     /// Get the data record at the specified position.  The file is advanced
     /// to this position.  If a data record is not found at the position or
     /// if the position has already been passed, NULL is returned.
