@@ -31,9 +31,14 @@ public:
     AspRecord();
     
     ~AspRecord();
-    
-    static bool setOutputFile(const char* fileName);
 
+    /// Set whether or not to include reads with bases of 'N' in 
+    /// detailed records.  Default is true (include them).
+    /// They are not included in RefOnly records.
+    /// The setting in place when the information is added is what is used.
+    static void setIncludeNinDetailed(bool includeN)
+    { ourIncludeNinDetailed = includeN; }
+    
     ////////////////////////////////////////////////
     // Setting/adding values methods.
     // Add will set values for both refOnly & detailed.
@@ -41,7 +46,8 @@ public:
 
     // Qual is the character quality.
     // Returns true if the information got added.  Returns false
-    // if it did not get added (already hit max number of entries). 
+    // if it did not get added (already hit max number of entries or
+    // 'N' and it is being ignored). 
     bool add(char base, char qual, int cycle, bool strand, int mq);
 
     // Sets this record to an empty record type.
@@ -80,6 +86,11 @@ public:
 
     /// Get the number of bases in this record.
     inline int getNumBases() {return(myNumBases);}
+
+    /// Get the number of non-N bases in this record.
+    /// May be the same as getNumBases() if no 'N' bases
+    /// were added to the record.
+    int getNumNonNBases();
 
     /// Get the number of bases that could not be represented because
     /// it went over the maximum number allowed.
@@ -128,7 +139,7 @@ public:
 private:
     AspRecord(const AspRecord & rec);
 
-    static IFILE ourOutput;
+    static bool ourIncludeNinDetailed;
     static const unsigned int REC_TYPE_LEN;
     static const uint8_t EMPTY_REC;
     static const uint8_t POS_REC;
@@ -180,6 +191,11 @@ private:
     uint8_t myType;
 
     uint8_t myNumBases;
+    // Used for REF_ONLY and to determine if a DETAILED record
+    // should be written.  Not used when reading a detailed record from
+    // an ASP file.
+    uint8_t myNumNonNBases;
+    bool myNumNonNBasesSet;
 
     // This allows a count of additional bases that could
     // not be represented because the maximum number 

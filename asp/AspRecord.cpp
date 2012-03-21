@@ -27,7 +27,7 @@
 // AspRecord
 //
 
-IFILE AspRecord::ourOutput = NULL;
+bool AspRecord::ourIncludeNinDetailed = true;
 const unsigned int AspRecord::REC_TYPE_LEN = 1;
 const uint8_t AspRecord::EMPTY_REC = 0x0;
 const uint8_t AspRecord::POS_REC = 0x1;
@@ -49,10 +49,16 @@ AspRecord::~AspRecord()
 // Add an entry
 bool AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
 {
-    // If se are already at the max number of bases, just return.
+    // If we are already at the max number of bases, just return.
     if(myNumBases >= MAX_NUM_BASES)
     {
         ++myOverMaxNumBases;
+        return(false);
+    }
+
+    // Check if the base is 'N' and it is being ignored.
+    if(!ourIncludeNinDetailed && (base == 'N'))
+    {
         return(false);
     }
 
@@ -130,14 +136,19 @@ bool AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
     myMQs[myNumBases] = mq;
     ++myNumBases;
 
-    // Update the GLH/GLA
-    if((phredQual > 13) && 
-       (phredQual != BaseUtilities::UNKNOWN_QUALITY_INT))
+    myNumNonNBasesSet = true;
+    if(!BaseUtilities::isAmbiguous(base))
     {
-        myGLH += 3;
-        myGLAd += 4.77;
-        myGLAd += phredQual;
-        myGLAi = (uint8_t) myGLAd;
+        ++myNumNonNBases;
+        // Update the GLH/GLA only if not 'N'
+        if((phredQual > 13) && 
+           (phredQual != BaseUtilities::UNKNOWN_QUALITY_INT))
+        {
+            myGLH += 3;
+            myGLAd += 4.77;
+            myGLAd += phredQual;
+            myGLAi = (uint8_t) myGLAd;
+        }
     }
     return(true);
 }
@@ -172,6 +183,8 @@ void AspRecord::reset()
 {
     myType = DETAILED_REC;
     myNumBases = 0;
+    myNumNonNBases = 0;
+    myNumNonNBasesSet = false;
     myOverMaxNumBases = 0;
     myChromID = INVALID_CHROMOSOME_INDEX;
     my0BasedPos = -1;
@@ -230,6 +243,27 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
     return(returnVal);
 }
 
+
+int AspRecord::getNumNonNBases()
+{
+    if(!myNumNonNBasesSet)
+    {
+        // It would only be not set if this is a detailed record
+        // that was read from a file - so the bases should be set.
+        myNumNonNBases = 0;
+        // Number of non-N bases is not set, so set it.
+        for(int i = 0; i < myNumBases; i++)
+        {
+            if(!BaseUtilities::isAmbiguous(getBaseChar(i)))
+            {
+                // Not an 'N'.
+                ++myNumNonNBases;
+            }
+        }
+        myNumNonNBasesSet = true;
+    }
+    return(myNumNonNBases);
+}
 
 int AspRecord::getGLH()
 {
@@ -436,6 +470,9 @@ bool AspRecord::readRefOnlyRecord(IFILE filePtr)
         throw(std::runtime_error("AspRecord: Failed reading the number of bases from a reference only record."));
         return(false);
     }
+    // Ref-only does not include any 'N's.
+    myNumNonNBases = myNumBases;
+    myNumNonNBasesSet = true;
 
     // Read GLH
     readSize = 1;
@@ -502,13 +539,25 @@ bool AspRecord::readDetailedRecord(IFILE filePtr)
 
 void AspRecord::writeRefOnly(IFILE outputFile)
 {
+    int8_t numBases = myNumNonNBases;
+    if(!myNumNonNBasesSet)
+    {
+        numBases = myNumBases;
+    }
+
+    if(numBases == 0)
+    {
+        // No bases, so return without writing.
+        return;
+    }
+
     if(ifwrite(outputFile, &REF_ONLY_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
     {
         throw(std::runtime_error("AspRecord: Failed writing a reference only record."));
     }
 
-    if(ifwrite(outputFile, &myNumBases, sizeof(myNumBases)) != 
-       sizeof(myNumBases))
+    if(ifwrite(outputFile, &numBases, sizeof(numBases)) != 
+       sizeof(numBases))
     {
         throw(std::runtime_error("AspRecord: Failed writing numBases to a reference only record."));
     }
@@ -526,6 +575,23 @@ void AspRecord::writeRefOnly(IFILE outputFile)
 
 void AspRecord::writeDetailed(IFILE outputFile)
 {
+    // If the number of Non-N bases is set, check if there are any, if not,
+    // don't write a record.
+    if(myNumNonNBasesSet && (myNumNonNBases == 0))
+    {
+        // no non-N bases, so return without writing.
+        return;
+    }
+
+    // Do not worry about num Non-N Bases since if they are not supposed to
+    // be included in the DETAILED count, they would have been skipped when
+    // added.
+    if(myNumBases == 0)
+    {
+        // No bases or no bases that aren't 'N', so return without writing.
+        return;
+    }
+
     if(ifwrite(outputFile, &DETAILED_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
     {
         throw(std::runtime_error("AspRecord: Failed writing a detailed record."));

@@ -337,6 +337,12 @@ bool AspFileWriter::write(AspRecord& record,
         return(false);
     }
 
+    // Check if there is data to write in this record.
+    if(record.getNumNonNBases() == 0)
+    {
+        return(false);
+    }
+
     int32_t chromID = myPrevChromID;
     // Check if the chromosome name changed.
     if(myPrevChromName != chromName)

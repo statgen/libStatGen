@@ -185,8 +185,9 @@ public:
     /// \return true = success; false = failure.
     bool open(const char* fileName, SamFileHeader samHeader);
 
-    /// Write the specified record.
-    /// Writes preceding  empty records or a position record as necessary.
+    /// Write the specified data record.
+    /// Writes preceding  empty records or a position record as necessary,
+    /// so do not specifically write those.
     bool write(AspRecord& record, const char* chromName, int32_t pos0Based);
 
     static const int DEFAULT_GAP_SIZE = 100;
