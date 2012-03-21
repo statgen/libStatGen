@@ -48,7 +48,8 @@ public:
     // Returns true if the information got added.  Returns false
     // if it did not get added (already hit max number of entries or
     // 'N' and it is being ignored). 
-    bool add(char base, char qual, int cycle, bool strand, int mq);
+    bool add(char refBase, char base, char qual,
+             int cycle, bool strand, int mq);
 
     // Sets this record to an empty record type.
     void setEmptyType();
@@ -72,9 +73,9 @@ public:
     /// first record is not a position record.
     bool read(IFILE filePtr, int32_t& chromID, int32_t& pos);
 
-    inline bool isEmptyType() { return(myType == EMPTY_REC); }
-    inline bool isPosType() { return(myType == POS_REC); }
-    inline bool isRefOnlyType() { return(myType == REF_ONLY_REC); }
+    inline bool isEmptyType()    { return(myType == EMPTY_REC);    }
+    inline bool isPosType()      { return(myType == POS_REC);      }
+    inline bool isRefOnlyType()  { return(myType == REF_ONLY_REC); }
     inline bool isDetailedType() { return(myType == DETAILED_REC); }
 
     /////////////////////////////////
@@ -83,6 +84,10 @@ public:
     /// Get the chrom.
     inline int32_t getChromID() {return(myChromID);}
     inline int32_t get0BasedPos() {return(my0BasedPos);}
+
+    /// For data records, get the reference base
+    /// Returns 'N' if it is not a data record.
+    char getRefBase();
 
     /// Get the number of bases in this record.
     inline int getNumBases() {return(myNumBases);}
@@ -140,12 +145,14 @@ private:
     AspRecord(const AspRecord & rec);
 
     static bool ourIncludeNinDetailed;
-    static const unsigned int REC_TYPE_LEN;
+    static const unsigned int REF_TYPE_LEN;
     static const uint8_t EMPTY_REC;
     static const uint8_t POS_REC;
     static const uint8_t REF_ONLY_REC;
     static const uint8_t DETAILED_REC;
     static const int MAX_NUM_BASES = 255;
+    static const int REC_TYPE_MASK = 0xF;
+    static const int BASE_SHIFT = 4;
 
     bool readPosRecord(IFILE filePtr);
     bool readRefOnlyRecord(IFILE filePtr);
@@ -188,7 +195,10 @@ private:
         return((myNumBases+7)/8);
     }
 
+    // myType is really only 4 bits.
     uint8_t myType;
+
+    char myRefBase;
 
     uint8_t myNumBases;
     // Used for REF_ONLY and to determine if a DETAILED record

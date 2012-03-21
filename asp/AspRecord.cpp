@@ -28,7 +28,7 @@
 //
 
 bool AspRecord::ourIncludeNinDetailed = true;
-const unsigned int AspRecord::REC_TYPE_LEN = 1;
+const unsigned int AspRecord::REF_TYPE_LEN = 1;
 const uint8_t AspRecord::EMPTY_REC = 0x0;
 const uint8_t AspRecord::POS_REC = 0x1;
 const uint8_t AspRecord::REF_ONLY_REC = 0x2;
@@ -47,7 +47,8 @@ AspRecord::~AspRecord()
 
 
 // Add an entry
-bool AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
+bool AspRecord::add(char refBase, char base, char qual,
+                    int cycle, bool strand, int mq)
 {
     // If we are already at the max number of bases, just return.
     if(myNumBases >= MAX_NUM_BASES)
@@ -62,6 +63,8 @@ bool AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
         return(false);
     }
 
+    myRefBase = refBase;
+
     // Have not yet incremented myNumBases so as an example:
     // myNumBases = 0; 1st base; basesIndex = 0;
     // myNumBases = 1; 2nd base; basesIndex = 0;
@@ -74,7 +77,7 @@ bool AspRecord::add(char base, char qual, int cycle, bool strand, int mq)
     {
         // When myNumBases is a multiple of 2, 
         // we want the upper bits of the index.
-        myBases[basesIndex] = (intBase & 0xF) << 4;
+        myBases[basesIndex] = (intBase & 0xF) << BASE_SHIFT;
     }
     else
     {
@@ -182,6 +185,7 @@ void AspRecord::setDetailedType()
 void AspRecord::reset()
 {
     myType = DETAILED_REC;
+    myRefBase = 'N';
     myNumBases = 0;
     myNumNonNBases = 0;
     myNumNonNBasesSet = false;
@@ -205,10 +209,19 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
     }
 
     // Read the first byte that contains the type.
-    if(ifread(filePtr, &myType, REC_TYPE_LEN) != REC_TYPE_LEN)
+    int8_t refBaseType = 0;
+    if(ifread(filePtr, &refBaseType, REF_TYPE_LEN) != REF_TYPE_LEN)
     {
         throw(std::runtime_error("AspRecord: Failed reading the record type."));
         return(false);
+    }
+    // Extract the type.
+    myType = refBaseType & REC_TYPE_MASK;
+    // Extract and convert the reference base.
+    myRefBase = BaseAsciiMap::int2base[refBaseType >> BASE_SHIFT];
+    if(myRefBase == 'M')
+    {
+        myRefBase = DELETION_BASE;
     }
 
     // Set the chrom/pos for this record, then update the position.
@@ -244,6 +257,24 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
 }
 
 
+char AspRecord::getRefBase()
+{
+    if(!isRefOnlyType() || !isDetailedType())
+    {
+        // Not a data record, so return 'N'
+        std::cerr << "AspRecord: requested the reference base for a non"
+                  << "data record, so returning 'N'\n";
+        return('N');
+    }
+    char returnVal = BaseAsciiMap::int2base[myType >> BASE_SHIFT];
+    if(returnVal == 'M')
+    {
+        return(DELETION_BASE);
+    }
+    return(returnVal);
+}
+
+
 int AspRecord::getNumNonNBases()
 {
     if(!myNumNonNBasesSet)
@@ -264,6 +295,7 @@ int AspRecord::getNumNonNBases()
     }
     return(myNumNonNBases);
 }
+
 
 int AspRecord::getGLH()
 {
@@ -393,7 +425,8 @@ int AspRecord::getMQ(int index)
 
 void AspRecord::writeEmpty(IFILE outputFile)
 {
-    if(ifwrite(outputFile, &EMPTY_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    // An empty record has no reference base, so no need to add that.
+    if(ifwrite(outputFile, &EMPTY_REC, REF_TYPE_LEN) != REF_TYPE_LEN)
     {
         throw(std::runtime_error("AspRecord: Failed writing an empty record."));
     }
@@ -402,7 +435,8 @@ void AspRecord::writeEmpty(IFILE outputFile)
 
 void AspRecord::writePos(int32_t chrom, int32_t pos, IFILE outputFile)
 {
-    if(ifwrite(outputFile, &POS_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    // An position record has no reference base, so no need to add that.
+    if(ifwrite(outputFile, &POS_REC, REF_TYPE_LEN) != REF_TYPE_LEN)
     {
         throw(std::runtime_error("AspRecord: Failed writing a position record."));
     };
@@ -551,7 +585,12 @@ void AspRecord::writeRefOnly(IFILE outputFile)
         return;
     }
 
-    if(ifwrite(outputFile, &REF_ONLY_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    myType = REF_ONLY_REC;
+    uint8_t refBaseType = 
+        ((BaseAsciiMap::base2int[(int)myRefBase] & 0xF) << BASE_SHIFT) &
+        (myType & REC_TYPE_MASK);
+    
+    if(ifwrite(outputFile, &refBaseType, REF_TYPE_LEN) != REF_TYPE_LEN)
     {
         throw(std::runtime_error("AspRecord: Failed writing a reference only record."));
     }
@@ -592,13 +631,19 @@ void AspRecord::writeDetailed(IFILE outputFile)
         return;
     }
 
-    if(ifwrite(outputFile, &DETAILED_REC, REC_TYPE_LEN) != REC_TYPE_LEN)
+    myType = DETAILED_REC;
+    uint8_t refBaseType = 
+        ((BaseAsciiMap::base2int[(int)myRefBase] & 0xF) << BASE_SHIFT) &
+        (myType & REC_TYPE_MASK);
+    
+    if(ifwrite(outputFile, &refBaseType, REF_TYPE_LEN) != REF_TYPE_LEN)
     {
         throw(std::runtime_error("AspRecord: Failed writing a detailed record."));
     }
 
     // Write the number of bases.
-    if(ifwrite(outputFile, &myNumBases, sizeof(myNumBases)) != REC_TYPE_LEN)
+    if(ifwrite(outputFile, &myNumBases, sizeof(myNumBases)) != 
+       sizeof(myNumBases))
     {
         throw(std::runtime_error("AspRecord: Failed writing num bases to a detailed record."));
     }
