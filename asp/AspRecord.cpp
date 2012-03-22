@@ -19,7 +19,6 @@
 //////////////////////////////////////////////////////////////////////////
 #include "AspRecord.h"
 #include <stdexcept>
-#include "BaseAsciiMap.h"
 #include "BaseUtilities.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -586,9 +585,7 @@ void AspRecord::writeRefOnly(IFILE outputFile)
     }
 
     myType = REF_ONLY_REC;
-    uint8_t refBaseType = 
-        ((BaseAsciiMap::base2int[(int)myRefBase] & 0xF) << BASE_SHIFT) &
-        (myType & REC_TYPE_MASK);
+    uint8_t refBaseType = getRefBaseType();
     
     if(ifwrite(outputFile, &refBaseType, REF_TYPE_LEN) != REF_TYPE_LEN)
     {
@@ -632,9 +629,7 @@ void AspRecord::writeDetailed(IFILE outputFile)
     }
 
     myType = DETAILED_REC;
-    uint8_t refBaseType = 
-        ((BaseAsciiMap::base2int[(int)myRefBase] & 0xF) << BASE_SHIFT) &
-        (myType & REC_TYPE_MASK);
+    uint8_t refBaseType = getRefBaseType();
     
     if(ifwrite(outputFile, &refBaseType, REF_TYPE_LEN) != REF_TYPE_LEN)
     {

@@ -22,6 +22,7 @@
 #define __ASP_RECORD_H__
 
 #include "SamFile.h"
+#include "BaseAsciiMap.h"
 
 class AspRecord
 {
@@ -193,6 +194,12 @@ private:
         //   myNumBases = 8, Size = (8+7)/8 = 1
         //   myNumBases = 9, Size = (9+7)/8 = 2
         return((myNumBases+7)/8);
+    }
+
+    inline uint8_t getRefBaseType() 
+    {
+        return(((BaseAsciiMap::base2int[(int)myRefBase] & 0xF) << BASE_SHIFT) |
+               (myType & REC_TYPE_MASK));
     }
 
     // myType is really only 4 bits.
