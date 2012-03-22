@@ -1,7 +1,7 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
-//#define QUEUE_DEBUG
+#define QUEUE_DEBUG
 
 enum {
     QUEUE_STATE_OK = 0,
@@ -74,5 +74,15 @@ queue_reset(queue_t *q, int32_t num_adders, int32_t num_getters);
 
 void
 queue_wake_all(queue_t *q);
+
+void 
+queue_remove_adder(queue_t *q);
+
+void 
+queue_remove_getter(queue_t *q);
+
+// DEBUG
+void
+queue_print_status(queue_t *q, FILE *fp);
 
 #endif

@@ -77,8 +77,8 @@ queue_add(queue_t *q, block_t *b, int8_t wait)
 {
   safe_mutex_lock(q->mut);
   queue_signal(q);
-  if(0 == q->num_getters) {
-      queue_close_nolock(q);
+  if(0 == q->num_getters) { // no more getters
+      queue_close_nolock(q); // close
       safe_mutex_unlock(q->mut);
       return 0;
   }
@@ -299,10 +299,9 @@ queue_destroy(queue_t *q)
   free(q);
 }
 
-void
-queue_wake_all(queue_t *q)
+static void
+queue_wake_all_no_lock(queue_t *q)
 {
-  safe_mutex_lock(q->mut);
   if(0 == q->num_getters || (0 == q->num_adders && 0 == q->n)) {
       q->state = QUEUE_STATE_EOF;
   }
@@ -310,5 +309,43 @@ queue_wake_all(queue_t *q)
   pthread_cond_signal(q->not_empty);
   pthread_cond_signal(q->is_empty);
   pthread_cond_signal(q->not_flush);
+}
+
+void
+queue_wake_all(queue_t *q)
+{
+  safe_mutex_lock(q->mut);
+  queue_wake_all_no_lock(q);
   safe_mutex_unlock(q->mut);
+}
+
+void 
+queue_remove_adder(queue_t *q)
+{
+  safe_mutex_lock(q->mut);
+  q->num_adders--;
+  if(0 == q->num_adders && 0 == q->n) queue_wake_all_no_lock(q);
+  safe_mutex_unlock(q->mut);
+}
+
+void 
+queue_remove_getter(queue_t *q)
+{
+  safe_mutex_lock(q->mut);
+  q->num_getters--;
+  if(0 == q->num_getters) queue_wake_all_no_lock(q);
+  safe_mutex_unlock(q->mut);
+}
+
+void
+queue_print_status(queue_t *q, FILE *fp)
+{
+    fprintf(fp, "QUEUE STATUS\n");
+    fprintf(fp, "mem=%d head=%d tail=%d n=%d length=%d id=%lld ordered=%d num_adders=%d num_getters=%d\n",
+            q->mem, q->head, q->tail, q->n, q->length, q->id, q->ordered, q->num_adders, q->num_getters);
+#ifdef QUEUE_DEBUG
+    fprintf(fp, "num_waiting=[%d,%d,%d,%d]\n", 
+            q->num_waiting[0], q->num_waiting[1],
+            q->num_waiting[2], q->num_waiting[3]);
+#endif
 }

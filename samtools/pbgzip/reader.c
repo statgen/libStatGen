@@ -227,15 +227,14 @@ reader_run(void *arg)
   block_destroy(b);
   b = NULL;
   
-  //fprintf(stderr, "reader read %llu blocks\n", n);
-  //fprintf(stderr, "r->input->n=%d\n", r->input->n);
-
   r->is_done = 1;
-  r->input->num_adders--;
-
-  // wake the input queue
-  r->input->state = QUEUE_STATE_EOF;
-  queue_wake_all(r->input);
+  
+  // NB: EOF should be handled when the adder is removed
+  queue_remove_adder(r->input);
+  
+  //fprintf(stderr, "reader read %llu blocks\n", n);
+  //fprintf(stderr, "reader r->input->n=%d\n", r->input->n);
+  //fprintf(stderr, "reader r->input->state=%d QUEUE_STATE_EOF=%d\n", r->input->state, QUEUE_STATE_EOF);
 
   block_pool_destroy(pool);
 

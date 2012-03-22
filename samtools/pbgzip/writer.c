@@ -11,7 +11,7 @@
 #include "writer.h"
 
 writer_t*
-writer_init(int fd, queue_t *output, uint8_t compress, int32_t compress_level, block_pool_t *pool)
+writer_init(int fd, queue_t *output, uint8_t compress, int32_t compress_level, int32_t compress_type, block_pool_t *pool)
 {
   writer_t *w = calloc(1, sizeof(writer_t));
 
@@ -22,7 +22,15 @@ writer_init(int fd, queue_t *output, uint8_t compress, int32_t compress_level, b
       }
   }
   else {
+#ifndef DISABLE_BZ2
+      if (compress_type == 0) {
+          compress_level = compress_level < 0? Z_DEFAULT_COMPRESSION : compress_level; // Z_DEFAULT_COMPRESSION==-1
+      } else {
+          compress_level = compress_level < 1? BZ2_DEFAULT_LEVEL : compress_level; 
+      }
+#else
       compress_level = compress_level < 0? Z_DEFAULT_COMPRESSION : compress_level; // Z_DEFAULT_COMPRESSION==-1
+#endif
       char mode[3]="w";
       if(0 <= compress_level) {
           if(9 <= compress_level) compress_level = 9;
@@ -178,11 +186,8 @@ writer_run(void *arg)
   w->is_done = 1;
   //fprintf(stderr, "writer written %llu blocks\n", n);
 
-  w->output->num_getters--;
-
-  // explicitly wake all
-  queue_wake_all(w->output);
-  // no need to signal, no one depends on me :(
+  // NB: will wake all
+  queue_remove_getter(w->output);
 
   return arg;
 }

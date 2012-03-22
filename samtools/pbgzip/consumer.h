@@ -9,6 +9,7 @@ typedef struct {
     int8_t is_done;
     int8_t compress;
     int32_t compress_level;
+    int32_t compress_type;
     int16_t cid;
     int64_t n;
 } consumer_t;
@@ -19,6 +20,7 @@ consumer_init(queue_t *input,
               reader_t *reader,
               int8_t compress,
               int32_t compress_level,
+              int32_t compress_type,
               int32_t cid);
 
 void*

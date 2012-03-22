@@ -6,6 +6,7 @@ typedef struct {
     FILE *fp_file;
     queue_t *output;
     uint8_t compress;
+    int32_t compress_type;
     uint8_t is_done;
     uint8_t is_closed;
     block_pool_t *pool_fp;
@@ -13,7 +14,7 @@ typedef struct {
 } writer_t;
 
 writer_t*
-writer_init(int fd, queue_t *output, uint8_t compress, int32_t compress_level, block_pool_t *pool);
+writer_init(int fd, queue_t *output, uint8_t compress, int32_t compress_level, int32_t compress_type, block_pool_t *pool);
 
 void*
 writer_run(void *arg);

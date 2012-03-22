@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <zlib.h>
+#ifndef DISABLE_BZ2
+#include <bzlib.h>
+#endif
 #include <pthread.h>
 
 #include "../bgzf.h"
@@ -19,6 +22,7 @@ consumer_init(queue_t *input,
               reader_t *reader,
               int8_t compress,
               int32_t compress_level,
+              int32_t compress_type,
               int32_t cid)
 {
   consumer_t *c = calloc(1, sizeof(consumer_t));
@@ -27,7 +31,12 @@ consumer_init(queue_t *input,
   c->output = output;
   c->reader = reader;
   c->compress = compress;
-  c->compress_level = compress_level < 0? Z_DEFAULT_COMPRESSION : compress_level; // Z_DEFAULT_COMPRESSION==-1
+  if (compress_type == 0) {
+      c->compress_level = compress_level < 0? Z_DEFAULT_COMPRESSION : compress_level; // Z_DEFAULT_COMPRESSION==-1
+  } else {
+      c->compress_level = compress_level < 1? BZ2_DEFAULT_LEVEL : compress_level; 
+  }
+  c->compress_type = compress_type;
   c->cid = cid;
 
   c->buffer = malloc(sizeof(uint8_t)*MAX_BLOCK_SIZE);
@@ -36,7 +45,7 @@ consumer_init(queue_t *input,
 }
 
 static int
-consumer_inflate_block(consumer_t *c, block_t *block)
+consumer_inflate_block_gz(consumer_t *c, block_t *block)
 {
   z_stream zs;
   int status;
@@ -73,26 +82,52 @@ consumer_inflate_block(consumer_t *c, block_t *block)
   return zs.total_out;
 }
 
+#ifndef DISABLE_BZ2
 static int
-consumer_deflate_block(consumer_t *c, block_t *b)
+consumer_inflate_block_bz2(consumer_t *c, block_t *b)
 {
-  // Deflate the block in fp->uncompressed_block into fp->compressed_block.
-  // Also adds an extra field that stores the compressed block length.
   int32_t block_length;
+  int status;
+  unsigned int destLen;
 
   memcpy(c->buffer, b->buffer, b->block_length); // copy uncompressed to compressed 
-
-  // Notes:
-  // fp->compressed_block is now b->buffer
-  // fp->uncompressed_block is now c->buffer
-  // block_length is now b->block_length
-
-  //bgzf_byte_t* buffer = fp->compressed_block;
-  //int buffer_size = fp->compressed_block_size;
-  bgzf_byte_t* buffer = b->buffer; // destination
-  int buffer_size = MAX_BLOCK_SIZE;
   block_length = b->block_length;
+  
+  destLen = MAX_BLOCK_SIZE;
+  status = BZ2_bzBuffToBuffDecompress((char*)b->buffer, &destLen, (char*)(c->buffer + 18), block_length-16, 0, 0); 
+  if (BZ_OK != status) {
+      // TODO: deal with BZ_OUTBUFF_FULL 
+      fprintf(stderr, "inflate failed\n");
+      return -1;
+  }
+  b->block_length = destLen;
 
+  return b->block_length;
+}
+#endif
+
+static int
+consumer_inflate_block(consumer_t *c, block_t *block)
+{
+#ifndef DISABLE_BZ2
+  // from bgzf.c
+  static uint8_t magic[28] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0\033\0\3\0\0\0\0\0\0\0\0\0";
+  static int32_t magic_l = 28;
+  if (0 == c->compress_type) return consumer_inflate_block_gz(c, block);
+  else if (magic_l == block->block_length) { // check EOF magic #...
+      if (0 != memcmp(magic, block->buffer, magic_l)) return consumer_inflate_block_bz2(c, block);
+      else return consumer_inflate_block_gz(c, block);
+  } else {
+      return consumer_inflate_block_bz2(c, block);
+  }
+#else
+  return consumer_inflate_block_gz(c, block);
+#endif
+}
+
+static void
+consumer_init_header(bgzf_byte_t* buffer)
+{
   // Init gzip header
   buffer[0] = GZIP_ID1;
   buffer[1] = GZIP_ID2;
@@ -112,6 +147,40 @@ consumer_deflate_block(consumer_t *c, block_t *b)
   buffer[15] = 0;
   buffer[16] = 0; // placeholder for block length
   buffer[17] = 0;
+}
+
+static void
+consumer_update_header(consumer_t *c, bgzf_byte_t *buffer, int32_t input_length, int32_t compressed_length)
+{
+  packInt16((uint8_t*)&buffer[16], compressed_length-1);
+  uint32_t crc = crc32(0L, NULL, 0L);
+  crc = crc32(crc, c->buffer, input_length);
+  packInt32((uint8_t*)&buffer[compressed_length-8], crc);
+  packInt32((uint8_t*)&buffer[compressed_length-4], input_length);
+}
+
+static int
+consumer_deflate_block_gz(consumer_t *c, block_t *b)
+{
+  // Deflate the block in fp->uncompressed_block into fp->compressed_block.
+  // Also adds an extra field that stores the compressed block length.
+  int32_t block_length;
+
+  memcpy(c->buffer, b->buffer, b->block_length); // copy uncompressed to compressed 
+
+  // Notes:
+  // fp->compressed_block is now b->buffer
+  // fp->uncompressed_block is now c->buffer
+  // block_length is now b->block_length
+
+  //bgzf_byte_t* buffer = fp->compressed_block;
+  //int buffer_size = fp->compressed_block_size;
+  bgzf_byte_t* buffer = b->buffer; // destination
+  int buffer_size = MAX_BLOCK_SIZE;
+  block_length = b->block_length;
+
+  // Init gzip header
+  consumer_init_header(buffer);
 
   // loop to retry for blocks that do not compress enough
   int input_length = block_length;
@@ -166,12 +235,7 @@ consumer_deflate_block(consumer_t *c, block_t *b)
       break;
   }
 
-  packInt16((uint8_t*)&buffer[16], compressed_length-1);
-  uint32_t crc = crc32(0L, NULL, 0L);
-  //crc = crc32(crc, fp->uncompressed_block, input_length);
-  crc = crc32(crc, c->buffer, input_length);
-  packInt32((uint8_t*)&buffer[compressed_length-8], crc);
-  packInt32((uint8_t*)&buffer[compressed_length-4], input_length);
+  consumer_update_header(c, buffer, input_length, compressed_length);
 
   int remaining = block_length - input_length;
   // since we read by blocks, we should have none remaining
@@ -181,8 +245,75 @@ consumer_deflate_block(consumer_t *c, block_t *b)
   }
   //fp->block_offset = remaining;
   b->block_offset = remaining;
-
+  
   return compressed_length;
+}
+
+#ifndef DISABLE_BZ2
+static int
+consumer_deflate_block_bz2(consumer_t *c, block_t *b)
+{
+  // Deflate the block in fp->uncompressed_block into fp->compressed_block.
+  // Also adds an extra field that stores the compressed block length.
+  int32_t block_length, compressed_length = 0;
+  int status, input_length;
+  unsigned int destLen;
+
+  memcpy(c->buffer, b->buffer, b->block_length); // copy uncompressed to compressed 
+  
+  // NB: use gzip header, for now...
+  consumer_init_header(b->buffer);
+
+  input_length = block_length = b->block_length;
+  destLen = MAX_BLOCK_SIZE - BLOCK_HEADER_LENGTH - BLOCK_FOOTER_LENGTH;
+  while (1) {
+      status = BZ2_bzBuffToBuffCompress((char*)(b->buffer + BLOCK_HEADER_LENGTH), &destLen, (char*)c->buffer, input_length, 9, 0, 0); 
+      if (BZ_OK != status) {
+          if (status == BZ_OUTBUFF_FULL) {
+              // Not enough space in buffer.
+              // Can happen in the rare case the input doesn't compress enough.
+              // Reduce the amount of input until it fits.
+              input_length -= 1024;
+              if (input_length <= 0) {
+                  // should never happen
+                  fprintf(stderr, "input reduction failed\n");
+                  return -1;
+              }
+              continue;
+          }
+          fprintf(stderr, "deflate failed\n");
+          return -1;
+      }
+      break;
+  }
+  compressed_length = destLen;
+  compressed_length += BLOCK_HEADER_LENGTH + BLOCK_FOOTER_LENGTH;
+  if (compressed_length > MAX_BLOCK_SIZE) {
+      // should never happen
+      fprintf(stderr, "deflate overflow\n");
+      return -1;
+  }
+  b->block_length = compressed_length;
+  
+  consumer_update_header(c, b->buffer, input_length, compressed_length);
+
+  int remaining = block_length - input_length;
+  b->block_offset = remaining;
+  b->block_offset = 0;
+  
+  return compressed_length;
+}
+#endif
+
+static int
+consumer_deflate_block(consumer_t *c, block_t *b)
+{
+#ifndef DISABLE_BZ2
+  if(0 == c->compress_type) return consumer_deflate_block_gz(c, b);
+  else return consumer_deflate_block_bz2(c, b);
+#else
+  return consumer_deflate_block_gz(c, b);
+#endif
 }
 
 void*
@@ -343,11 +474,15 @@ consumer_run(void *arg)
   }
 
   c->is_done = 1;
-  c->input->num_getters--;
-  c->output->num_adders--;
+  // NB: queue handles waking...
+  queue_remove_getter(c->input);
+  queue_remove_adder(c->output);
 
   //fprintf(stderr, "consumer #%d done processed %llu blocks\n", c->cid, c->n);
-  // explicitly wake all
+  //queue_print_status(c->input, stderr);
+  //queue_print_status(c->output, stderr);
+
+  // TODO: why do you need to wake all here?
   queue_wake_all(c->input);
   queue_wake_all(c->output);
 

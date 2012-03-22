@@ -10,6 +10,8 @@
 #include "writer.h"
 #include "util.h"
 
+#define BZ2_DEFAULT_LEVEL 9
+
 typedef struct {
     pthread_attr_t attr;
     pthread_t *threads;
@@ -58,6 +60,15 @@ extern "C" {
 #define PBGZF_QUEUE_SIZE 100
 #define PBGZF_BLOCKS_POOL_NUM 100
 //#define PBGZF_USE_LOCAL_POOLS 
+
+/*
+ * Sets the number of consumer threads per file handle.  If set to
+ * X, the numebr of threads will be X+1, due to the need to have a 
+ * single reader or writer thread in addition to the consumer 
+ * thread(s).
+ */
+void
+pbgzf_set_num_threads_per(int32_t n);
 
 /*
  * Open an existing file descriptor for reading or writing.
@@ -128,7 +139,7 @@ void pbgzf_set_cache_size(PBGZF *fp, int cache_size);
 #endif
 
 void
-pbgzf_main(int f_src, int f_dst, int compress, int compress_level, int queue_size, int n_threads);
+pbgzf_main(int f_src, int f_dst, int compress, int compress_level, int compress_type, int queue_size, int num_threads);
 
 
 #endif
