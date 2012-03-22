@@ -258,19 +258,14 @@ bool AspRecord::read(IFILE filePtr, int32_t& chromID, int32_t& pos)
 
 char AspRecord::getRefBase()
 {
-    if(!isRefOnlyType() || !isDetailedType())
+    if(!isRefOnlyType() && !isDetailedType())
     {
         // Not a data record, so return 'N'
         std::cerr << "AspRecord: requested the reference base for a non"
                   << "data record, so returning 'N'\n";
         return('N');
     }
-    char returnVal = BaseAsciiMap::int2base[myType >> BASE_SHIFT];
-    if(returnVal == 'M')
-    {
-        return(DELETION_BASE);
-    }
-    return(returnVal);
+    return(myRefBase);
 }
 
 
