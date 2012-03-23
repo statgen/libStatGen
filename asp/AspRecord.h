@@ -109,7 +109,7 @@ public:
 
     // Get the likelihood of the genotype with the 2 specified bases.
     // Make sure all bases are the same case (upper/lower).
-    int getLikelihood(char base1, char base2, char refBase);
+    int getLikelihood(char base1, char base2);
     
 
     ////////////////////////
@@ -164,11 +164,11 @@ private:
 
     // Get the likelihood of the genotype with the 2 specified bases.
     // Make sure all bases are the same case (upper/lower).
-    int getRefOnlyLikelihood(char base1, char base2, char refBase);
+    int getRefOnlyLikelihood(char base1, char base2);
     
     // Get the likelihood of the genotype with the 2 specified bases.
     // Make sure all bases are the same case (upper/lower).
-    int getDetailedLikelihood(char base1, char base2, char refBase);
+    int getDetailedLikelihood(char base1, char base2);
     
 
     inline unsigned int getBasesSize()

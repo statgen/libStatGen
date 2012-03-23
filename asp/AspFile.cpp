@@ -111,8 +111,14 @@ void AspFile::updateRecordCount(AspRecord& record)
 
 
 AspFileReader::AspFileReader()
-    : AspFile()
+    : AspFile(),
+      myHeader(),
+      myStoredRecord(),
+      myEmptyRecord()
+      
 {
+    // Set the empty record.
+    myEmptyRecord.setEmptyType();
     reset();
 }
 
@@ -209,59 +215,59 @@ bool AspFileReader::advanceToNextChromosome(std::string& nextChrom)
 }
 
 
-const AspRecord* AspFileReader::getDataRecord(const char* chromName,
-                                              int32_t pos0Based)
+const AspRecord& AspFileReader::getRecord(const char* chromName,
+                                          int32_t pos0Based)
 {
     if(!advanceToPos(chromName, pos0Based))
     {
         // Position does not have data, so return NULL.
-        return(NULL);
+        return(myEmptyRecord);
     }
     // A data record was found.
-    return(&myStoredRecord);
+    return(myStoredRecord);
 }
 
 
-const AspRecord* AspFileReader::getRefOnlyRecord(const char* chromName,
+const AspRecord& AspFileReader::getRefOnlyRecord(const char* chromName,
                                                  int32_t pos0Based)
 {
     if(!advanceToPos(chromName, pos0Based))
     {
         // Position does not have data, so return NULL.
-        return(NULL);
+        return(myEmptyRecord);
     }
 
     // Check if the record is a detailed record.
     if(!myStoredRecord.isDetailedType())
     {
         // Not a detailed record, so return NULL.
-        return(NULL);
+        return(myEmptyRecord);
     }
-    return(&myStoredRecord);
+    return(myStoredRecord);
 }
 
 
-const AspRecord* AspFileReader::getDetailedRecord(const char* chromName,
+const AspRecord& AspFileReader::getDetailedRecord(const char* chromName,
                                                   int32_t pos0Based)
 {
     if(!advanceToPos(chromName, pos0Based))
     {
         // Position does not have data, so return NULL.
-        return(NULL);
+        return(myEmptyRecord);
     }
 
     // Check if the record is a detailed record.
     if(!myStoredRecord.isDetailedType())
     {
         // Not a detailed record, so return NULL.
-        return(NULL);
+        return(myEmptyRecord);
     }
-    return(&myStoredRecord);
+    return(myStoredRecord);
 }
 
 
 int AspFileReader::getLikelihood(const char* chromName, int32_t pos0Based,
-                                 char base1, char base2, char refBase)
+                                 char base1, char base2)
 {
     static const int UNKNOWN_LIKELIHOOD = 0;
 
@@ -271,7 +277,7 @@ int AspFileReader::getLikelihood(const char* chromName, int32_t pos0Based,
         return(UNKNOWN_LIKELIHOOD);
     }
     // Data was found for this position, so return the likelihood.
-    return(myStoredRecord.getLikelihood(base1, base2, refBase));
+    return(myStoredRecord.getLikelihood(base1, base2));
 }
 
 

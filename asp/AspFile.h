@@ -107,29 +107,32 @@ public:
     /// \return true if there was another chromosome, false if eof.
     bool advanceToNextChromosome(std::string& nextChrom);
 
-    /// Get the data record at the specified position.  The file is advanced
+    /// Get the record at the specified position.  The file is advanced
     /// to this position.  If a data record is not found at the position or
-    /// if the position has already been passed, NULL is returned.
-    /// This is a constant pointer to the record in this class.  The record
-    /// is replaced the next time a new position is read.
-    /// \return pointer to the data record stored in this class or NULL
-    const AspRecord* getDataRecord(const char* chromName, int32_t pos0Based);
+    /// if the position has already been passed, a reference to an EMPTY
+    /// Record is returned.  The returned record is only valid until the next
+    /// time a new position is read.
+    /// \return reference to the data record stored in this class or an EMPTY
+    /// record.
+    const AspRecord& getRecord(const char* chromName, int32_t pos0Based);
 
     /// Get the reference only record at the specified position.  The file is
     /// advanced to this position.  If a reference only record is not found at
-    /// the position or if the position has already been passed, NULL is
-    /// returned.  This is a constant pointer to the record in this class.
-    /// The record is replaced the next time a new position is read.
-    /// \return pointer to the data record stored in this class or NULL
-    const AspRecord* getRefOnlyRecord(const char* chromName, int32_t pos0Based);
+    /// the position or if the position has already been passed, a reference to
+    /// an EMPTY Record is returned.  The returned record is only valid until
+    /// the next time a new position is read.
+    /// \return reference to the data record stored in this class or an EMPTY
+    /// record.
+    const AspRecord& getRefOnlyRecord(const char* chromName, int32_t pos0Based);
 
     /// Get the detailed record at the specified position.  The file is
     /// advanced to this position.  If a detailed record is not found at
-    /// the position or if the position has already been passed, NULL is
-    /// returned.  This is a constant pointer to the record in this class.
-    /// The record is replaced the next time a new position is read.
-    /// \return pointer to the data record stored in this class or NULL
-    const AspRecord* getDetailedRecord(const char* chromName, 
+    /// the position or if the position has already been passed, a reference to
+    /// an EMPTY Record is returned.  The returned record is only valid until
+    /// the next time a new position is read.
+    /// \return reference to the data record stored in this class or an EMPTY
+    /// record.
+    const AspRecord& getDetailedRecord(const char* chromName, 
                                        int32_t pos0Based);
 
     /// Get the likelihood at the specified position of the genotype with
@@ -142,7 +145,7 @@ public:
     ///   position and 0 is returned.
     ///   Make sure all bases are the same case (upper/lower).
     int getLikelihood(const char* chromName, int32_t pos0Based,
-                      char base1, char base2, char refBase);
+                      char base1, char base2);
 
     /// Get the number of bases at the specified position
     /// advancing in the file to the specified position.
@@ -170,9 +173,15 @@ private:
     AspHeader myHeader;
 
     // Used to store a record that is used in the accessor logic that
-    // takes a position and returns information rather than a record.
+    // takes a position and returns information or a reference to the record.
     // The record is stored here.
     AspRecord myStoredRecord;
+
+    // Used to store an empty record that can be returned in the accessor
+    // logic that takes a position and returns information or a reference
+    // to a record.  This is returned if no data record is found at that 
+    // location.
+    AspRecord myEmptyRecord;
 };
 
 

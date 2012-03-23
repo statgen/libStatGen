@@ -318,15 +318,15 @@ int AspRecord::getGLA()
     }
 }
 
-int AspRecord::getLikelihood(char base1, char base2, char refBase)
+int AspRecord::getLikelihood(char base1, char base2)
 {
     if(isRefOnlyType())
     {
-        return(getRefOnlyLikelihood(base1, base2, refBase));
+        return(getRefOnlyLikelihood(base1, base2));
     }
     if(isDetailedType())
     {
-        return(getDetailedLikelihood(base1, base2, refBase));
+        return(getDetailedLikelihood(base1, base2));
     }
     // Other type, does not have likelihood, so return 0.
     return(0);
@@ -662,10 +662,10 @@ void AspRecord::writeDetailed(IFILE outputFile)
 }
 
 
-int AspRecord::getRefOnlyLikelihood(char base1, char base2, char refBase)
+int AspRecord::getRefOnlyLikelihood(char base1, char base2)
 {
     // Check if either base matches the reference.
-    if((base1 == refBase) || (base2 == refBase))
+    if((base1 == myRefBase) || (base2 == myRefBase))
     {
         // If both bases match, then it is homozygous reference and
         // return 0.
@@ -681,7 +681,7 @@ int AspRecord::getRefOnlyLikelihood(char base1, char base2, char refBase)
 }
 
 
-int AspRecord::getDetailedLikelihood(char base1, char base2, char refBase)
+int AspRecord::getDetailedLikelihood(char base1, char base2)
 {
     // TBD
     return(0);
