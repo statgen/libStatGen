@@ -20,7 +20,7 @@
 #ifndef __VCF_HEADER_H__
 #define __VCF_HEADER_H__
 
-#include <list>
+#include <vector>
 #include "StringArray.h"
 #include "StatGenStatus.h"
 
@@ -33,8 +33,8 @@ public:
     /// Destructor
     virtual ~VcfHeader();
 
-    /// Read the header from the specified file, fails if a header
-    /// has already been completely read.
+    /// Read the header from the specified file replacing any previous header
+    /// contents.
     /// \param filePtr IFILE to read from.
     /// \return true if an entire meta/header was successfully read from
     /// the specified filePtr, false if not.
@@ -79,9 +79,15 @@ public:
     /// is not found (first sample is index 0).
     int getSampleIndex(const char* sampleName);
 
+    /// Remove the sample at the specified index.
+    void removeSample(unsigned int index);
+
 protected: 
 
 private:
+    // Make sure the last header line is synced with the parsed header line.
+    void syncHeaderLine();
+    
     static const int NUM_NON_SAMPLE_HEADER_COLS = 9;
 
     // Is set to true once the header line has been set, false until then.

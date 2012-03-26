@@ -33,13 +33,9 @@ VcfHeader::~VcfHeader()
 
 bool VcfHeader::read(IFILE filePtr)
 {
-    if(myHasHeaderLine)
-    {
-        // Already set the header line, so can't add any more lines.
-        myStatus.setStatus(StatGenStatus::FAIL_ORDER, 
-                           "Error reading VCF Meta/Header, Header line has already been set, so can't read more lines from a file.");
-        return(false);
-    }
+    // Reading, so clean out this header.
+    reset();
+
     if(filePtr == NULL)
     {
         // No file was passed in.
@@ -77,7 +73,8 @@ bool VcfHeader::read(IFILE filePtr)
         if((newStr[0] == '#') && (newStr[1] != '#'))
         {
             myHasHeaderLine = true;
-            // Parse the header line to get the samples.
+
+            // Parse the header line to get the sample information.
             myParsedHeaderLine.ReplaceColumns(newStr, '\t');
         }
         else if((newStr[0] != '#') || (newStr[1] != '#'))
@@ -103,6 +100,9 @@ bool VcfHeader::write(IFILE filePtr)
         return(false);
     }
     
+    // Make sure the last header line is synced with the parsed header line.
+    syncHeaderLine();
+
     int numWritten = 0;
     int numExpected = 0;
     for(std::vector<String>::iterator iter = myHeaderLines.begin(); 
@@ -164,6 +164,8 @@ const char* VcfHeader::getMetaLine(unsigned int index)
 
 const char* VcfHeader::getHeaderLine()
 {
+    // Make sure the last header line is synced with the parsed header line.
+    syncHeaderLine();
     if(myHasHeaderLine)
     {
         return(myHeaderLines.back().c_str());
@@ -229,4 +231,49 @@ int VcfHeader::getSampleIndex(const char* sampleName)
     }
     // Not found.
     return(-1);
+}
+
+
+void VcfHeader::removeSample(unsigned int index)
+{
+    int position = index + NUM_NON_SAMPLE_HEADER_COLS;
+
+    if(position >= myParsedHeaderLine.Length())
+    {
+        // Out of range, so just return, nothing to remove.
+        return;
+    }
+
+    // Remove it from the parsed header line.
+    myParsedHeaderLine.Delete(position);
+
+    // Removed a sample, so clear the header line so the next time it is
+    // accessed it will be reset based on the existing samples.
+    String& hdrLine = myHeaderLines.back();
+    hdrLine.Clear();
+}
+
+
+void VcfHeader::syncHeaderLine()
+{
+    if(!myHasHeaderLine)
+    {
+        // No header line, so nothing to sync.
+        return;
+    }
+    // Get the last header line and see if it is set.
+    String& hdrLine = myHeaderLines.back();
+
+    if(hdrLine.IsEmpty())
+    {
+        // The header line is not set, so set it.
+        for(int i  = 0; i < myParsedHeaderLine.Length(); i++)
+        {
+            if(i != 0)
+            {
+                hdrLine += '\t';
+            }
+            hdrLine += myParsedHeaderLine[i];
+        }
+    }
 }

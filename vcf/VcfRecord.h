@@ -40,9 +40,11 @@ public:
     /// Read the next Vcf data line from the file.
     /// \param filePtr IFILE to read from.
     /// \param siteOnly only store the first 8 columns
+    /// \param subsetInfo pointer to subset information, but NULL if subsetting
+    /// is not to be done.
     /// \return true if a line was successfully read from the specified filePtr,
     /// false if not.
-    bool read(IFILE filePtr, bool siteOnly);
+    bool read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo = NULL);
 
     /// Write this data line to the file (including the newline).
     /// \param filePtr IFILE to write to.

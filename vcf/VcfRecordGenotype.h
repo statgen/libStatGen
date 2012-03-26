@@ -23,6 +23,7 @@
 
 #include "VcfRecordField.h"
 #include "ReusableVector.h"
+#include "VcfSubsetSamples.h"
 
 /// This header file provides interface to read/write VCF files.
 class VcfRecordGenotype : public VcfRecordField
@@ -39,6 +40,13 @@ public:
     /// \return true if a tab ended the field, false if it was \n or EOF (always
     /// returns false since this is the last field on the line).
     bool read(IFILE filePtr);
+
+    /// Read this genotype field from the file up until the next \t,\n, or EOF.
+    /// \param filePtr IFILE to read from.
+    /// \param subsetInfo pointer to optional subsetting information.
+    /// \return true if a tab ended the field, false if it was \n or EOF (always
+    /// returns false since this is the last field on the line).
+    bool read(IFILE filePtr, VcfSubsetSamples* subsetInfo);
 
     /// Write the genotype field to the file, without printing the
     // starting/trailing '\t'.

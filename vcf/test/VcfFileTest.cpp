@@ -17,7 +17,13 @@
 
 #include "VcfFileTest.h"
 #include "VcfFileReader.h"
+#include "VcfHeaderTest.h"
 #include <assert.h>
+
+const std::string HEADER_LINE_SUBSET1="#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA00001	NA00002";
+const std::string HEADER_LINE_SUBSET2="#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA00002	NA00003";
+const int NUM_SAMPLES_SUBSET1 = 2;
+const int NUM_SAMPLES_SUBSET2 = 2;
 
 void testVcfFile()
 {
@@ -89,4 +95,113 @@ void testVcfFile()
 //     }
 //     assert(caughtException);
 //     assert(vcfReadConstructor.ReadHeader(header) == true);
+
+
+    ////////////////////////////////
+    // Test the subset logic.
+    VcfFileReader reader;
+    VcfHeader header;
+    VcfRecordGenotype* sampleInfo = NULL;
+
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", ";");
+
+    assert(header.getHeaderLine() == HEADER_LINE_SUBSET1);
+    assert(header.getNumSamples() == NUM_SAMPLES_SUBSET1);
+    assert(header.getSampleName(2) == NULL);
+    assert(header.getSampleName(0) == SAMPLES[0]);
+    assert(header.getSampleName(1) == SAMPLES[1]);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == 1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == -1);
+ 
+    // Read the records to make sure they were subset.
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "1|0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "0|1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "1|2");
+    assert(*(sampleInfo->getString("GT", 1)) == "2|1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "0|0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/1");
+    assert(*(sampleInfo->getString("GT", 1)) == "0/2");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record) == false);
+
+    reader.close();
+
+    ////////
+    // Subset with a different file.
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset2.txt");
+    
+    assert(header.getHeaderLine() == HEADER_LINE_SUBSET2);
+    assert(header.getNumSamples() == NUM_SAMPLES_SUBSET2);
+    assert(header.getSampleName(2) == NULL);
+    assert(header.getSampleName(0) == SAMPLES[1]);
+    assert(header.getSampleName(1) == SAMPLES[2]);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == 0);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == 1);
+
+    // Read the records to make sure they were subset.
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "1|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "1/1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|1");
+    assert(*(sampleInfo->getString("GT", 1)) == "0/0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "2|1");
+    assert(*(sampleInfo->getString("GT", 1)) == "2/2");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "0/0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record));
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/2");
+    assert(*(sampleInfo->getString("GT", 1)) == "1/1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+
+    assert(reader.readRecord(record) == false);
 }

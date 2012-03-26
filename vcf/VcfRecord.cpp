@@ -31,7 +31,7 @@ VcfRecord::~VcfRecord()
 }
 
 
-bool VcfRecord::read(IFILE filePtr, bool siteOnly)
+bool VcfRecord::read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo)
 {
     // Clear out any previously set values.
     reset();
@@ -132,7 +132,7 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly)
     {
         // Not yet at the end of the line, so read the genotype fields
         // (format & samples)
-        myGenotype.read(filePtr);
+        myGenotype.read(filePtr, subsetInfo);
     }
     // Found the end of the line, return true since all required fields
     // were read.

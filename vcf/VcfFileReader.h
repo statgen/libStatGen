@@ -22,6 +22,7 @@
 
 #include "VcfFile.h"
 #include "VcfRecord.h"
+#include "VcfSubsetSamples.h"
 
 /// This header file provides interface to read/write VCF files.
 class VcfFileReader : public VcfFile
@@ -34,11 +35,26 @@ public:
     virtual ~VcfFileReader();
 
     /// Open the vcf file with the specified filename for reading.
+    /// This method does no sample subsetting.
     /// \param  filename the vcf file to open for reading.
     /// \param header to be read from the file
     /// \return true = success; false = failure.
     virtual bool open(const char* filename, VcfHeader& header);
-    
+
+    /// Open the vcf file with the specified filename for reading
+    /// subsetting the samples in the file to just the samples specified
+    /// in the sample file.
+    /// \param  filename the vcf file to open for reading.
+    /// \param header to be read from the file
+    /// \param sampleFileName file containing samples to keep
+    /// \param delims deliminators separating the samples in the file ('\n'
+    /// is always considered a delimiter even if it isn't specified).  When
+    /// any of the specified delimiter characters is found in the file it
+    /// indicates the end of a sample name.
+    /// \return true = success; false = failure.
+    virtual bool open(const char* filename, VcfHeader& header,
+                      const char* sampleFileName, const char* delims = "\n");
+
     /// Read the next Vcf data line from the file.
     /// \param record record to populate with the next data line.
     /// \return true if successful, false if not.
@@ -48,7 +64,7 @@ public:
     /// \return true = EOF; false = not eof.
     /// If the file is not open, true is returned.
     bool isEOF();
-   
+
     /// Get the Status of the last call that sets status.
     inline StatGenStatus::Status getStatus()
     {
@@ -56,8 +72,11 @@ public:
     }
 
 protected: 
+    virtual void resetFile();
 
 private:
+    VcfSubsetSamples mySampleSubset;
+    bool myUseSubset;
 };
 
 #endif

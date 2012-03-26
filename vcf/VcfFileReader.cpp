@@ -20,7 +20,9 @@
 #include "VcfFileReader.h"
 
 VcfFileReader::VcfFileReader()
-    : VcfFile()
+    : VcfFile(),
+      mySampleSubset(),
+      myUseSubset(false)
 {
   myFilePtr = NULL;
 }
@@ -33,6 +35,9 @@ VcfFileReader::~VcfFileReader()
 
 bool VcfFileReader::open(const char* filename, VcfHeader& header)
 {
+    // Close an already open file.
+    close();
+
     myStatus = StatGenStatus::SUCCESS;
     if(VcfFile::open(filename, "r"))
     {
@@ -55,10 +60,40 @@ bool VcfFileReader::open(const char* filename, VcfHeader& header)
 }
 
 
+bool VcfFileReader::open(const char* filename, VcfHeader& header,
+                         const char* sampleFileName, const char* delims)
+{
+    if(!open(filename, header))
+    {
+        // Failed to open & read header, so return.
+        return(false);
+    }
+
+    // Successfully opened and read the header, so setup the sample subset
+    // object based on the specified sample file and the header.
+    if(!mySampleSubset.init(header, sampleFileName, delims))
+    {
+        // Failed to setup the subsetting.
+        std::cerr << "VcfFileReader - failed to setup sample subsetting\n";
+    }
+
+    myUseSubset = true;
+
+    // Successfully opened and read the header.
+    return(true);
+}
+
+
 bool VcfFileReader::readRecord(VcfRecord& record)
 {
     myStatus = StatGenStatus::SUCCESS;
-    if(!record.read(myFilePtr, mySiteOnly))
+    // Subset the read if there are subsets specified.
+    VcfSubsetSamples* subsetPtr = NULL;
+    if(myUseSubset)
+    {
+        subsetPtr = &mySampleSubset;
+    }
+    if(!record.read(myFilePtr, mySiteOnly, subsetPtr))
     {
         myStatus = record.getStatus();
         return(false);
@@ -82,3 +117,8 @@ bool VcfFileReader::isEOF()
 }
 
 
+void VcfFileReader::resetFile()
+{
+    mySampleSubset.reset();
+    myUseSubset = false;
+}

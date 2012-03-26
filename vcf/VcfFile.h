@@ -61,6 +61,8 @@ protected:
     /// \return true = success; false = failure.
     bool open(const char* filename, const char* mode);
     
+    virtual void resetFile();
+
     IFILE  myFilePtr;
 
     StatGenStatus myStatus;
@@ -71,7 +73,6 @@ protected:
     int myNumRecords;
 
 private:
-    void resetFile();
 };
 
 #endif

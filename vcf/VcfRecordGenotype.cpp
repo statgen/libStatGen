@@ -32,6 +32,12 @@ VcfRecordGenotype::~VcfRecordGenotype()
 
 bool VcfRecordGenotype::read(IFILE filePtr)
 {
+    return(read(filePtr, NULL));
+}
+
+
+bool VcfRecordGenotype::read(IFILE filePtr, VcfSubsetSamples* subsetInfo)
+{
     // Clear out any previously set values.
     reset();
     
@@ -42,6 +48,7 @@ bool VcfRecordGenotype::read(IFILE filePtr)
     }
     
     static const std::string fieldStopChars = "\n\t:";
+    static const std::string discardSampleStopChars = "\n\t";
 
     // The start of the first character in stopChars that means there is more
     // genotype info in the format field, so continue reading the format field.
@@ -62,8 +69,22 @@ bool VcfRecordGenotype::read(IFILE filePtr)
 
     // Done reading the format field, so read the samples.
     VCF_SAMPLE* nextSample = NULL;
+
+    int sampleIndex = 0;
     while(stopPos == tabPos)
     {
+        // Check if this sample should be kept.
+        if(subsetInfo != NULL)
+        {
+            // Check if this sample should be kept.
+            if(!subsetInfo->keep(sampleIndex))
+            {
+                // this sample should not be kept.
+                stopPos = filePtr->readTilChar(discardSampleStopChars);
+                ++sampleIndex;
+                continue;
+            }
+        }
         // Read this sample.
         nextSample = &(mySamples.getNextEmpty());
         stopPos = contPos;
@@ -71,9 +92,9 @@ bool VcfRecordGenotype::read(IFILE filePtr)
         while(stopPos >= contPos)
         {
             nextType = &(nextSample->getNextEmpty());
-
             stopPos = filePtr->readTilChar(fieldStopChars, *nextType);
         }
+        ++sampleIndex;
     }
     
     // Return whether or not a tab was found at the end of the field.
@@ -122,6 +143,12 @@ const std::string* VcfRecordGenotype::getString(const std::string& key,
                                                 int sampleNum)
 {
     // Get this sample
+    if(sampleNum >= mySamples.size())
+    {
+        // Out of range sample index.
+        return(NULL);
+    }
+
     VCF_SAMPLE* samplePtr = &(mySamples.get(sampleNum));
 
     //  Search for this field of the sample.
