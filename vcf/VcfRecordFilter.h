@@ -46,6 +46,9 @@ public:
 
     void reset();
 
+    /// Return true if all filters were passed (contents is PASS).
+    bool passedAllFilters();
+
     /// Get the entire filter string returned as a const reference.
     const std::string& getString();
 

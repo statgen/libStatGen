@@ -71,6 +71,12 @@ void VcfRecordFilter::reset()
 }
 
 
+bool VcfRecordFilter::passedAllFilters()
+{
+    return(getString() == "PASS");
+}
+
+
 const std::string& VcfRecordFilter::getString()
 {
     // Check if the filter string needs to be set.

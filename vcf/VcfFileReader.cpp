@@ -23,8 +23,8 @@ VcfFileReader::VcfFileReader()
     : VcfFile(),
       mySampleSubset(),
       myUseSubset(false),
-      myFilters(0),
-      myNumNonFilteredRecords(0)
+      myDiscardRules(0),
+      myNumKeptRecords(0)
 {
   myFilePtr = NULL;
 }
@@ -108,24 +108,38 @@ bool VcfFileReader::readRecord(VcfRecord& record)
 
         ++myNumRecords;
         
-        // Record successfully read, so check to see if it is filtered.
-        if((myFilters & FILTER_NON_PHASED) && !record.allPhased())
+        // Record successfully read, so check to see if it is discarded.
+        if((myDiscardRules & DISCARD_NON_PHASED) && !record.allPhased())
         {
-            // Not all samples are phased, so filter this record.
+            // Not all samples are phased, so discard this record.
             continue;
         }
-        if((myFilters & FILTER_MISSING_GT) && !record.hasAllGenotypeAlleles())
+        if((myDiscardRules & DISCARD_MISSING_GT) &&
+           !record.hasAllGenotypeAlleles())
         {
-            // filter missing GTs and this record had missing alleles,
+            // discard missing GTs and this record had missing alleles,
             // so keep reading.
             continue;
         }
-        // Record was not filtered.
+        if((myDiscardRules & DISCARD_FILTERED) && 
+           !(record.getFilter().passedAllFilters()))
+        {
+            // Record was filtered, so discard it.
+            continue;
+        }
+        if((myDiscardRules & DISCARD_MULTIPLE_ALTS) &&
+           (record.getNumAlts() > 1))
+        {
+            // Record had multiple alternates, so discard.
+            continue;
+        }
+
+        // Record was not discarded.
         recordFound = true;
     }
 
-    // Increment the number of non-filtered records.
-    ++myNumNonFilteredRecords;
+    // Increment the number of kept records.
+    ++myNumKeptRecords;
     return(true);
 }
 
@@ -148,5 +162,5 @@ void VcfFileReader::resetFile()
 {
     mySampleSubset.reset();
     myUseSubset = false;
-    myNumNonFilteredRecords = 0;
+    myNumKeptRecords = 0;
 }

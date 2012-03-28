@@ -267,10 +267,28 @@ const StatGenStatus& VcfRecord::getStatus()
 }
 
 
-// bool VcfRecord::isValid()
-// {
+int VcfRecord::getNumAlts()
+{
+    size_t pos = 0;
     
-// }
+    // Check if it is just '.'.
+    if((myAlt.length() == 1) && (myAlt == "."))
+    {
+        // No alternates.
+        return(0);
+    }
+
+    // Loop looking for commas.
+    int numAlts = 0;
+    while(pos != std::string::npos)
+    {
+        ++numAlts;
+        // Can start reading at the pos = 1 since the
+        // first position should not be a ','
+        pos = myAlt.find(ALT_DELIM, pos + 1);
+    }
+    return(numAlts);
+}
 
 
 bool VcfRecord::readTilTab(IFILE filePtr, std::string& stringRef)

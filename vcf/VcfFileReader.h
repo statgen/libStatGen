@@ -28,8 +28,11 @@
 class VcfFileReader : public VcfFile
 {
 public:
-    static const int FILTER_NON_PHASED = 0x1;
-    static const int FILTER_MISSING_GT = 0x2;
+    static const int DISCARD_NON_PHASED = 0x1;
+    static const int DISCARD_MISSING_GT = 0x2;
+    static const int DISCARD_FILTERED = 0x4;
+    static const int DISCARD_MULTIPLE_ALTS = 0x8;
+
 
     /// Default Constructor, initializes the variables, but does not open
     /// any files.
@@ -69,14 +72,24 @@ public:
     bool isEOF();
 
     /// Get the number of VCF records that have been processed (read/written)
-    /// so far excluding any filtered records.
-    int getNumNonFilteredRecords() {return(myNumNonFilteredRecords);}
+    /// so far excluding any discarded records.
+    int getNumKeptRecords() {return(myNumKeptRecords);}
 
-    /// Set which filters should be applied.  OR in all filters to be applied.
-    /// For example:: reader.setFilters(FILTER_NON_PHASED | FILTER_MISSING_GT);
-    /// NOTE: Filters are NOT reset when a file is reset, closed, or a new
-    /// one opened.
-    void setFilters(uint32_t filters) { myFilters = filters; }
+    /// Set which rules should be applied for discarding records.
+    /// OR in all discard rules to be applied.
+    /// For example:: reader.setDiscards(DISCARD_NON_PHASED | 
+    ///                                  DISCARD_MISSING_GT);
+    /// NOTE: Discard rules are NOT reset when a file is reset, closed, or a new
+    /// one opened, but are reset when this is called.
+    void setDiscardRules(uint32_t discards) { myDiscardRules = discards; }
+
+    /// Add additional discard rule,  OR in all additional discard rules to
+    /// be applied.
+    /// For example:: reader.setDiscards(DISCARD_NON_PHASED | 
+    ///                                  DISCARD_MISSING_GT);
+    /// NOTE: Discard rules are NOT reset when a file is reset, closed, or a new
+    /// one opened, and are NOT reset when this is called.
+    void addDiscardRules(uint32_t discards) { myDiscardRules |= discards; }
 
 protected: 
     virtual void resetFile();
@@ -85,10 +98,10 @@ private:
     VcfSubsetSamples mySampleSubset;
     bool myUseSubset;
 
-    uint32_t myFilters;
+    uint32_t myDiscardRules;
 
-    // Number of records read/written so far that were not filtered.
-    int myNumNonFilteredRecords;
+    // Number of records read/written so far that were not discarded.
+    int myNumKeptRecords;
 };
 
 #endif

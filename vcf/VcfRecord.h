@@ -71,11 +71,16 @@ public:
     const char* getIDStr() {return(myID.c_str());}
     const char* getRefStr() {return(myRef.c_str());}
     const char* getAltStr() {return(myAlt.c_str());}
+    /// Return the number of alternates listed in the Alts string.
+    int getNumAlts();
+
     float getQual() {return(myQualNum);}
     const char* getQualStr() {return(myQual.c_str());}
 
     /// Return a reference to the filter information.
     VcfRecordFilter& getFilter(){return(myFilter);}
+    /// Return whether or not all filters were passed.
+    int passedAllFilters() { return(myFilter.passedAllFilters()); }
 
     /// Get a reference to the information field.
     VcfRecordInfo& getInfo() {return myInfo;}
@@ -135,6 +140,7 @@ protected:
     bool readTilTab(IFILE filePtr, std::string& stringRef);
 
 private:
+    static const char ALT_DELIM = ',';
 
     std::string myChrom;
     int my1BasedPosNum;
