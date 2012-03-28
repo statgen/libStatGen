@@ -45,6 +45,7 @@ public:
     bool writeRecord(VcfRecord& record);
 
 protected: 
+    virtual void resetFile() {}
 
 private:
 };

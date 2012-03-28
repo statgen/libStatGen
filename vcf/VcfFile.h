@@ -50,18 +50,25 @@ public:
     void setSiteOnly(bool siteOnly) {mySiteOnly = siteOnly;}
 
     /// Get the number of VCF records that have been processed (read/written)
-    /// so far.
+    /// so far including any filtered records.
     int getNumRecords() {return(myNumRecords);}
 
+    /// Get the Status of the last call that sets status.
+    inline StatGenStatus::Status getStatus()
+    {
+        return(myStatus.getStatus());
+    }
+
 protected: 
-    /// Open the vcf file with the specified filename
-    /// with the specified mode.
-    /// \param  filename the vcf file to open.
-    /// \param  mode how to open (r/w).
-    /// \return true = success; false = failure.
+    // Open the vcf file with the specified filename
+    // with the specified mode.
+    // \param  filename the vcf file to open.
+    // \param  mode how to open (r/w).
+    // \return true = success; false = failure.
     bool open(const char* filename, const char* mode);
     
-    virtual void resetFile();
+    void reset();
+    virtual void resetFile() = 0;
 
     IFILE  myFilePtr;
 

@@ -22,7 +22,6 @@
 VcfFileWriter::VcfFileWriter()
     : VcfFile()
 {
-  myFilePtr = NULL;
 }
 
 

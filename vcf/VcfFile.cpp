@@ -28,14 +28,20 @@ VcfFile::VcfFile()
 
 VcfFile::~VcfFile()
 {
-  resetFile();
+  // Close the file.
+  if (myFilePtr != NULL)
+  {
+      // If we already have an open file, close it.
+      ifclose(myFilePtr);
+      myFilePtr = NULL;
+  }
 }
 
 
 bool VcfFile::open(const char* filename, const char* mode)
 {
     // Reset for any previously operated on files.
-    resetFile();
+    reset();
 
     myFilePtr = ifopen(filename, mode);
 
@@ -52,13 +58,18 @@ bool VcfFile::open(const char* filename, const char* mode)
     return(true);
 }
 
+
 void VcfFile::close()
 {
-    resetFile();
+    reset();
 }
 
-void VcfFile::resetFile()
+
+void VcfFile::reset()
 {
+    // Reset the child class.
+    resetFile();
+
     // Close the file.
     if (myFilePtr != NULL)
     {

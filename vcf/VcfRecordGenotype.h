@@ -24,6 +24,8 @@
 #include "VcfRecordField.h"
 #include "ReusableVector.h"
 #include "VcfSubsetSamples.h"
+#include "VcfGenotypeFormat.h"
+#include "VcfGenotypeSample.h"
 
 /// This header file provides interface to read/write VCF files.
 class VcfRecordGenotype : public VcfRecordField
@@ -63,10 +65,10 @@ public:
     /// Get a pointer to the string containing the value associated with the
     /// specified key for the specified sample
     /// (the pointer will be invalid if the field is changed/reset).  
-    /// \param key to find the falue for.
+    /// \param key to find the value for.
     /// \param sampleNum which sample to get the value for (starts at 0).
     /// \return const pointer to the string value for this key, NULL if
-    /// the sample or the key wer not found.
+    /// the sample or the key was not found.
     const std::string* getString(const std::string& key, 
                                  int sampleNum);
 
@@ -75,23 +77,42 @@ public:
     bool setString(const std::string& key, int sampleNum, 
                    const std::string& value);
 
+    /// Determine if all samples are phased.  Returns true if all are phased
+    /// and false if any are not phased or if any are unphased.
+    bool allPhased();
+
+    /// Determine if all samples are unphased.  Returns true if all are unphased
+    /// and false if any are not unphased or if any are phased.
+    bool allUnphased();
+
+    /// Determine if all samples have all the genotype alleles specified. 
+    /// Returns true if all genotype alleles are specified and false if
+    /// any are missing ('.') or if GT is not specified.
+    bool hasAllGenotypeAlleles();
+
+    /// Determine if the specified sample number is phased, returns true
+    /// if it is phased and false if it is unphased or the sample number is
+    /// invalid.
+    bool isPhased(int sampleNum);
+
+    /// Determine if the specified sample number is unphased, returns true
+    /// if it is unphased and false if it is phased or the sample number is
+    /// invalid.
+    bool isUnphased(int sampleNum);
+
+    /// Determine if the specified sample number has all of its genotype
+    /// alleles specified.  Returns true if all genotype alleles are specified
+    /// and false if any are missing ('.') or if GT is not specified.
+    bool hasAllGenotypeAlleles(int sampleNum);
+
     /// Get the number of samples.
     const int getNumSamples();
 
 protected:
 
 private:
-
-    //   std::map<const std::string*, int> myTypeToPos;
-
-    // Format field indexed by position with the value
-    // as the datatype.
-    typedef ReusableVector<std::string> VCF_SAMPLE;
-    VCF_SAMPLE myPosToType;
-    ReusableVector<VCF_SAMPLE> mySamples;
-
-    // Can also be used for writing the format as it has the same syntax as a sample.
-    bool writeSample(IFILE filePtr, VCF_SAMPLE& sample);
+    VcfGenotypeFormat myFormat;
+    ReusableVector<VcfGenotypeSample> mySamples;
 };
 
 #endif

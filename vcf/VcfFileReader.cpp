@@ -22,7 +22,9 @@
 VcfFileReader::VcfFileReader()
     : VcfFile(),
       mySampleSubset(),
-      myUseSubset(false)
+      myUseSubset(false),
+      myFilters(0),
+      myNumNonFilteredRecords(0)
 {
   myFilePtr = NULL;
 }
@@ -93,12 +95,37 @@ bool VcfFileReader::readRecord(VcfRecord& record)
     {
         subsetPtr = &mySampleSubset;
     }
-    if(!record.read(myFilePtr, mySiteOnly, subsetPtr))
+
+    // Keep looping until a desired record is found.
+    bool recordFound = false;
+    while(!recordFound)
     {
-        myStatus = record.getStatus();
-        return(false);
+        if(!record.read(myFilePtr, mySiteOnly, subsetPtr))
+        {
+            myStatus = record.getStatus();
+            return(false);
+        }
+
+        ++myNumRecords;
+        
+        // Record successfully read, so check to see if it is filtered.
+        if((myFilters & FILTER_NON_PHASED) && !record.allPhased())
+        {
+            // Not all samples are phased, so filter this record.
+            continue;
+        }
+        if((myFilters & FILTER_MISSING_GT) && !record.hasAllGenotypeAlleles())
+        {
+            // filter missing GTs and this record had missing alleles,
+            // so keep reading.
+            continue;
+        }
+        // Record was not filtered.
+        recordFound = true;
     }
-    ++myNumRecords;
+
+    // Increment the number of non-filtered records.
+    ++myNumNonFilteredRecords;
     return(true);
 }
 
@@ -121,4 +148,5 @@ void VcfFileReader::resetFile()
 {
     mySampleSubset.reset();
     myUseSubset = false;
+    myNumNonFilteredRecords = 0;
 }

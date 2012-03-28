@@ -28,6 +28,9 @@
 class VcfFileReader : public VcfFile
 {
 public:
+    static const int FILTER_NON_PHASED = 0x1;
+    static const int FILTER_MISSING_GT = 0x2;
+
     /// Default Constructor, initializes the variables, but does not open
     /// any files.
     VcfFileReader();
@@ -65,11 +68,15 @@ public:
     /// If the file is not open, true is returned.
     bool isEOF();
 
-    /// Get the Status of the last call that sets status.
-    inline StatGenStatus::Status getStatus()
-    {
-        return(myStatus.getStatus());
-    }
+    /// Get the number of VCF records that have been processed (read/written)
+    /// so far excluding any filtered records.
+    int getNumNonFilteredRecords() {return(myNumNonFilteredRecords);}
+
+    /// Set which filters should be applied.  OR in all filters to be applied.
+    /// For example:: reader.setFilters(FILTER_NON_PHASED | FILTER_MISSING_GT);
+    /// NOTE: Filters are NOT reset when a file is reset, closed, or a new
+    /// one opened.
+    void setFilters(uint32_t filters) { myFilters = filters; }
 
 protected: 
     virtual void resetFile();
@@ -77,6 +84,11 @@ protected:
 private:
     VcfSubsetSamples mySampleSubset;
     bool myUseSubset;
+
+    uint32_t myFilters;
+
+    // Number of records read/written so far that were not filtered.
+    int myNumNonFilteredRecords;
 };
 
 #endif

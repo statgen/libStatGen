@@ -83,6 +83,18 @@ public:
     /// Get a reference to the genotype fields.
     VcfRecordGenotype& getGenotypeInfo() {return myGenotype;}
 
+    /// Return true if all of the records are phased and none are unphased,
+    /// false if any are unphased or not phased.
+    inline bool allPhased() { return(myGenotype.allPhased()); }
+
+    /// Return true if all of the records are unphased and none are phased,
+    /// false if any are phased or not unphased.
+    inline bool allUnphased() { return(myGenotype.allUnphased()); }
+
+    /// Return true if all samples of all records have all the genotype alleles
+    /// specified, false if not or if any GT field is missing.
+    bool hasAllGenotypeAlleles() { return(myGenotype.hasAllGenotypeAlleles()); }
+
     //@}
 
 

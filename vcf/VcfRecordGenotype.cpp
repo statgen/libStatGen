@@ -38,6 +38,10 @@ bool VcfRecordGenotype::read(IFILE filePtr)
 
 bool VcfRecordGenotype::read(IFILE filePtr, VcfSubsetSamples* subsetInfo)
 {
+    // Needed for skipping samples.
+    static const std::string fieldEndChars = "\n\t";
+    static const int tabPos = 1;
+
     // Clear out any previously set values.
     reset();
     
@@ -47,32 +51,20 @@ bool VcfRecordGenotype::read(IFILE filePtr, VcfSubsetSamples* subsetInfo)
         return(false);
     }
     
-    static const std::string fieldStopChars = "\n\t:";
-    static const std::string discardSampleStopChars = "\n\t";
-
-    // The start of the first character in stopChars that means there is more
-    // genotype info in the format field, so continue reading the format field.
-    static const int contPos = 2;
-    static const int tabPos = 1;
-    int stopPos = contPos;
-
-    std::string* nextType = NULL;
-    // Read/parse the format.
-    while(stopPos >= contPos)
+    // Read the format.
+    if(!myFormat.read(filePtr))
     {
-        nextType = &(myPosToType.getNextEmpty());
-        stopPos = filePtr->readTilChar(fieldStopChars, *nextType);
-
-        // Store map of format to position. 
-        // TODO
+        // No more fields
+        return(false);
     }
 
-    // Done reading the format field, so read the samples.
-    VCF_SAMPLE* nextSample = NULL;
-
+   // Read all the samples until the end of the line.
+    VcfGenotypeSample* nextSample = NULL;
+    bool moreSamples = true;
     int sampleIndex = 0;
-    while(stopPos == tabPos)
+    while(moreSamples)
     {
+        // Done reading the format field, so read the samples.
         // Check if this sample should be kept.
         if(subsetInfo != NULL)
         {
@@ -80,21 +72,29 @@ bool VcfRecordGenotype::read(IFILE filePtr, VcfSubsetSamples* subsetInfo)
             if(!subsetInfo->keep(sampleIndex))
             {
                 // this sample should not be kept.
-                stopPos = filePtr->readTilChar(discardSampleStopChars);
+                if(filePtr->readTilChar(fieldEndChars) != tabPos)
+                {
+                    // Stopped on new line or end of file instead of
+                    // a tab, so no more samples to read.
+                    moreSamples = false;
+                }
                 ++sampleIndex;
                 continue;
             }
         }
+
         // Read this sample.
         nextSample = &(mySamples.getNextEmpty());
-        stopPos = contPos;
-        // Read each data field for the sample.
-        while(stopPos >= contPos)
+        if(nextSample == NULL)
         {
-            nextType = &(nextSample->getNextEmpty());
-            stopPos = filePtr->readTilChar(fieldStopChars, *nextType);
+            throw(std::runtime_error("VCF failed to get another sample."));
         }
-        ++sampleIndex;
+        if(!nextSample->read(filePtr, myFormat))
+        {
+            // No more fields.
+            moreSamples = false;
+        }
+       ++sampleIndex;
     }
     
     // Return whether or not a tab was found at the end of the field.
@@ -105,28 +105,14 @@ bool VcfRecordGenotype::read(IFILE filePtr, VcfSubsetSamples* subsetInfo)
 bool VcfRecordGenotype::write(IFILE filePtr)
 {
     bool status = true;
-    int numWritten = 0;
-    int numExpected = 0;
 
     // Write the format.
-    status &= writeSample(filePtr, myPosToType);
+    status &= myFormat.write(filePtr);
 
-    VCF_SAMPLE* sample = NULL;
-    
     // Loop through and write each sample.
     for(int i = 0; i < mySamples.size(); i++)
     {
-        // Write the tab before this sample.
-        numWritten += ifprintf(filePtr, "\t");
-        ++numExpected;
-        
-        sample = &(mySamples.get(i));
-        status &= writeSample(filePtr, *sample);
-    }
-
-    if(numWritten != numExpected)
-    {
-        status = false;
+        status &= mySamples.get(i).write(filePtr);
     }
     return(status);
 }
@@ -134,7 +120,7 @@ bool VcfRecordGenotype::write(IFILE filePtr)
 
 void VcfRecordGenotype::reset()
 {
-    myPosToType.reset();
+    myFormat.reset();
     mySamples.reset();
 }
 
@@ -142,26 +128,13 @@ void VcfRecordGenotype::reset()
 const std::string* VcfRecordGenotype::getString(const std::string& key, 
                                                 int sampleNum)
 {
-    // Get this sample
     if(sampleNum >= mySamples.size())
     {
         // Out of range sample index.
         return(NULL);
     }
-
-    VCF_SAMPLE* samplePtr = &(mySamples.get(sampleNum));
-
-    //  Search for this field of the sample.
-    for(int i = 0; i < myPosToType.size(); i++)
-    {
-        if(myPosToType.get(i) == key)
-        {
-            // Found the type.
-            return(&(samplePtr->get(i)));
-        }
-    }
-    // field was not found, so return null.
-    return(NULL);
+    // Get the field from the sample.
+    return(mySamples.get(sampleNum).getString(key));
 }
 
 
@@ -169,53 +142,98 @@ bool VcfRecordGenotype::setString(const std::string& key,
                                   int sampleNum, 
                                   const std::string& value)
 {
-    // Get this sample
-    VCF_SAMPLE* samplePtr = &(mySamples.get(sampleNum));
-
-    // Search for this field of the sample.
-    for(int i = 0; i < myPosToType.size(); i++)
+    if(sampleNum >= mySamples.size())
     {
-        if(myPosToType.get(i) == key)
+        // Out of range sample index.
+        return(NULL);
+    }
+    // Set the field in the sample.
+    return(mySamples.get(sampleNum).setString(key, value));
+}
+
+
+bool VcfRecordGenotype::allPhased()
+{
+    for(int i = 0; i < mySamples.size(); i++)
+    {
+        if(!mySamples.get(i).isPhased() || mySamples.get(i).isUnphased())
         {
-            // Found the type, so set it.
-            samplePtr->get(i) = value;
-            return(true);
+            // found a sample that is not phased or is unphased, so
+            // return false.
+            return(false);
         }
     }
+    // All phased.
+    return(true);
+}
 
-    // field was not found, so return false.
-    return(false);
+
+bool VcfRecordGenotype::allUnphased()
+{
+    for(int i = 0; i < mySamples.size(); i++)
+    {
+        if(!mySamples.get(i).isUnphased() || mySamples.get(i).isPhased())
+        {
+            // found a sample that is not unphased or is phased, so
+            // return false.
+            return(false);
+        }
+    }
+    // All unphased.
+    return(true);
+}
+
+
+bool VcfRecordGenotype::hasAllGenotypeAlleles()
+{
+    for(int i = 0; i < mySamples.size(); i++)
+    {
+        if(!mySamples.get(i).hasAllGenotypeAlleles())
+        {
+            // found a sample that does not have all genotype alleles, so
+            // return false.
+            return(false);
+        }
+    }
+    // All have all genotype alleles.
+    return(true);
+}
+
+
+bool VcfRecordGenotype::isPhased(int sampleNum)
+{
+    if(sampleNum >= mySamples.size())
+    {
+        // Out of range sample index.
+        return(false);
+    }
+    return(mySamples.get(sampleNum).isPhased());
+}
+
+
+bool VcfRecordGenotype::isUnphased(int sampleNum)
+{
+    if(sampleNum >= mySamples.size())
+    {
+        // Out of range sample index.
+        return(false);
+    }
+    return(mySamples.get(sampleNum).isUnphased());
+}
+
+
+bool VcfRecordGenotype::hasAllGenotypeAlleles(int sampleNum)
+{
+    if(sampleNum >= mySamples.size())
+    {
+        // Out of range sample index.
+        return(false);
+    }
+    return(mySamples.get(sampleNum).hasAllGenotypeAlleles());
 }
 
 
 const int  VcfRecordGenotype::getNumSamples()
 {
     return(mySamples.size());
-}
-
-
-bool VcfRecordGenotype::writeSample(IFILE filePtr, 
-                                    VCF_SAMPLE& sample)
-{
-    int numWritten = 0;
-    int numExpected = 0;
-    std::string* subFieldPtr = NULL;
-
-    for(int i = 0; i < sample.size(); i++)
-    {
-        subFieldPtr = &(sample.get(i));
-        if(i == 0)
-        {
-            // First entry, so no ':'
-            numWritten += ifprintf(filePtr, "%s", subFieldPtr->c_str());
-            numExpected += subFieldPtr->size();
-        }
-        else
-        {
-            // Not first entry, so use a ':'
-            numWritten += ifprintf(filePtr, ":%s", subFieldPtr->c_str());
-            numExpected += 1 + subFieldPtr->size();
-        }
-    } // End loop through entries.
-    return(numWritten == numExpected);
 }
