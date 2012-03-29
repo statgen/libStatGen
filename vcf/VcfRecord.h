@@ -1,7 +1,7 @@
 /*
- *  Copyright (C) 2011  Regents of the University of Michigan,
- *                      Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
- *                      and Goncalo Abecasis
+ *  Copyright (C) 2011-2012  Regents of the University of Michigan,
+ *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
+ *                           and Goncalo Abecasis
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -88,11 +88,11 @@ public:
     /// Get a reference to the genotype fields.
     VcfRecordGenotype& getGenotypeInfo() {return myGenotype;}
 
-    /// Return true if all of the records are phased and none are unphased,
+    /// Return true if all of the samples are phased and none are unphased,
     /// false if any are unphased or not phased.
     inline bool allPhased() { return(myGenotype.allPhased()); }
 
-    /// Return true if all of the records are unphased and none are phased,
+    /// Return true if all of the samples are unphased and none are phased,
     /// false if any are phased or not unphased.
     inline bool allUnphased() { return(myGenotype.allUnphased()); }
 
