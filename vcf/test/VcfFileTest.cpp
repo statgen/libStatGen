@@ -30,20 +30,34 @@ void testVcfFile()
     //    VcfFileHeader header;
 
     // Test open for read via the constructor with return.
-    VcfFileReader vcfReader;
+    VcfFileReader reader;
+    VcfHeader header;
     VcfRecord record;
     // Try reading without opening.
     bool caughtException = false;
     try
     {
-        assert(vcfReader.readRecord(record) == false);
+        assert(reader.readRecord(record) == false);
     }
     catch (std::exception& e) 
     {
         caughtException = true;
     }
-    //TODO    assert(vcfReader.getStatus() == StatGenStatus::FAIL_ORDER);
 
+    assert(caughtException);
+
+
+    // Try opening a file that doesn't exist.
+    caughtException = false;
+    try
+    {
+        assert(reader.open("fileDoesNotExist.txt", header) == false);
+    }
+    catch (std::exception& e) 
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
 // "testFiles/testVcf.vcf");
 //     assert(vcfInConstructorReadDefault.WriteHeader(header) == false);
 //     assert(vcfInConstructorReadDefault.ReadHeader(header) == true);
@@ -99,8 +113,6 @@ void testVcfFile()
 
     ////////////////////////////////
     // Test the subset logic.
-    VcfFileReader reader;
-    VcfHeader header;
     VcfRecordGenotype* sampleInfo = NULL;
 
     reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", ";");

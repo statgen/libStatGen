@@ -53,11 +53,11 @@ public:
     /// so far including any filtered records.
     int getNumRecords() {return(myNumRecords);}
 
-    /// Get the Status of the last call that sets status.
-    inline StatGenStatus::Status getStatus()
-    {
-        return(myStatus.getStatus());
-    }
+    // Get the Status of the last call that sets status.
+    //    inline StatGenStatus::Status getStatus()
+    //    {
+    //        return(myStatus.getStatus());
+    //    }
 
 protected: 
     // Open the vcf file with the specified filename

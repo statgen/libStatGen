@@ -61,8 +61,9 @@ public:
     virtual bool open(const char* filename, VcfHeader& header,
                       const char* sampleFileName, const char* delims = "\n");
 
-    /// Read the next Vcf data line from the file.
-    /// \param record record to populate with the next data line.
+    /// Read the next Vcf record from the file until a line passes all
+    /// discard rules (if any) or until the end of the file is found..
+    /// \param record record to populate with the next record.
     /// \return true if successful, false if not.
     bool readRecord(VcfRecord& record);
 
