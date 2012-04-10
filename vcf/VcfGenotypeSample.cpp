@@ -89,6 +89,8 @@ bool VcfGenotypeSample::read(IFILE filePtr, VcfGenotypeFormat& format)
                         myHasAllGenotypeAlleles = false;
                     }
                 }
+                // Check if this is the END_GT signal.
+                readStatus = getReadStatus(stopChar);
             }
             else
             {

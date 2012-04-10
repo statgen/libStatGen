@@ -83,3 +83,21 @@ VcfGenotypeField::SUBFIELD_READ_STATUS
     // '\n' or EOF
     return(END_OF_RECORD);
 }
+
+
+VcfGenotypeField::SUBFIELD_READ_STATUS 
+    VcfGenotypeField::getReadStatus(int stopChar)
+{
+    if(stopChar >= 2)
+    {
+        // ':' 
+        return(MORE_SUBFIELDS);
+    }
+    else if(stopChar == 1)
+    {
+        // '\t'
+        return(END_OF_FIELD);
+    }
+    // '\n' or EOF
+    return(END_OF_RECORD);
+}

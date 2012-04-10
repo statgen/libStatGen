@@ -55,6 +55,8 @@ protected:
     // Specify null if the field is not to be stored.
     static SUBFIELD_READ_STATUS readGenotypeSubField(IFILE filePtr, 
                                                      std::string* stringDest);
+    // The stopCharacters must be in the same order as, "\n\t:".
+    static SUBFIELD_READ_STATUS getReadStatus(int stopChar);
 
     virtual void internal_reset() = 0;
 
