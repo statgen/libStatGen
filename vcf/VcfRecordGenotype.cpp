@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2011  Regents of the University of Michigan,
+ *  Copyright (C) 2011-2012  Regents of the University of Michigan,
  *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
  *                           and Goncalo Abecasis
  *
@@ -18,6 +18,30 @@
  */
 #include "VcfRecordGenotype.h"
 #include <stdlib.h>
+
+std::set <std::string> VcfRecordGenotype::ourStoreFields;
+
+
+void VcfRecordGenotype::storeAllFields()
+{
+    ourStoreFields.clear();
+}
+
+
+void VcfRecordGenotype::addStoreField(const char* field)
+{
+    ourStoreFields.insert(field);
+}
+
+bool VcfRecordGenotype::storeField(std::string& field)
+{
+    if(ourStoreFields.size() == 0)
+    {
+        // No fields were set so read all fields.
+        return(true);
+    }
+    return(ourStoreFields.find(field) != ourStoreFields.end());
+}
 
 VcfRecordGenotype::VcfRecordGenotype()
 {
@@ -105,6 +129,13 @@ bool VcfRecordGenotype::read(IFILE filePtr, VcfSubsetSamples* subsetInfo)
 bool VcfRecordGenotype::write(IFILE filePtr)
 {
     bool status = true;
+
+    // Check if there are any fields to write.
+    if(myFormat.getNumFields() == 0)
+    {
+        // Nothing to write.
+        return(true);
+    }
 
     // Write the format.
     status &= myFormat.write(filePtr);
@@ -230,10 +261,4 @@ bool VcfRecordGenotype::hasAllGenotypeAlleles(int sampleNum)
         return(false);
     }
     return(mySamples.get(sampleNum).hasAllGenotypeAlleles());
-}
-
-
-const int  VcfRecordGenotype::getNumSamples()
-{
-    return(mySamples.size());
 }

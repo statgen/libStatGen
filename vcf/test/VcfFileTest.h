@@ -16,3 +16,5 @@
  */
 
 void testVcfFile();
+void testVcfReadFile();
+void testVcfWriteFile();

@@ -52,7 +52,9 @@ protected:
         END_OF_RECORD = 2,
     };
 
-    static SUBFIELD_READ_STATUS readGenotypeSubField(IFILE filePtr, std::string& stringDest);
+    // Specify null if the field is not to be stored.
+    static SUBFIELD_READ_STATUS readGenotypeSubField(IFILE filePtr, 
+                                                     std::string* stringDest);
 
     virtual void internal_reset() = 0;
 

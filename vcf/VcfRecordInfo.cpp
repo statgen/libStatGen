@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2011  Regents of the University of Michigan,
+ *  Copyright (C) 2011-2012  Regents of the University of Michigan,
  *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
  *                           and Goncalo Abecasis
  *
@@ -74,6 +74,11 @@ bool VcfRecordInfo::read(IFILE filePtr)
 
 bool VcfRecordInfo::write(IFILE filePtr)
 {
+    // If there are no entries, write '.'.
+    if(myInfo.size() == 0)
+    {
+        return(ifprintf(filePtr, "%c", EMPTY_INFO) == 1);
+    }
     return(myInfo.write(filePtr));
 }
 
@@ -118,7 +123,8 @@ void VcfRecordInfo::setString(const char* key, const char* stringVal)
 /////////////////////////////////////////////////////////////
 // Info Container
 VcfRecordInfo::InfoContainer::InfoContainer()
-    : myCont()
+    : myCont(),
+      mySize(0)
 {
     myNextEmpty = myCont.end();
 }
@@ -129,11 +135,14 @@ void VcfRecordInfo::InfoContainer::reset()
     // Set the next empty element to be the first one on the list.
     // That means there are none used.
     myNextEmpty = myCont.begin();
+    mySize = 0;
 }
 
 
 VcfRecordInfo::InfoContainer::InfoKeyValue& VcfRecordInfo::InfoContainer::getNextEmpty()
 {
+    // Increment the size.
+    ++mySize;
     if(myNextEmpty == myCont.end())
     {
         // We are at the end of the list of available entries, so add a new one.

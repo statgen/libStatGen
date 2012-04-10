@@ -16,6 +16,7 @@
  */
 
 #include "VcfGenotypeFormat.h"
+#include "VcfRecordGenotype.h"
 
 VcfGenotypeFormat::VcfGenotypeFormat()
     : VcfGenotypeField(),
@@ -34,21 +35,33 @@ bool VcfGenotypeFormat::read(IFILE filePtr)
     // Clear out any previously set values.
     reset();
     SUBFIELD_READ_STATUS readStatus = MORE_SUBFIELDS;  
-    std::string* nextType = NULL;
+    std::string* nextType = &(myGenotypeSubFields.getNextEmpty());
     int subFieldIndex = 0;
     while(readStatus == MORE_SUBFIELDS)
     {
         // more subfields to read.
-        nextType = &(myGenotypeSubFields.getNextEmpty());
-        readStatus = readGenotypeSubField(filePtr, *nextType);
-
-        // Check if this is GT.
-        if(*nextType == "GT")
+        readStatus = readGenotypeSubField(filePtr, nextType);
+        // Check if this field should be read/stored.
+        if(!VcfRecordGenotype::storeField(*nextType))
         {
-            myGTIndex = subFieldIndex;
+            // Do not read/store this field.
+            myStoreIndices.push_back(false);
+            nextType->clear();
+        }
+        else
+        {
+            // Check if this is GT.
+            if(*nextType == "GT")
+            {
+                myGTIndex = subFieldIndex;
+            }
+            myStoreIndices.push_back(true);
+            nextType = &(myGenotypeSubFields.getNextEmpty());
         }
         ++subFieldIndex;
     }
+    // Since we didn't use the last type that was retrieved, remove it.
+    myGenotypeSubFields.rmLast();
 
     // Return true if there is a tab - it is just END_OF_FIELD.
     return(readStatus == END_OF_FIELD);
@@ -71,7 +84,18 @@ int VcfGenotypeFormat::getIndex(const std::string& key)
 }
 
 
+bool VcfGenotypeFormat::storeIndex(unsigned int index)
+{
+    if(index > myStoreIndices.size())
+    {
+        return(false);
+    }
+    return(myStoreIndices[index]);
+}
+
+
 void VcfGenotypeFormat::internal_reset()
 {
     myGTIndex = GENOTYPE_INDEX_NA;
+    myStoreIndices.clear();
 }

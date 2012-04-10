@@ -1,7 +1,7 @@
 /*
- *  Copyright (C) 2011  Regents of the University of Michigan,
- *                      Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
- *                      and Goncalo Abecasis
+ *  Copyright (C) 2011-2012  Regents of the University of Michigan,
+ *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
+ *                           and Goncalo Abecasis
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -72,6 +72,8 @@ public:
 protected:
 
 private:
+    static const char EMPTY_INFO = '.';
+
     class InfoContainer
     {
     public:
@@ -80,12 +82,14 @@ private:
         void reset();
         InfoKeyValue& getNextEmpty();
         InfoKeyValue* find(const char* key);
+        int size() { return(mySize); }
         // Does not print the starting/trailing '\t'
         bool write(IFILE filePtr);
     private:
         typedef std::list<InfoKeyValue>::iterator InfoContainerIter;
         std::list<InfoKeyValue> myCont;
         InfoContainerIter myNextEmpty;
+        int mySize;
     };
 
     InfoContainer myInfo;

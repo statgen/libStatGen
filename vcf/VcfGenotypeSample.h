@@ -65,8 +65,6 @@ private:
     bool myPhased;
     bool myUnphased;
     bool myHasAllGenotypeAlleles;
-
-    std::vector<int> myGTs;
 };
 
 #endif

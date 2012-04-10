@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2011  Regents of the University of Michigan,
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan,
  *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
  *                           and Goncalo Abecasis
  *
@@ -230,7 +230,6 @@ bool VcfRecord::write(IFILE filePtr, bool siteOnly)
     // data and there is at least one sample 
     if((!siteOnly) && (myGenotype.getNumSamples() != 0))
     {
-        numWritten += ifprintf(filePtr, "\t");
         writeSuccess &= myGenotype.write(filePtr);
     }
 

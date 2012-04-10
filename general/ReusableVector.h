@@ -50,6 +50,8 @@ public:
     // The next empty position is the same as the size.
     int size() const {return(myNextEmpty);}
 
+    void rmLast();
+
 protected:
     std::vector<DATA_TYPE*> myCont;
     unsigned int myNextEmpty;
@@ -124,6 +126,15 @@ DATA_TYPE& ReusableVector<DATA_TYPE>::get(unsigned int index)
     // Not set in the vector, so throw an exception.
     throw(std::runtime_error("ReusableVector::get called with out of range index."));
     // return(myCont[0]);
+}
+
+template <class DATA_TYPE>
+void ReusableVector<DATA_TYPE>::rmLast()
+{
+    if(myNextEmpty > 0)
+    {
+        --myNextEmpty;
+    }
 }
 
 #endif

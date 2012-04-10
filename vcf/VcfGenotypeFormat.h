@@ -47,12 +47,19 @@ public:
     /// Get the GT index, returns GENOTYPE_INDEX_NA if it is not found..
     inline int getGTIndex() { return(myGTIndex); }
 
+    /// Return true if the specified subField should be read/stored.
+    bool storeIndex(unsigned int index);
+
 protected:
     /// reset the sample for a new entry.
     virtual void internal_reset();
 
 private:
     int myGTIndex;
+
+    // Set when reading the format by checking the readFields in
+    // VcfRecordGenotype and queried when reading the samples fields.
+    std::vector<bool> myStoreIndices;
 };
 
 #endif

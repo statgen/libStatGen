@@ -51,7 +51,7 @@ bool VcfGenotypeField::write(IFILE filePtr)
  
 VcfGenotypeField::SUBFIELD_READ_STATUS 
     VcfGenotypeField::readGenotypeSubField(IFILE filePtr, 
-                                           std::string& stringDest)
+                                           std::string* stringDest)
 {
     if(ifeof(filePtr))
     {
@@ -61,7 +61,15 @@ VcfGenotypeField::SUBFIELD_READ_STATUS
     
     static const std::string fieldStopChars = "\n\t:";
     // Read/parse the field.
-    int pos = filePtr->readTilChar(fieldStopChars, stringDest);
+    int pos = 0;
+    if(stringDest == NULL)
+    {
+        pos = filePtr->readTilChar(fieldStopChars);
+    }
+    else
+    {
+        pos = filePtr->readTilChar(fieldStopChars, *stringDest);
+    }
     if(pos == 2)
     {
         // ':' 

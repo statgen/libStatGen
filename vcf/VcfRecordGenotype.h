@@ -21,6 +21,7 @@
 #ifndef __VCF_RECORD_GENOTYPE_H__
 #define __VCF_RECORD_GENOTYPE_H__
 
+#include <list>
 #include "VcfRecordField.h"
 #include "ReusableVector.h"
 #include "VcfSubsetSamples.h"
@@ -31,6 +32,17 @@
 class VcfRecordGenotype : public VcfRecordField
 {
 public:
+    /// When reading, store all fields.
+    static void storeAllFields();
+
+    /// When reading, store the specified field in addition to any others
+    /// that have previously been specified.  By default, all fields are stored.
+    /// Use this method if you only want to store certain fields.
+    static void addStoreField(const char* field);
+
+    /// Return true if the specified field has been set to be stored.
+    static bool storeField(std::string& field);
+
     /// Default Constructor, initializes the variables.
     VcfRecordGenotype();
 
@@ -106,11 +118,14 @@ public:
     bool hasAllGenotypeAlleles(int sampleNum);
 
     /// Get the number of samples.
-    const int getNumSamples();
+    inline int getNumSamples() const { return(mySamples.size()); }
 
 protected:
 
 private:
+    // Fields that should be stored when reading for all records.
+    static std::set<std::string> ourStoreFields;
+
     VcfGenotypeFormat myFormat;
     ReusableVector<VcfGenotypeSample> mySamples;
 };

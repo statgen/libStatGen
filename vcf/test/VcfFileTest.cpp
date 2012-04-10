@@ -17,6 +17,7 @@
 
 #include "VcfFileTest.h"
 #include "VcfFileReader.h"
+#include "VcfFileWriter.h"
 #include "VcfHeaderTest.h"
 #include <assert.h>
 
@@ -26,6 +27,13 @@ const int NUM_SAMPLES_SUBSET1 = 2;
 const int NUM_SAMPLES_SUBSET2 = 2;
 
 void testVcfFile()
+{
+    testVcfReadFile();
+    testVcfWriteFile();
+}
+
+
+void testVcfReadFile()
 {
     //    VcfFileHeader header;
 
@@ -924,4 +932,57 @@ void testVcfFile()
     assert(reader.getNumRecords() == 7);
 
     reader.close();
+}
+
+
+void testVcfWriteFile()
+{
+    VcfFileWriter writer;
+    VcfFileReader reader;
+    VcfHeader header;
+    VcfRecord record;
+
+    assert(reader.open("testFiles/vcfFile.vcf", header) == true);
+    assert(writer.open("results/vcfFile.vcf", header) == true);
+    while(reader.readRecord(record))
+    {
+        // Write the record.
+        assert(writer.writeRecord(record));
+    }
+    
+    assert(reader.open("testFiles/vcfFile.vcf", header) == true);
+    assert(writer.open("results/vcfFileNoInfo.vcf", header) == true);
+    while(reader.readRecord(record))
+    {
+        // Test Clearing the INFO field.
+        record.getInfo().clear();
+        // Write the record.
+        assert(writer.writeRecord(record));
+    }
+
+    assert(reader.open("testFiles/vcfFile.vcf", header) == true);
+    VcfRecordGenotype::addStoreField("GT");
+    assert(writer.open("results/vcfFileNoInfoKeepGT.vcf", header) == true);
+    while(reader.readRecord(record))
+    {
+        // Test Clearing the INFO field.
+        record.getInfo().clear();
+        // Write the record.
+        assert(writer.writeRecord(record));
+    }
+
+    assert(reader.open("testFiles/vcfFile.vcf", header) == true);
+    // Undo the storing of GT.
+    VcfRecordGenotype::storeAllFields();
+    VcfRecordGenotype::addStoreField("GQ");
+    VcfRecordGenotype::addStoreField("XX");
+    VcfRecordGenotype::addStoreField("HQ");
+    assert(writer.open("results/vcfFileNoInfoKeepGQHQ.vcf", header) == true);
+    while(reader.readRecord(record))
+    {
+        // Test Clearing the INFO field.
+        record.getInfo().clear();
+        // Write the record.
+        assert(writer.writeRecord(record));
+    }
 }
