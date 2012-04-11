@@ -38,12 +38,13 @@ VcfFile::~VcfFile()
 }
 
 
-bool VcfFile::open(const char* filename, const char* mode)
+bool VcfFile::open(const char* filename, const char* mode,
+                   InputFile::ifileCompression compressionMode)
 {
     // Reset for any previously operated on files.
     reset();
 
-    myFilePtr = ifopen(filename, mode);
+    myFilePtr = ifopen(filename, mode, compressionMode);
 
     if(myFilePtr == NULL)
     {

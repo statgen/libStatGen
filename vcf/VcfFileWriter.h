@@ -34,7 +34,16 @@ public:
     virtual ~VcfFileWriter();
 
     /// Open the vcf file with the specified filename for writing.
-    /// \param  filename the vcf file to open for writing.
+    /// \param filename the vcf file to open for writing.
+    /// \param header to be written the file
+    /// \param compressionMode type of compression to use for writing
+    /// \return true = success; false = failure.
+    bool open(const char* filename, VcfHeader& header,
+              InputFile::ifileCompression compressionMode);
+
+    /// Open the vcf file with the specified filename for writing using the
+    /// default compression (BGZF).
+    /// \param filename the vcf file to open for writing.
     /// \param header to be written the file
     /// \return true = success; false = failure.
     virtual bool open(const char* filename, VcfHeader& header);

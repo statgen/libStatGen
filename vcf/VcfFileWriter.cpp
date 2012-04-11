@@ -30,10 +30,11 @@ VcfFileWriter::~VcfFileWriter()
 }
 
 
-bool VcfFileWriter::open(const char* filename, VcfHeader& header)
+bool VcfFileWriter::open(const char* filename, VcfHeader& header,
+                         InputFile::ifileCompression compressionMode)
 {
     myStatus = StatGenStatus::SUCCESS;
-    if(VcfFile::open(filename, "w"))
+    if(VcfFile::open(filename, "w", compressionMode))
     {
         // Successfully opened, so write the header.
         if(!header.write(myFilePtr))
@@ -51,6 +52,12 @@ bool VcfFileWriter::open(const char* filename, VcfHeader& header)
 
     // Successfully opened and read the header.
     return(true);
+}
+
+
+bool VcfFileWriter::open(const char* filename, VcfHeader& header)
+{
+    open(filename, header, InputFile::BGZF);
 }
 
 

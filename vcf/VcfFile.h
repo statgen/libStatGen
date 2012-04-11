@@ -65,7 +65,8 @@ protected:
     // \param  filename the vcf file to open.
     // \param  mode how to open (r/w).
     // \return true = success; false = failure.
-    bool open(const char* filename, const char* mode);
+    bool open(const char* filename, const char* mode,
+              InputFile::ifileCompression compressionMode = InputFile::DEFAULT);
     
     void reset();
     virtual void resetFile() = 0;

@@ -943,7 +943,8 @@ void testVcfWriteFile()
     VcfRecord record;
 
     assert(reader.open("testFiles/vcfFile.vcf", header) == true);
-    assert(writer.open("results/vcfFile.vcf", header) == true);
+    assert(writer.open("results/vcfFile.vcf", header, InputFile::DEFAULT)
+           == true);
     while(reader.readRecord(record))
     {
         // Write the record.
@@ -951,7 +952,18 @@ void testVcfWriteFile()
     }
     
     assert(reader.open("testFiles/vcfFile.vcf", header) == true);
-    assert(writer.open("results/vcfFileNoInfo.vcf", header) == true);
+    assert(writer.open("results/vcfFileNoInfo.vcf", header, 
+                       InputFile::DEFAULT) == true);
+    while(reader.readRecord(record))
+    {
+        // Test Clearing the INFO field.
+        record.getInfo().clear();
+        // Write the record.
+        assert(writer.writeRecord(record));
+    }
+
+    assert(reader.open("testFiles/vcfFile.vcf", header) == true);
+    assert(writer.open("results/vcfFileNoInfoBGZF.vcf", header) == true);
     while(reader.readRecord(record))
     {
         // Test Clearing the INFO field.
@@ -962,7 +974,8 @@ void testVcfWriteFile()
 
     assert(reader.open("testFiles/vcfFile.vcf", header) == true);
     VcfRecordGenotype::addStoreField("GT");
-    assert(writer.open("results/vcfFileNoInfoKeepGT.vcf", header) == true);
+    assert(writer.open("results/vcfFileNoInfoKeepGT.vcf", header, 
+                       InputFile::DEFAULT) == true);
     while(reader.readRecord(record))
     {
         // Test Clearing the INFO field.
@@ -977,7 +990,8 @@ void testVcfWriteFile()
     VcfRecordGenotype::addStoreField("GQ");
     VcfRecordGenotype::addStoreField("XX");
     VcfRecordGenotype::addStoreField("HQ");
-    assert(writer.open("results/vcfFileNoInfoKeepGQHQ.vcf", header) == true);
+    assert(writer.open("results/vcfFileNoInfoKeepGQHQ.vcf", header, 
+                       InputFile::DEFAULT) == true);
     while(reader.readRecord(record))
     {
         // Test Clearing the INFO field.
