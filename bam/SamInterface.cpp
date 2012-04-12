@@ -16,6 +16,7 @@
  */
 
 #include "SamInterface.h"
+#include "SamRecordHelper.h"
 
 #include <limits>
 #include <stdint.h>
@@ -56,7 +57,11 @@ SamStatus::Status SamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
         }
       
         // This is a header line, so add it to header.
-        header.addHeaderLine(buffer.c_str());
+        if(!header.addHeaderLine(buffer.c_str()))
+        {
+            // Failed reading the header.
+            return(SamStatus::FAIL_PARSE);
+        }
 
         // Continue to the next line if this line is less than 3 characters
         // or is not an SQ line.
