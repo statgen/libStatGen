@@ -79,6 +79,7 @@ SRCONLY=\
 
 HDRONLY= \
 	Constant.h \
+	CSG_MD5.h \
 	Generic.h \
 	GenomeSequenceHelpers.h \
 	GreedyTupleAligner.h \

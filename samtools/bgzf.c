@@ -681,7 +681,11 @@ int bgzf_check_EOF(BGZF *fp)
 #else
 	offset = ftello(fp->file);
 	if (fseeko(fp->file, -28, SEEK_END) != 0) return -1;
-	fread(buf, 1, 28, fp->file);
+	int count = fread(buf, 1, 28, fp->file);
+        if(count != 28)
+        {
+            report_error(fp, "bgzf_check_EOF failed");
+        }
 	fseeko(fp->file, offset, SEEK_SET);
 #endif
 	if((memcmp(magic, buf, 28) == 0) || (memcmp(magic2, buf, 28) == 0))
