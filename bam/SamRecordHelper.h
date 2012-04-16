@@ -32,6 +32,28 @@ public:
     /// returns the cycle (read position) of pos0Based if it does match.
     static int checkSequence(SamRecord& record, int32_t pos0Based, 
                               const char* sequence);
+    
+    /// Helper to append the SAM string representation of all the tags to 
+    /// the specified string.  Does NOT add a preceding delimiter before the
+    /// first tag.
+    /// \param record record whose tags to append.
+    /// \param returnString string to append the tags to.
+    /// \param delim delimiter to use to separate different tags.
+    /// \return true on success, false on failure/partial generation.
+    static bool genSamTagsString(SamRecord& record, String& returnString,
+                                 char delim = '\t');
+
+
+    /// Helper to append the SAM string representation of the specified tag to 
+    /// the specified string.
+    /// \param tag the tag name.
+    /// \param vtype the vtype.
+    /// \param value pointer to the value of the tag (will be cast
+    /// to int, double, char, or string based on vtype).
+    /// \param returnString string to append the tag to.
+    /// \return true on success, false on failure/partial generation.
+    static bool genSamTagString(const char* tag, char vtype, 
+                                void* value, String& returnString);
 
 private:
     SamRecordHelper();

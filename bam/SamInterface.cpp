@@ -367,39 +367,12 @@ SamStatus::Status SamInterface::writeRecord(IFILE filePtr,
     recordString += record.getSequence(translation);
     recordString += "\t";
     recordString += record.getQuality();
-   
-    char tag[3];
-    char vtype;
-    void* value;
 
-    // Reset the tag iterator to ensure that all the tags are written.
-    record.resetTagIter();
-
-    // While there are more tags, write them to the recordString.
-    while(record.getNextSamTag(tag, vtype, &value) != false)
+    // If there are any tags, add a preceding tab.
+    if(record.getTagLength() != 0)
     {
         recordString += "\t";
-        recordString += tag;
-        recordString += ":"; 
-        recordString += vtype;
-        recordString += ":";
-        if(record.isIntegerType(vtype))
-        {
-            recordString += (int)*(int*)value;
-        }
-        else if(record.isDoubleType(vtype))
-        {
-            recordString += (double)*(double*)value;
-        }
-        else if(record.isCharType(vtype))
-        {
-            recordString += (char)*(char*)value;
-        }
-        else
-        {
-            // String type.
-            recordString += (String)*(String*)value;
-        }
+        SamRecordHelper::genSamTagsString(record, recordString);
     }
 
     recordString += "\n";
