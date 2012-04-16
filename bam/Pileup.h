@@ -22,6 +22,13 @@
 #include "SamFile.h"
 #include "PosList.h"
 
+
+class PileupHelper
+{
+public:
+    static const int DEFAULT_WINDOW_SIZE = 1024;
+};
+
 template <class PILEUP_TYPE>
 class defaultPileup
 {
@@ -148,7 +155,7 @@ Pileup<PILEUP_TYPE, FUNC_CLASS>::Pileup(const FUNC_CLASS& fp)
       pileupStart(0),
       pileupHead(0),
       pileupTail(-1),
-      pileupWindow(1024),
+      pileupWindow(PileupHelper::DEFAULT_WINDOW_SIZE),
       myCurrentRefID(-2),
       myRefPtr(NULL)
 {
@@ -180,7 +187,7 @@ Pileup<PILEUP_TYPE, FUNC_CLASS>::Pileup(const std::string& refSeqFileName, const
       pileupStart(0),
       pileupHead(0),
       pileupTail(-1),
-      pileupWindow(1024),
+      pileupWindow(PileupHelper::DEFAULT_WINDOW_SIZE),
       myCurrentRefID(-2),
       myRefPtr(NULL)
 {
