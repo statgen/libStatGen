@@ -26,6 +26,7 @@ VcfFileReader::VcfFileReader()
       mySectionChrom(""),
       mySection1BasedStartPos(-1),
       mySection1BasedEndPos(-1),
+      mySectionOverlap(false),
       mySampleSubset(),
       myUseSubset(false),
       myDiscardRules(0),
@@ -220,10 +221,19 @@ bool VcfFileReader::readRecord(VcfRecord& record)
         }
         
         // Check if the record is prior to the section start if applicable.
-        // The VCF record end position is the start position + length of the
-        // reference string - 1.
+        // Determinine the VCF record end position.
+        // If we are not requiring overlap, then we only need to check
+        // the start position, but if overlap is required, then it needs
+        // to incrment the start by the length-1.
+        int numIncBases = 0;
+        if(mySectionOverlap)
+        {
+            // The VCF record end position is the start position + length of the
+            // reference string - 1.
+            numIncBases = record.getNumRefBases() - 1;
+        }
         if((mySection1BasedStartPos != -1) &&
-           ((record.get1BasedPosition() + record.getNumRefBases() - 1)
+           ((record.get1BasedPosition() + numIncBases)
             < mySection1BasedStartPos))
         {
             // This record is prior to the section, so keep reading.
@@ -275,12 +285,14 @@ bool VcfFileReader::setReadSection(const char* chromName)
 
 
 bool VcfFileReader::set1BasedReadSection(const char* chromName, 
-                                         int32_t start, int32_t end)
+                                         int32_t start, int32_t end,
+                                         bool overlap)
 {
     myNewSection = true;
     mySectionChrom = chromName;
     mySection1BasedStartPos = start;
     mySection1BasedEndPos = end;
+    mySectionOverlap = overlap;
     return(true);
 }
 
@@ -308,6 +320,7 @@ void VcfFileReader::resetFile()
     mySectionChrom = "";
     mySection1BasedStartPos = -1;
     mySection1BasedEndPos = -1;
+    mySectionOverlap = false;
 
     if(myVcfIndex != NULL)
     {

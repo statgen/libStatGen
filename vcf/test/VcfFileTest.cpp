@@ -1016,12 +1016,13 @@ void testVcfReadSection()
     reader.open("testFiles/testTabix.vcf.bgzf", header);
     reader.readVcfIndex();
     
-    reader.set1BasedReadSection("1", 16384, 32767);
+    reader.set1BasedReadSection("10", 16384, 32767);
+    assert(reader.readRecord(record) == false);
 
+    reader.set1BasedReadSection("1", 16384, 32767);
     assert(reader.readRecord(record) == false);
 
     reader.set1BasedReadSection("1", 16384, 32768);
-
     assert(reader.readRecord(record) == false);
 
     reader.set1BasedReadSection("1", 16384, 32769);
@@ -1068,6 +1069,10 @@ void testVcfReadSection()
     assert(reader.readRecord(record) == false);
     assert(reader.readRecord(record) == false);
 
+
+    ////////////////////////////////////////
+    // Test selecting whole chroms
+
     assert(reader.setReadSection("10"));
     assert(reader.readRecord(record) == false);
 
@@ -1076,6 +1081,194 @@ void testVcfReadSection()
     assert(record.get1BasedPosition() == 32768);
     assert(reader.readRecord(record) == true);
     assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.setReadSection("3"));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    ////////////////////////////////////////
+    // Test selecting sections with deletions
+    reader.set1BasedReadSection("3", 16384, 32767);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 16384, 32768);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 16384, 32769);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32768, 32769);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32769, 32767);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32769, 65537);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32769, 65537);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32770, 65537);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32771, 65537);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32780, 65537);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32781, 65537);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32768, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32769, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32770, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32771, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 0, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    ////////////////////////////////////////
+    // Test selecting sections with deletions for overlapping
+    reader.set1BasedReadSection("3", 16384, 32767, true);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 16384, 32768, true);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 16384, 32769, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32768, 32769, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32769, 32767, true);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32769, 65537, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32769, 65537, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32770, 65537, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32771, 65537, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32780, 65537, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("3", 32781, 65537, true);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32768, 65538, true));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32769, 65538, true));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32770, 65538, true));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 32771, 65538, true));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.set1BasedReadSection("3", 0, 65538, true));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
     assert(reader.readRecord(record) == false);
     assert(reader.readRecord(record) == false);
 

@@ -93,8 +93,14 @@ public:
     /// read for this chromosome.
     /// \param end exclusive 1-based end positions of records that should be
     /// read for this chromosome (this position is not read).
+    /// \param overlap bool indicating whether or not records overlapping
+    /// the specified region should be included even if they do not start
+    /// in the region.  False (DEFAULT) means only read records that start
+    /// in the region.  True means to read record's whose deletions extend 
+    /// into the region.
     bool set1BasedReadSection(const char* chromName, 
-                              int32_t start, int32_t end);
+                              int32_t start, int32_t end, 
+                              bool overlap = false);
 
     /// Returns whether or not the end of the file has been reached.
     /// \return true = EOF; false = not eof.
@@ -134,6 +140,7 @@ private:
     std::string mySectionChrom;
     int32_t mySection1BasedStartPos;
     int32_t mySection1BasedEndPos;
+    bool mySectionOverlap;
 
     VcfSubsetSamples mySampleSubset;
     bool myUseSubset;
