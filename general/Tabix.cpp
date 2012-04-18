@@ -233,5 +233,10 @@ bool Tabix::getStartPos(const char* refName, int32_t start,
     }
 
     // Look up in the linear index.
+    if(start < 0)
+    {
+        // Negative index, so start at 0.
+        start = 0;
+    }
     return(getMinOffsetFromLinearIndex(refID, start, fileStartPos));
 }

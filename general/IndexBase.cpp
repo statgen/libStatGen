@@ -184,6 +184,7 @@ bool IndexBase::getMinOffsetFromLinearIndex(int32_t refID, uint32_t position,
                                             uint64_t& minOffset) const
 {
     int32_t linearIndex = position >> LINEAR_INDEX_SHIFT;
+
     minOffset = 0;
 
     if(refID > n_ref)
@@ -203,22 +204,36 @@ bool IndexBase::getMinOffsetFromLinearIndex(int32_t refID, uint32_t position,
     {
         return(false);
     }
-    else
-    {
-        // The linear index is specified for this block, so return that
-        // value.
-        minOffset = myRefs[refID].ioffsets[linearIndex];
 
-        // If the offset is 0, go to the previous block that has an offset.
-        // This is due to a couple of bugs in older sam tools indexes.
-        // 1) they add one to the index location (so when reading those, you
-        // may be starting earlier than necessary)
-        // 2) (the bigger issue) They did not include bins 4681-37449 in
-        // the linear index.
-        while((minOffset == 0) && (--linearIndex >= 0))
-        {
-            minOffset = myRefs[refID].ioffsets[linearIndex];            
-        }
+    // The linear index is specified for this block, so return that value.
+    minOffset = myRefs[refID].ioffsets[linearIndex];
+    
+    // If the offset is 0, go to the previous block that has an offset.
+    // This is due to a couple of bugs in older sam tools indexes.
+    // 1) they add one to the index location (so when reading those, you
+    // may be starting earlier than necessary)
+    // 2) (the bigger issue) They did not include bins 4681-37449 in
+    // the linear index.
+    while((minOffset == 0) && (--linearIndex >= 0))
+    {
+        minOffset = myRefs[refID].ioffsets[linearIndex]; 
+    }
+
+
+    // If the minOffset is still 0 when moving forward,
+    // check later indices to find a non-zero since we don't want to return
+    // an offset of 0 since the record can't start at 0 we want to at least
+    // return the first record position for this reference.
+    linearIndex = 0;
+    while((minOffset == 0) && (linearIndex < linearOffsetSize))
+    {
+         minOffset = myRefs[refID].ioffsets[linearIndex]; 
+         linearIndex++;
+    }
+    if(minOffset == 0)
+    {
+        // Could not find a valid start position for this reference.
+        return(false);
     }
     return(true);
 }
