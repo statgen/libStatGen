@@ -70,6 +70,7 @@ public:
     int get1BasedPosition() {return(my1BasedPosNum);}
     const char* getIDStr() {return(myID.c_str());}
     const char* getRefStr() {return(myRef.c_str());}
+    int getNumRefBases() {return(myRef.size());}
     const char* getAltStr() {return(myAlt.c_str());}
     /// Return the number of alternates listed in the Alts string.
     int getNumAlts();

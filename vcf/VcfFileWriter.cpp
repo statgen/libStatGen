@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2011  Regents of the University of Michigan,
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan,
  *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
  *                           and Goncalo Abecasis
  *
@@ -57,7 +57,7 @@ bool VcfFileWriter::open(const char* filename, VcfHeader& header,
 
 bool VcfFileWriter::open(const char* filename, VcfHeader& header)
 {
-    open(filename, header, InputFile::BGZF);
+    return(open(filename, header, InputFile::BGZF));
 }
 
 

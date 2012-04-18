@@ -52,6 +52,12 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo)
     // Read the chromosome.
     if(!readTilTab(filePtr, myChrom))
     {
+        if(myChrom.empty())
+        {
+            // EOF.
+            return(false);
+        }
+        // Not an empty line.
         myStatus.setStatus(StatGenStatus::FAIL_PARSE, 
                            "Error reading VCF Record CHROM.");
         return(false);

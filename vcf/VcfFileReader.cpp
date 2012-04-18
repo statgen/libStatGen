@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2011  Regents of the University of Michigan,
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan,
  *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
  *                           and Goncalo Abecasis
  *
@@ -21,6 +21,11 @@
 
 VcfFileReader::VcfFileReader()
     : VcfFile(),
+      myVcfIndex(NULL),
+      myNewSection(false),
+      mySectionChrom(""),
+      mySection1BasedStartPos(-1),
+      mySection1BasedEndPos(-1),
       mySampleSubset(),
       myUseSubset(false),
       myDiscardRules(0),
@@ -32,6 +37,7 @@ VcfFileReader::VcfFileReader()
 
 VcfFileReader::~VcfFileReader() 
 {
+    resetFile();
 }
 
 
@@ -86,6 +92,86 @@ bool VcfFileReader::open(const char* filename, VcfHeader& header,
 }
 
 
+// Read VCF Index file.
+bool VcfFileReader::readVcfIndex(const char* vcfIndexFilename)
+{
+    // Cleanup a previously setup index.
+    if(myVcfIndex != NULL)
+    {
+        delete myVcfIndex;
+        myVcfIndex = NULL;
+    }
+
+    // Create a new vcf index.
+    myVcfIndex = new Tabix();
+    StatGenStatus::Status indexStat = myVcfIndex->readIndex(vcfIndexFilename);
+
+    if(indexStat != StatGenStatus::SUCCESS)
+    {
+        std::string errorMessage = "Failed to read the vcf Index file: ";
+        errorMessage += vcfIndexFilename;
+        myStatus.setStatus(indexStat, errorMessage.c_str());
+        delete myVcfIndex;
+        myVcfIndex = NULL;
+        return(false);
+    }
+    myStatus = StatGenStatus::SUCCESS;
+    return(true);
+}
+
+
+// Read VCF Index file.
+bool VcfFileReader::readVcfIndex()
+{
+    if(myFilePtr == NULL)
+    {
+        // Can't read the vcf index file because the VCF file has not yet been
+        // opened, so we don't know the base filename for the index file.
+        std::string errorMessage = "Failed to read the vcf Index file -"
+            " the VCF file needs to be read first in order to determine"
+            " the index filename.";
+        myStatus.setStatus(StatGenStatus::FAIL_ORDER, errorMessage.c_str());
+        return(false);
+    }
+
+    const char* vcfBaseName = myFilePtr->getFileName();
+    
+    std::string indexName = vcfBaseName;
+    indexName += ".tbi";
+
+    bool foundFile = true;
+    try
+    {
+        if(readVcfIndex(indexName.c_str()) == false)
+        {
+            foundFile = false;
+        }
+    }
+    catch (std::exception& e)
+    {
+        foundFile = false;
+    }
+
+    // Check to see if the index file was found.
+    if(!foundFile)
+    {
+        // Not found - try without the vcf extension.
+        // Locate the start of the vcf extension
+        size_t startExt = indexName.find(".vcf");
+        if(startExt == std::string::npos)
+        {
+            // Could not find the .vcf extension, so just return false since the
+            // call to readVcfIndex set the status.
+            return(false);
+        }
+        // Remove ".vcf" and try reading the index again.
+        indexName.erase(startExt,  4);
+        return(readVcfIndex(indexName.c_str()));
+    }
+    return(true);
+}
+
+
 bool VcfFileReader::readRecord(VcfRecord& record)
 {
     myStatus = StatGenStatus::SUCCESS;
@@ -96,6 +182,16 @@ bool VcfFileReader::readRecord(VcfRecord& record)
         subsetPtr = &mySampleSubset;
     }
 
+    // Check to see if a new region has been set.  If so, setup for that region.
+    if(myNewSection)
+    {
+        if(!processNewSection())
+        {
+            myStatus = StatGenStatus::NO_MORE_RECS;
+            return(false);
+        }
+    }
+
     // Keep looping until a desired record is found.
     bool recordFound = false;
     while(!recordFound)
@@ -104,6 +200,34 @@ bool VcfFileReader::readRecord(VcfRecord& record)
         {
             myStatus = record.getStatus();
             return(false);
+        }
+
+        // Check to see if the record is in the section.
+        // First check the chromosome.
+        if(!mySectionChrom.empty() && (mySectionChrom != record.getChromStr()))
+        {
+            // Record is not within the correct chromosome, so return failure.
+            myStatus = StatGenStatus::NO_MORE_RECS;
+           return(false);
+        }
+
+        // Check if the record is after the section end if applicable.
+        if((mySection1BasedEndPos != -1) && 
+           (record.get1BasedPosition() >= mySection1BasedEndPos))
+        {
+            myStatus = StatGenStatus::NO_MORE_RECS;
+            return(false);
+        }
+        
+        // Check if the record is prior to the section start if applicable.
+        // The VCF record end position is the start position + length of the
+        // reference string - 1.
+        if((mySection1BasedStartPos != -1) &&
+           ((record.get1BasedPosition() + record.getNumRefBases() - 1)
+            < mySection1BasedStartPos))
+        {
+            // This record is prior to the section, so keep reading.
+            continue;
         }
 
         ++myNumRecords;
@@ -144,6 +268,23 @@ bool VcfFileReader::readRecord(VcfRecord& record)
 }
 
 
+bool VcfFileReader::setReadSection(const char* chromName)
+{
+    return(set1BasedReadSection(chromName, -1, -1));
+}
+
+
+bool VcfFileReader::set1BasedReadSection(const char* chromName, 
+                                         int32_t start, int32_t end)
+{
+    myNewSection = true;
+    mySectionChrom = chromName;
+    mySection1BasedStartPos = start;
+    mySection1BasedEndPos = end;
+    return(true);
+}
+
+
 // Returns whether or not the end of the file has been reached.
 // return: int - true = EOF; false = not eof.
 bool VcfFileReader::isEOF()
@@ -163,4 +304,62 @@ void VcfFileReader::resetFile()
     mySampleSubset.reset();
     myUseSubset = false;
     myNumKeptRecords = 0;
+    myNewSection = false;
+    mySectionChrom = "";
+    mySection1BasedStartPos = -1;
+    mySection1BasedEndPos = -1;
+
+    if(myVcfIndex != NULL)
+    {
+        delete myVcfIndex;
+        myVcfIndex = NULL;
+    }
+}
+
+
+bool VcfFileReader::processNewSection()
+{
+    myNewSection = false;
+    
+    // Check to see if the index file has been read.
+    if(myVcfIndex == NULL)
+    {
+        myStatus.setStatus(StatGenStatus::FAIL_ORDER, 
+                           "Cannot read section since there is no index file open");
+        throw(std::runtime_error("SOFTWARE BUG: trying to read a VCF record by section prior to opening the VCF Index file."));
+        return(false);
+    }
+
+    if(myFilePtr == NULL)
+    {
+        myStatus.setStatus(StatGenStatus::FAIL_ORDER, 
+                           "Cannot read section without first opening the VCF file.");
+        throw(std::runtime_error("SOFTWARE BUG: trying to read a VCF record by section prior to opening the VCF file."));
+        return(false);
+    }
+
+    // Using random access, so can't buffer
+    myFilePtr->disableBuffering();
+
+    uint64_t startPos = 0;
+    // Find where this section starts in the file.
+    if(!myVcfIndex->getStartPos(mySectionChrom.c_str(),
+                                mySection1BasedStartPos, 
+                                startPos))
+    {
+        // Didn't find the position.
+        return(false);
+    }
+    if(startPos != (uint64_t)iftell(myFilePtr))
+    {
+        // Seek to the start position.
+        if(ifseek(myFilePtr, startPos, SEEK_SET) != true)
+        {
+            // seek failed, return failure.
+            myStatus.setStatus(StatGenStatus::FAIL_IO, 
+                               "Failed to seek to the specified section");
+            return(false);
+        }
+    }
+    return(true);
 }

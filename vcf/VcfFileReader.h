@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2011  Regents of the University of Michigan,
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan,
  *                           Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
  *                           and Goncalo Abecasis
  *
@@ -23,6 +23,7 @@
 #include "VcfFile.h"
 #include "VcfRecord.h"
 #include "VcfSubsetSamples.h"
+#include "Tabix.h"
 
 /// This header file provides interface to read/write VCF files.
 class VcfFileReader : public VcfFile
@@ -61,11 +62,39 @@ public:
     virtual bool open(const char* filename, VcfHeader& header,
                       const char* sampleFileName, const char* delims = "\n");
 
+    /// Read the specified vcf index file.  It must be read prior to setting a
+    /// read section, for seeking and reading portions of a vcf file.
+    /// \param filename the name of the vcf index file to be read.
+    /// \return true = success; false = failure.
+    bool readVcfIndex(const char * filename);
+
+    /// Read the bam index file using the VCF filename as a base. 
+    /// It must be read prior to setting a read section, for seeking
+    /// and reading portions of a vcf file.
+    /// Must be read after opening the VCF file since it uses the
+    /// VCF filename as a base name for the index file.
+    /// First it tries filename.vcf.tbi. If that fails, it tries
+    /// it without the .vcf extension, filename.tbi.
+    /// \return true = success; false = failure.
+    bool readVcfIndex();
+
     /// Read the next Vcf record from the file until a line passes all
     /// discard rules (if any) or until the end of the file is found..
     /// \param record record to populate with the next record.
     /// \return true if successful, false if not.
     bool readRecord(VcfRecord& record);
+
+    /// Only read the specified chromosome when readRecord is called.
+    bool setReadSection(const char* chromName);
+
+    /// Only read the specified chromosome/positions when readRecord is called.
+    /// \param chromName chromosome name to read.
+    /// \param start inclusive 1-based start positions of records that should be
+    /// read for this chromosome.
+    /// \param end exclusive 1-based end positions of records that should be
+    /// read for this chromosome (this position is not read).
+    bool set1BasedReadSection(const char* chromName, 
+                              int32_t start, int32_t end);
 
     /// Returns whether or not the end of the file has been reached.
     /// \return true = EOF; false = not eof.
@@ -96,6 +125,16 @@ protected:
     virtual void resetFile();
 
 private:
+    // Set1BasedReadSection was called so process the section prior to reading.
+    bool processNewSection();
+
+    // New section information.
+    Tabix* myVcfIndex;
+    bool myNewSection;
+    std::string mySectionChrom;
+    int32_t mySection1BasedStartPos;
+    int32_t mySection1BasedEndPos;
+
     VcfSubsetSamples mySampleSubset;
     bool myUseSubset;
 

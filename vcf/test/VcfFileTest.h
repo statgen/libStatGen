@@ -18,3 +18,4 @@
 void testVcfFile();
 void testVcfReadFile();
 void testVcfWriteFile();
+void testVcfReadSection();

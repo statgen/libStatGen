@@ -30,6 +30,8 @@ void testVcfFile()
 {
     testVcfReadFile();
     testVcfWriteFile();
+
+    testVcfReadSection();
 }
 
 
@@ -999,4 +1001,64 @@ void testVcfWriteFile()
         // Write the record.
         assert(writer.writeRecord(record));
     }
+}
+
+
+void testVcfReadSection()
+{
+    // Test open for read via the constructor with return.
+    VcfFileReader reader;
+    VcfHeader header;
+    VcfRecord record;
+    
+    ////////////////////////////////
+    // Test the read section logic.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.readVcfIndex();
+    
+    reader.set1BasedReadSection("1", 16384, 32767);
+
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 16384, 32768);
+
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 16384, 32769);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 32768, 32769);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 32769, 32767);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 32769, 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 32769, 65537);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 32768, 65538);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.set1BasedReadSection("1", 32769, 65538);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    reader.close();
 }

@@ -36,6 +36,7 @@ TOOLBASE=\
 	GzipFileType \
 	GzipHeader \
 	Hash \
+	IndexBase \
 	Input \
 	InputFile \
 	IntArray \
@@ -68,6 +69,7 @@ TOOLBASE=\
 	StringBasics \
 	StringHash \
 	StringMap \
+	Tabix \
 	TrimSequence \
 	UncompressedFileType \
 	WindowsHelper

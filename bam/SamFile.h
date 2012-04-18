@@ -263,7 +263,7 @@ public:
     /// reads with no reference.  When all records have been retrieved for
     /// the specified section, ReadRecord will return failure until a new read
     /// section is set.  Must be called only after the file has been opened for
-    /// reading.  Sorting validation is reset everytime SetReadPosition is
+    /// reading.  Sorting validation is reset everytime SetReadSection is
     /// called since it can jump around in the file.
     /// \param  refName the reference name of the records to read from the file.
     /// \param  start inclusive 0-based start position of records that should be read for this refID.
