@@ -1046,7 +1046,7 @@ void testVcfReadSection()
     reader.set1BasedReadSection("1", 32769, 65537);
     assert(reader.readRecord(record) == false);
 
-    reader.set1BasedReadSection("1", 32768, 65538);
+    assert(reader.set1BasedReadSection("1", 32768, 65538));
     assert(reader.readRecord(record) == true);
     assert(record.get1BasedPosition() == 32768);
     assert(reader.readRecord(record) == true);
@@ -1054,11 +1054,22 @@ void testVcfReadSection()
     assert(reader.readRecord(record) == false);
     assert(reader.readRecord(record) == false);
 
-    reader.set1BasedReadSection("1", 32769, 65538);
+    assert(reader.set1BasedReadSection("1", 32769, 65538));
     assert(reader.readRecord(record) == true);
     assert(record.get1BasedPosition() == 65537);
     assert(reader.readRecord(record) == false);
     assert(reader.readRecord(record) == false);
 
-    reader.close();
+    assert(reader.setReadSection("10"));
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.setReadSection("1"));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+   reader.close();
 }
