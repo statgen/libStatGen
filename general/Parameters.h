@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -317,5 +317,53 @@ public:
     void Enforce(double & var, double value, const char * reason, ...);
     void Enforce(String & var, const char * value, const char * reason, ...);
 };
+
+
+// Container for holding the long parameter list.
+// Allows paramters to be added.
+// Allows users to not have to use BEGIN_LONG_PARAMETERS or to understand
+// the details of a LongParameterList.
+class LongParamContainer
+{
+public:
+    LongParamContainer();
+    ~LongParamContainer();
+
+    // Get a pointer to the LongParameterList.
+    inline LongParameterList* getLongParameterList()
+    { return(myArray); }
+
+    void add(const char * label, void * val, bool excl, 
+             int paramType, bool touch = 0);
+
+    inline void addGroup(const char * label)
+    { add(label, NULL, false, 0, 0); }
+
+    inline void addBool(const char * label, void * boolptr)
+    { add(label, boolptr, false, LP_BOOL_PARAMETER, 0); }
+
+    inline void addExclusiveBool(const char * label, void * boolptr)
+    { add(label, boolptr, true, LP_BOOL_PARAMETER, 0); }
+
+    inline void addInt(const char * label, void * intptr)
+    { add(label, intptr, false, LP_INT_PARAMETER, 0); }
+
+    inline void addSmartInt(const char * label, void * intptr)
+    { add(label, intptr, true, LP_INT_PARAMETER, 0); }
+
+    inline void addDouble(const char * label, void * doubleptr)
+    { add(label, doubleptr, false, LP_DOUBLE_PARAMETER, 0); }
+
+    inline void addString(const char * label, void * stringptr)
+    { add(label, stringptr, false, LP_STRING_PARAMETER, 0); }
+
+private:
+    // At most 100 parameters are allowed.
+    static const int MAX_PARAM_ARRAY_SIZE = 100;
+    LongParameterList myArray[MAX_PARAM_ARRAY_SIZE];
+
+    int myEndIndex;
+};
+
 
 #endif

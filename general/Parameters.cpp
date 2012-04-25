@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept>
 
 int Parameter::nameCol = 30;
 int Parameter::statusCol = 15;
@@ -785,3 +786,45 @@ void ParameterList::Enforce(String & var, const char * value, const char * forma
 
     messages += buffer;
 }
+
+
+LongParamContainer::LongParamContainer()
+    : myEndIndex(0)
+{
+    // Add the first (also adds ending) indicators.
+    add(NULL, NULL, false, 0, 0);
+}
+
+
+LongParamContainer::~LongParamContainer()
+{
+}
+
+
+void LongParamContainer::add(const char * label, void * val, bool excl, 
+                             int paramType, bool touch)
+{
+    if(myEndIndex+1 < MAX_PARAM_ARRAY_SIZE)
+    {
+        // Overwrite the previous end record.
+        myArray[myEndIndex].description = label;
+        myArray[myEndIndex].value = val;
+        myArray[myEndIndex].exclusive = excl;
+        myArray[myEndIndex].type = paramType; 
+        myArray[myEndIndex].touched = touch;
+        ++myEndIndex;
+
+        // Add a new empty entry to the end.
+        myArray[myEndIndex].description = NULL;
+        myArray[myEndIndex].value = NULL;
+        myArray[myEndIndex].exclusive = false;
+        myArray[myEndIndex].type = 0; 
+        myArray[myEndIndex].touched = 0;
+    }
+    else
+    {
+        throw std::runtime_error("Tool Error: trying to add more parameters than allowed in LongParamContainer.\n");
+    }
+}
+
+
