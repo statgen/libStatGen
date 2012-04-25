@@ -16,6 +16,7 @@
  */
 
 #include "SamFile.h"
+#include "SamFlag.h"
 #include "Modify.h"
 
 void testModify()
@@ -23,8 +24,6 @@ void testModify()
     modify modTest;
     modTest.testModify("testFiles/testSam.sam");
     modTest.testModify("testFiles/testBam.bam");
-
-    
 }
 
 
@@ -34,6 +33,8 @@ void modify::testModify(const char* filename)
 
     modifyPosition();
     modifyCigar();
+    
+    modifyFlag();
 
     modifyTags();
 }
@@ -66,6 +67,26 @@ void modify::modifyCigar()
 
     // Verify the bin was updated.
     assert(samRecord.getBin() == 585);
+}
+
+
+void modify::modifyFlag()
+{
+    openAndRead1Rec();
+   
+    // Verify the initial bin.
+    uint16_t flag = 73;
+    assert(samRecord.getFlag() == flag);
+
+    SamFlag::setDuplicate(flag);
+    assert(flag == 1097);
+    assert(samRecord.setFlag(flag));
+    assert(samRecord.getFlag() == 1097);
+
+    SamFlag::setNotDuplicate(flag);
+    assert(flag == 73);
+    assert(samRecord.setFlag(flag));
+    assert(samRecord.getFlag() == 73);
 }
 
 

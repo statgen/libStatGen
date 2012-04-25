@@ -27,6 +27,8 @@ private:
 
     void modifyCigar();
 
+    void modifyFlag();
+
     // Open and read the first record.
     void openAndRead1Rec();
 

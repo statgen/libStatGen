@@ -99,6 +99,10 @@ public:
 
     /// Mark the passed in flag as unmapped.
     static inline void setUnmapped(uint16_t& flag) { flag |= UNMAPPED;}
+    /// Mark the passed in flag as not duplicate.
+    static inline void setNotDuplicate(uint16_t& flag) { flag ^= DUPLICATE;}
+    /// Mark the passed in flag as not duplicate.
+    static inline void setDuplicate(uint16_t& flag) { flag |= DUPLICATE;}
     //@}
 
 private:
