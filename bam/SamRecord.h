@@ -525,25 +525,25 @@ public:
     /// \param vtype value type to check.
     /// \return true if the passed in vtype is an integer ('c', 'C', 's',
     /// 'S', 'i', 'I'), false otherwise.
-    bool isIntegerType(char vtype) const;
+    static bool isIntegerType(char vtype);
 
     /// Returns whether or not the specified vtype is a double type.
     /// Does not set SamStatus.
     /// \param vtype value type to check.
     /// \return true if the passed in vtype is a double ('f'), false otherwise.
-    bool isDoubleType(char vtype) const;
+    static bool isDoubleType(char vtype);
 
     /// Returns whether or not the specified vtype is a char type.
     /// Does not set SamStatus.
     /// \param vtype value type to check.
     /// \return true if the passed in vtype is a char ('A'), false otherwise.
-    bool isCharType(char vtype) const;
+    static bool isCharType(char vtype);
 
     /// Returns whether or not the specified vtype is a string type.
     /// Does not set SamStatus.
     /// \param vtype value type to check.
     /// \return true if the passed in vtype is a string ('Z'), false othwerise.
-    bool isStringType(char vtype) const;
+    static bool isStringType(char vtype);
 
     /// Get the string representation of the tags from the record, formatted
     /// as TAG:TYPE:VALUE<delim>TAG:TYPE:VALUE...

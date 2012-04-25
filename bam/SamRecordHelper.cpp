@@ -51,3 +51,66 @@ int SamRecordHelper::checkSequence(SamRecord& record, int32_t pos0Based,
     // Did not match.
     return(-1);
 }
+
+
+bool SamRecordHelper::genSamTagsString(SamRecord& record,
+                                       String& returnString,
+                                       char delim)
+{
+    char tag[3];
+    char vtype;
+    void* value;
+
+    // Reset the tag iterator to ensure that all the tags are written.
+    record.resetTagIter();
+
+    // While there are more tags, write them to the recordString.
+    bool firstEntry = true;
+    bool returnStatus = true;
+    while(record.getNextSamTag(tag, vtype, &value) != false)
+    {
+        if(!firstEntry)
+        {
+            returnString += delim;
+        }
+        else
+        {
+            firstEntry = false;
+        }
+        returnStatus &= genSamTagString(tag, vtype, value, returnString);
+    }
+    return(returnStatus);
+}
+
+
+bool SamRecordHelper::genSamTagString(const char* tag, char vtype, 
+                                      void* value, String& returnString)
+{
+    returnString += tag;
+    returnString += ":"; 
+    returnString += vtype;
+    returnString += ":";
+    if(SamRecord::isIntegerType(vtype))
+    {
+        returnString += (int)*(int*)value;
+    }
+    else if(SamRecord::isDoubleType(vtype))
+    {
+        returnString += (double)*(double*)value;
+    }
+    else if(SamRecord::isCharType(vtype))
+    {
+        returnString += (char)*(char*)value;
+    }
+    else if(SamRecord::isStringType(vtype))
+    {
+        // String type.
+        returnString += (String)*(String*)value;
+    }
+    else
+    {
+        // Could not determine the type.
+        return(false);
+    }
+    return(true);
+}

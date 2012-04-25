@@ -1967,7 +1967,7 @@ void SamRecord::resetTagIter()
 }
 
 
-bool SamRecord::isIntegerType(char vtype) const
+bool SamRecord::isIntegerType(char vtype)
 {
     if((vtype == 'c') || (vtype == 'C') ||
        (vtype == 's') || (vtype == 'S') ||
@@ -1979,7 +1979,7 @@ bool SamRecord::isIntegerType(char vtype) const
 }
 
 
-bool SamRecord::isDoubleType(char vtype) const
+bool SamRecord::isDoubleType(char vtype)
 {
     if(vtype == 'f')
     {
@@ -1989,7 +1989,7 @@ bool SamRecord::isDoubleType(char vtype) const
 }
 
 
-bool SamRecord::isCharType(char vtype) const
+bool SamRecord::isCharType(char vtype)
 {
     if(vtype == 'A')
     {
@@ -1999,7 +1999,7 @@ bool SamRecord::isCharType(char vtype) const
 }
 
 
-bool SamRecord::isStringType(char vtype) const
+bool SamRecord::isStringType(char vtype)
 {
     if(vtype == 'Z')
     {
@@ -2064,11 +2064,6 @@ bool SamRecord::getTagsString(const char* tags, String& returnString, char delim
             char vtype;
             getTypeFromKey(key, vtype);
 
-            
-            // Offset is set, so recalculate the buffer size without this entry.
-            // Do NOT remove from strings, integers, or doubles because then
-            // extras would need to be updated for all entries with the new indexes
-            // into those variables.
             switch(vtype)
             {
                 case 'i':

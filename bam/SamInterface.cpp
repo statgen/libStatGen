@@ -16,6 +16,7 @@
  */
 
 #include "SamInterface.h"
+#include "SamRecordHelper.h"
 
 #include <limits>
 #include <stdint.h>
@@ -56,7 +57,11 @@ SamStatus::Status SamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
         }
       
         // This is a header line, so add it to header.
-        header.addHeaderLine(buffer.c_str());
+        if(!header.addHeaderLine(buffer.c_str()))
+        {
+            // Failed reading the header.
+            return(SamStatus::FAIL_PARSE);
+        }
 
         // Continue to the next line if this line is less than 3 characters
         // or is not an SQ line.
@@ -362,39 +367,12 @@ SamStatus::Status SamInterface::writeRecord(IFILE filePtr,
     recordString += record.getSequence(translation);
     recordString += "\t";
     recordString += record.getQuality();
-   
-    char tag[3];
-    char vtype;
-    void* value;
 
-    // Reset the tag iterator to ensure that all the tags are written.
-    record.resetTagIter();
-
-    // While there are more tags, write them to the recordString.
-    while(record.getNextSamTag(tag, vtype, &value) != false)
+    // If there are any tags, add a preceding tab.
+    if(record.getTagLength() != 0)
     {
         recordString += "\t";
-        recordString += tag;
-        recordString += ":"; 
-        recordString += vtype;
-        recordString += ":";
-        if(record.isIntegerType(vtype))
-        {
-            recordString += (int)*(int*)value;
-        }
-        else if(record.isDoubleType(vtype))
-        {
-            recordString += (double)*(double*)value;
-        }
-        else if(record.isCharType(vtype))
-        {
-            recordString += (char)*(char*)value;
-        }
-        else
-        {
-            // String type.
-            recordString += (String)*(String*)value;
-        }
+        SamRecordHelper::genSamTagsString(record, recordString);
     }
 
     recordString += "\n";

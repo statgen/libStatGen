@@ -209,13 +209,7 @@ bool SamFileHeader::addHeaderLine(const char* headerLine)
 {
     // Parse the added header line.
     String headerString = headerLine;
-    if(parseHeader(headerString))
-    {
-        // Successfully parsed the header line.
-        return(true);
-    }
-    // Failed to parse the header line, return false.
-    return(false);
+    return(parseHeader(headerString));
 }
 
 
@@ -625,8 +619,11 @@ SamStatus::Status SamFileHeader::setHeaderFromBamFile(IFILE filePtr)
     }
 
     // Parse the header that was read.
-    parseHeader(header);
-    return(SamStatus::SUCCESS);
+    if(parseHeader(header))
+    {
+        return(SamStatus::SUCCESS);
+    }
+    return(SamStatus::FAIL_PARSE);
 }
 
 
