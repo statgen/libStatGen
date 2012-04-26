@@ -99,10 +99,6 @@ class GenomeSequence : public genomeSequenceArray
 {
 public:
     // TODO - these are found in BaseAsciiMap so should be removed from here.
-    static const int baseAIndex = 000;
-    static const int baseTIndex = 001;
-    static const int baseCIndex = 002;
-    static const int baseGIndex = 003;
     static const int baseNIndex = 004; // baseN --> bad read
     static const int baseXIndex = 005; // baseX --> unknown (bad data)
     //
