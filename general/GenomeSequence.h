@@ -25,6 +25,7 @@
 #endif
 #include <string>
 #include "MemoryMapArray.h"
+#include "BaseAsciiMap.h"
 
 // Goncalo's String class
 #include "StringArray.h"
@@ -97,22 +98,6 @@ genomeSequenceMmapHeader
 
 class GenomeSequence : public genomeSequenceArray
 {
-public:
-    // TODO - these are found in BaseAsciiMap so should be removed from here.
-    static const int baseNIndex = 004; // baseN --> bad read
-    static const int baseXIndex = 005; // baseX --> unknown (bad data)
-    //
-    // two arrays for converting back and forth between base pair character
-    // value (ASCII) to a base integer in the range 0..3.  Note there is actually
-    // a value 4 and 5, for 'N' (indelible) and 'M' (unknown to me).
-    //
-    static unsigned char base2int[];        // base space read (ATCG)
-
-    // TODO - these are found in BaseAsciiMap so should be removed from here.
-    static const char int2base[];
-    static const char int2colorSpace[];
-    static unsigned char base2complement[];
-
 private:
     int                     _debugFlag;
 
@@ -341,7 +326,7 @@ public:
     // TODO - this will be moved somewhere else and be made a static method.
     char BasePair(char c) const
     {
-        return base2complement[(int) c];
+        return BaseAsciiMap::base2complement[(int) c];
     }
 
     void dumpSequenceSAMDictionary(std::ostream&) const;
@@ -377,7 +362,7 @@ public:
     // performance testing as well as compiler evaluation.
     inline char operator[](genomeIndex_t index) const
     {
-        return int2base[(*((genomeSequenceArray*) this))[index]];
+        return BaseAsciiMap::int2base[(*((genomeSequenceArray*) this))[index]];
     }
 #endif
 
@@ -397,9 +382,10 @@ public:
         }
         else
         {
-            val = baseNIndex;
+            val = BaseAsciiMap::baseNIndex;
         }
-        val = isColorSpace() ? int2colorSpace[val] : int2base[val];
+        val = isColorSpace() ? BaseAsciiMap::int2colorSpace[val] : 
+            BaseAsciiMap::int2base[val];
         return val;
     }
 
@@ -428,7 +414,8 @@ public:
 
     inline void set(genomeIndex_t index, char value)
     {
-        genomeSequenceArray::set(index, base2int[(uint8_t) value]);
+        genomeSequenceArray::set(index, 
+                                 BaseAsciiMap::base2int[(uint8_t) value]);
     }
 
     /// obtain the pointer to the raw data for other access methods

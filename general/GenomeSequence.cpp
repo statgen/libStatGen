@@ -35,79 +35,6 @@
 #include "CSG_MD5.h"
 
 //
-// Map ASCII values to a 2 (or 3) bit encoding for the base pair value
-//  class 0 -> 'A' (Adenine - 0x41 and 0x61)
-//  class 1 -> 'C' (Cytosine - 0x43 and 0x63)
-//  class 2 -> 'G' (Guanine - 0x47 and 0x67)
-//  class 3 -> 'T' (Thymine - 0x54 and 0x74)
-//  class 4 -> 'N' (Unknown - read error or incomplete data - 0x4E and 0x6E)
-//  class 5 -> not a valid DNA base pair character
-//
-// Note: The +1 array size is for the terminating NUL character
-//
-// NB: This table also maps 0, 1, 2, and 3 to the corresponding integers,
-// and '.' to class 4.  This allows ABI SOLiD reads to be converted
-// to integers via ReadIndexer::Word2Integer.
-//
-unsigned char GenomeSequence::base2int[256+1] =
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x00-0x0F
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x10-0x1F
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\004\005"  // 0x20-0x2F
-    "\000\001\002\003\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x30-0x3F
-    "\005\000\005\001\005\005\005\002\005\005\005\005\005\005\004\005"  // 0x40-0x4F
-    "\005\005\005\005\003\005\005\005\005\005\005\005\005\005\005\005"  // 0x50-0x5F
-    "\005\000\005\001\005\005\005\002\005\005\005\005\005\005\004\005"  // 0x60-0x6F
-    "\005\005\005\005\003\005\005\005\005\005\005\005\005\005\005\005"  // 0x70-0x7F
-// not used, but included for completeness:
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x80-0x8F
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0x90-0x9F
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xA0-0xAF
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xB0-0xBF
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xC0-0xCF
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xD0-0xDF
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xE0-0xEF
-    "\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005\005"  // 0xF0-0xFF
-    ;
-
-//
-// This is obviously for base space use only:
-//
-const char GenomeSequence::int2base[] = "ACGTNMXXXXXXXXXX";
-//
-// convert int to color space value
-//
-const char GenomeSequence::int2colorSpace[] = "0123NXXXXXXXXXXX";
-
-//
-// This table maps 5' base space to the 3' complement base space
-// values, as well as 5' color space values to the corresponding
-// 3' complement color space values.
-//
-// In both cases, invalids are mapped to 'N', which isn't accurate
-// for ABI SOLiD, but internally it shouldn't matter (on output it
-// will).
-//
-unsigned char GenomeSequence::base2complement[256+1 /* for NUL char */] =
-    "NNNNNNNNNNNNNNNN"  // 0x00-0x0F
-    "NNNNNNNNNNNNNNNN"  // 0x10-0x1F
-    "NNNNNNNNNNNNNNNN"  // 0x20-0x2F
-    "0123NNNNNNNNNNNN"  // 0x30-0x3F
-    "NTNGNNNCNNNNNNNN"  // 0x40-0x4F
-    "NNNNANNNNNNNNNNN"  // 0x50-0x5F
-    "NTNGNNNCNNNNNNNN"  // 0x60-0x6F
-    "NNNNANNNNNNNNNNN"  // 0x70-0x7F
-// not used, but included for completeness:
-    "NNNNNNNNNNNNNNNN"  // 0x80-0x8F
-    "NNNNNNNNNNNNNNNN"  // 0x90-0x9F
-    "NNNNNNNNNNNNNNNN"  // 0xA0-0xAF
-    "NNNNNNNNNNNNNNNN"  // 0xB0-0xBF
-    "NNNNNNNNNNNNNNNN"  // 0xC0-0xCF
-    "NNNNNNNNNNNNNNNN"  // 0xD0-0xDF
-    "NNNNNNNNNNNNNNNN"  // 0xE0-0xEF
-    "NNNNNNNNNNNNNNNN"  // 0xF0-0xFF
-    ;
-
-//
 // given a read in a string, pack it into the vector of
 // bytes coded as two bases per byte.
 //
@@ -128,8 +55,8 @@ void PackedRead::set(const char *rhs, int padWithNCount)
     while (padWithNCount>1)
     {
         packedBases.push_back(
-            GenomeSequence::base2int[(int) 'N'] << 4 |
-            GenomeSequence::base2int[(int) 'N']
+            BaseAsciiMap::base2int[(int) 'N'] << 4 |
+            BaseAsciiMap::base2int[(int) 'N']
         );
         padWithNCount -= 2;
         length+=2;
@@ -142,8 +69,8 @@ void PackedRead::set(const char *rhs, int padWithNCount)
         // NB: *rhs could be NUL, which is ok here - just keep
         // the length straight.
         packedBases.push_back(
-            GenomeSequence::base2int[(int) *rhs] << 4 |
-            GenomeSequence::base2int[(int) 'N']
+            BaseAsciiMap::base2int[(int) *rhs] << 4 |
+            BaseAsciiMap::base2int[(int) 'N']
         );
         // two cases - have characters in rhs or we don't:
         if (*rhs)
@@ -163,8 +90,8 @@ void PackedRead::set(const char *rhs, int padWithNCount)
     while (*rhs && *(rhs+1))
     {
         packedBases.push_back(
-            GenomeSequence::base2int[(int) *(rhs+1)] << 4 |
-            GenomeSequence::base2int[(int) *(rhs+0)]
+            BaseAsciiMap::base2int[(int) *(rhs+1)] << 4 |
+            BaseAsciiMap::base2int[(int) *(rhs+0)]
         );
         rhs+=2;
         length+=2;
@@ -175,7 +102,7 @@ void PackedRead::set(const char *rhs, int padWithNCount)
     if (*rhs)
     {
         packedBases.push_back(
-            GenomeSequence::base2int[(int) *(rhs+0)]
+            BaseAsciiMap::base2int[(int) *(rhs+0)]
         );
         length++;
     }
@@ -195,7 +122,7 @@ std::string GenomeSequence::IntegerToSeq(unsigned int n, unsigned int wordsize) 
 
     for (unsigned int i = 0; i < wordsize; i++)
     {
-        sequence[wordsize-1-i] = int2base[n & 3];
+        sequence[wordsize-1-i] = BaseAsciiMap::int2base[n & 3];
         n >>= 2;
     }
     return sequence;
@@ -292,12 +219,14 @@ void GenomeSequence::sanityCheck(MemoryMap &fasta) const
             case '\r':
                 break;
             default:
-                assert(base2int[(int)(*this)[genomeIndex]] == base2int[(int) fasta[i]]);
+                assert(BaseAsciiMap::base2int[(int)(*this)[genomeIndex]] == 
+                       BaseAsciiMap::base2int[(int) fasta[i]]);
 #if 0
-                if (base2int[(*this)[genomeIndex]] != base2int[(int) fasta[i]])
+                if(BaseAsciiMap::base2int[(*this)[genomeIndex]] != 
+                   BaseAsciiMap::base2int[(int) fasta[i]])
                 {
-                    int bp1 = base2int[(*this)[genomeIndex]];
-                    int bp2 = base2int[fasta[i]];
+                    int bp1 = BaseAsciiMap::base2int[(*this)[genomeIndex]];
+                    int bp2 = BaseAsciiMap::base2int[fasta[i]];
                     printf("failing at genome index = %u, fasta index = %u.\n",
                            genomeIndex,i);
                 }
@@ -561,7 +490,8 @@ bool loadFastaFile(const char *filename,
                     // On second and subsequent bases, write based on
                     // the index table above
                     //
-                    char thisBase = base2int[(int)(fasta[fastaIndex])];
+                    char thisBase = 
+                        BaseAsciiMap::base2int[(int)(fasta[fastaIndex])];
                     if (lastBase>=0)
                     {
                         char color;
@@ -569,7 +499,8 @@ bool loadFastaFile(const char *filename,
                         else color = fromBase2CS[(int)(lastBase<<2 | thisBase)];
                         // re-use the int to base, because ::set expects a base char (ATCG), not
                         // a color code (0123).  It should only matter on final output.
-                        set(header->elementCount++, int2base[(int) color]);
+                        set(header->elementCount++, 
+                            BaseAsciiMap::int2base[(int) color]);
                     }
                     lastBase = thisBase;
                 }
@@ -668,7 +599,7 @@ bool GenomeSequence::create(bool isColor)
 
     //
     // for converting the reference to colorspace, the first base is always 5 (in base space it is 'N')
-    signed char lastBase = base2int[(int) 'N'];
+    signed char lastBase = BaseAsciiMap::base2int[(int) 'N'];
     bool terminateLoad = false;
     int percent = -1, newPercent;
     uint32_t whichChromosome = 0;
@@ -779,7 +710,8 @@ bool GenomeSequence::create(bool isColor)
                     // On second and subsequent bases, write based on
                     // the index table above
                     //
-                    char thisBase = base2int[(int)(fasta[fastaIndex])];
+                    char thisBase = 
+                        BaseAsciiMap::base2int[(int)(fasta[fastaIndex])];
                     if (lastBase>=0)
                     {
                         char color;
@@ -787,7 +719,8 @@ bool GenomeSequence::create(bool isColor)
                         else color = fromBase2CS[(int)(lastBase<<2 | thisBase)];
                         // re-use the int to base, because ::set expects a base char (ATCG), not
                         // a color code (0123).  It should only matter on final output.
-                        set(header->elementCount++, int2base[(int) color]);
+                        set(header->elementCount++, 
+                            BaseAsciiMap::int2base[(int) color]);
                     }
                     lastBase = thisBase;
                 }
@@ -1140,7 +1073,7 @@ void GenomeSequence::getString(std::string &str, genomeIndex_t index, int baseCo
         // the read for the 3' end
         for (int i=0; i< -baseCount; i++)
         {
-            str.push_back(base2complement[(int)(*this)[index + i]]);
+            str.push_back(BaseAsciiMap::base2complement[(int)(*this)[index + i]]);
         }
     }
 }
@@ -1171,7 +1104,7 @@ void GenomeSequence::getHighLightedString(std::string &str, genomeIndex_t index,
         // the read for the 3' end
         for (int i=0; i< -baseCount; i++)
         {
-            char base = base2complement[(int)(*this)[index + i]];
+            char base = BaseAsciiMap::base2complement[(int)(*this)[index + i]];
             if (in(index+i, highLightStart, highLightEnd))
                 base = tolower(base);
             str.push_back(base);
@@ -1567,10 +1500,10 @@ void testGenomeSequence(void)
 
     pr.set("ATCGATCG", 0);
     assert(pr.size()==8);
-    assert(pr[0]==GenomeSequence::base2int[(int) 'A']);
-    assert(pr[1]==GenomeSequence::base2int[(int) 'T']);
-    assert(pr[2]==GenomeSequence::base2int[(int) 'C']);
-    assert(pr[3]==GenomeSequence::base2int[(int) 'G']);
+    assert(pr[0]==BaseAsciiMap::base2int[(int) 'A']);
+    assert(pr[1]==BaseAsciiMap::base2int[(int) 'T']);
+    assert(pr[2]==BaseAsciiMap::base2int[(int) 'C']);
+    assert(pr[3]==BaseAsciiMap::base2int[(int) 'G']);
     pr.set("ATCGATCG", 1);
     assert(pr.size()==9);
     pr.set("", 0);
@@ -1581,13 +1514,13 @@ void testGenomeSequence(void)
     assert(pr.size()==2);
     pr.set("", 3);
     assert(pr.size()==3);
-    assert(pr[0]==GenomeSequence::base2int[(int) 'N']);
-    assert(pr[1]==GenomeSequence::base2int[(int) 'N']);
-    assert(pr[2]==GenomeSequence::base2int[(int) 'N']);
+    assert(pr[0]==BaseAsciiMap::base2int[(int) 'N']);
+    assert(pr[1]==BaseAsciiMap::base2int[(int) 'N']);
+    assert(pr[2]==BaseAsciiMap::base2int[(int) 'N']);
     pr.set("C", 1);
     assert(pr.size()==2);
-    assert(pr[0]==GenomeSequence::base2int[(int) 'N']);
-    assert(pr[1]==GenomeSequence::base2int[(int) 'C']);
+    assert(pr[0]==BaseAsciiMap::base2int[(int) 'N']);
+    assert(pr[1]==BaseAsciiMap::base2int[(int) 'C']);
 
 }
 
