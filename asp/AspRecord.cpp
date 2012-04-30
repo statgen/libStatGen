@@ -64,77 +64,12 @@ bool AspRecord::add(char refBase, char base, char qual,
 
     myRefBase = refBase;
 
-    // Have not yet incremented myNumBases so as an example:
-    // myNumBases = 0; 1st base; basesIndex = 0;
-    // myNumBases = 1; 2nd base; basesIndex = 0;
-    // myNumBases = 2; 3rd base; basesIndex = 1;
-    // myNumBases = 3; 4th base; basesIndex = 1;
-    // myNumBases = 4; 5th base; basesIndex = 2;
-    int basesIndex = myNumBases/2;
-    unsigned char intBase = BaseAsciiMap::base2int[(int)base];
-    if((myNumBases % 2) == 0)
-    {
-        // When myNumBases is a multiple of 2, 
-        // we want the upper bits of the index.
-        myBases[basesIndex] = (intBase & 0xF) << BASE_SHIFT;
-    }
-    else
-    {
-        // Not a multiple of 2, so add it to the lower bits.
-        myBases[basesIndex] |= (intBase & 0xF);
-    }
+    myBases[myNumBases] = BaseAsciiMap::base2int[(int)base];
     int phredQual = BaseUtilities::getPhredBaseQuality(qual);
     myQuals[myNumBases] = phredQual;
     myCycles[myNumBases] = cycle;
-
-    int strandsIndex = myNumBases/8;
-    int strandsSubIndex = myNumBases%8;
-    if(strandsSubIndex == 0)
-    {
-        if(strand != 0)
-        {
-            // Turn on the upper-most bit, default the rest to off.
-            myStrands[strandsIndex] = 0x80;
-        }
-        else
-        {
-            // The upper-most bit is off, set the rest to off too.
-            myStrands[strandsIndex] = 0;
-        }
-    }
-    else if(strand != 0)
-    {
-        // Set this strand to 1 based on the position in the int.
-        if(strandsSubIndex == 1)
-        {
-            myStrands[strandsIndex] |= 0x40;
-        }
-        else if(strandsSubIndex == 2)
-        {
-            myStrands[strandsIndex] |= 0x20;
-        }
-        else if(strandsSubIndex == 3)
-        {
-            myStrands[strandsIndex] |= 0x10;
-        }
-        else if(strandsSubIndex == 4)
-        {
-            myStrands[strandsIndex] |= 0x8;
-        }
-        else if(strandsSubIndex == 5)
-        {
-            myStrands[strandsIndex] |= 0x4;
-        }
-        else if(strandsSubIndex == 6)
-        {
-            myStrands[strandsIndex] |= 0x2;
-        }
-        else if(strandsSubIndex == 7)
-        {
-            myStrands[strandsIndex] |= 0x1;
-        }
-        
-    }
+    myStrands[myNumBases] = strand;
+    
     myMQs[myNumBases] = mq;
     ++myNumBases;
 
@@ -339,17 +274,8 @@ char AspRecord::getBaseChar(int index)
         // Invalid index, so just return 'N';
         return('N');
     }
-    uint8_t basePair = myBases[index/2];
     char returnVal;
-    if((index % 2) == 0)
-    {
-        // Higher bits, so shift and look up the base.
-        returnVal = BaseAsciiMap::int2base[basePair >> 4];
-    }
-    else
-    {
-        returnVal = BaseAsciiMap::int2base[basePair & 0xF];
-    }
+    returnVal = BaseAsciiMap::int2base[myBases[index]];
     if(returnVal == 'M')
     {
         return(DELETION_BASE);
@@ -398,11 +324,8 @@ bool AspRecord::getStrand(int index)
         // Invalid index, so just return false;
         return(false);
     }
-    int strandIndex = index/8;
-    int strandSubIndex = index%8;
-
     // Return whether or not the specified bit is 1.
-    return((myStrands[strandIndex] >> (7-strandSubIndex)) && 0x1);
+    return(myStrands[index]);
 }
 
 
@@ -531,14 +454,12 @@ bool AspRecord::readDetailedRecord(IFILE filePtr)
     }
 
     // We now have the number of records so can read the remaining fields.
-    readSize = getBasesSize();
+    readSize = myNumBases;
     if(ifread(filePtr, &myBases, readSize) != readSize)
     {
         throw(std::runtime_error("AspRecord: Failed reading the bases from a detailed record."));
         return(false);
     }
-    
-    readSize = myNumBases;
     if(ifread(filePtr, &myQuals, readSize) != readSize)
     {
         throw(std::runtime_error("AspRecord: Failed reading the qualities from a detailed record."));
@@ -549,7 +470,6 @@ bool AspRecord::readDetailedRecord(IFILE filePtr)
         throw(std::runtime_error("AspRecord: Failed reading the cycles from a detailed record."));
         return(false);
     }
-    readSize = getStrandsSize();
     if(ifread(filePtr, &myStrands, readSize) != readSize)
     {
         throw(std::runtime_error("AspRecord: Failed reading the strands from a detailed record."));
@@ -637,8 +557,8 @@ void AspRecord::writeDetailed(IFILE outputFile)
     {
         throw(std::runtime_error("AspRecord: Failed writing num bases to a detailed record."));
     }
-    unsigned int basesSize = getBasesSize();
-    if(ifwrite(outputFile, myBases, basesSize) != basesSize)
+
+    if(ifwrite(outputFile, myBases, myNumBases) != myNumBases)
     {
         throw(std::runtime_error("AspRecord: Failed writing bases to a detailed record."));
     }
@@ -651,7 +571,7 @@ void AspRecord::writeDetailed(IFILE outputFile)
     {
         throw(std::runtime_error("AspRecord: Failed writing cycles to a detailed record."));
     }
-    if(ifwrite(outputFile, myStrands, getStrandsSize()) != getStrandsSize())
+    if(ifwrite(outputFile, myStrands, myNumBases) != myNumBases)
     {
         throw(std::runtime_error("AspRecord: Failed writing strands to a detailed record."));
     }

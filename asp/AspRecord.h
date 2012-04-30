@@ -169,32 +169,6 @@ private:
     // Get the likelihood of the genotype with the 2 specified bases.
     // Make sure all bases are the same case (upper/lower).
     int getDetailedLikelihood(char base1, char base2);
-    
-
-    inline unsigned int getBasesSize()
-    {
-        // The number of bytes used for the bases array is the
-        // (number of bases + 1) divided by 2.
-        // Examples:  
-        //   myNumBases = 0, Size = (0+1)/2 = 0
-        //   myNumBases = 1, Size = (1+1)/2 = 1
-        //   myNumBases = 2, Size = (2+1)/2 = 1
-        //   myNumBases = 3, Size = (3+1)/2 = 2
-        return((myNumBases+1)/2);
-    }
-    
-    inline unsigned int getStrandsSize()
-    {
-        // The number of bytes used for the strands array is the
-        // (number of bases + 7) divided by 8.
-        // Examples:  
-        //   myNumBases = 0, Size = (0+7)/8 = 0
-        //   myNumBases = 1, Size = (1+7)/8 = 1
-        //   myNumBases = 2, Size = (2+7)/8 = 1
-        //   myNumBases = 8, Size = (8+7)/8 = 1
-        //   myNumBases = 9, Size = (9+7)/8 = 2
-        return((myNumBases+7)/8);
-    }
 
     inline uint8_t getRefBaseType() 
     {
@@ -223,14 +197,10 @@ private:
     double myGLAd;
     uint8_t myGLAi;
 
-    // Since each base is only 4 bits, each index holds two bases.
-    // The earlier base is in the upper bits.
-    int8_t myBases[(MAX_NUM_BASES+1)/2];
+    int8_t myBases[MAX_NUM_BASES];
     int8_t myQuals[MAX_NUM_BASES];
     int8_t myCycles[MAX_NUM_BASES];
-    // Since strands are only 1 bit, each index holds 4 strands
-    // with the first strand in the uppermost bit.
-    int8_t myStrands[(MAX_NUM_BASES+7)/8];
+    int8_t myStrands[MAX_NUM_BASES];
     uint8_t myMQs[MAX_NUM_BASES];
 
     // The choromsome & position for this record.
