@@ -47,7 +47,8 @@ AspRecord::~AspRecord()
 
 // Add an entry
 bool AspRecord::add(char refBase, char base, char qual,
-                    int cycle, bool strand, int mq)
+                    int cycle, bool strand, int mq,
+                    const char* readName)
 {
     // If we are already at the max number of bases, just return.
     if(myNumBases >= MAX_NUM_BASES)
@@ -69,8 +70,8 @@ bool AspRecord::add(char refBase, char base, char qual,
     myQuals[myNumBases] = phredQual;
     myCycles[myNumBases] = cycle;
     myStrands[myNumBases] = strand;
-    
     myMQs[myNumBases] = mq;
+    myReadNames[myNumBases] = myReadNameID.getReadNameID(readName);
     ++myNumBases;
 
     myNumNonNBasesSet = true;
@@ -340,6 +341,17 @@ int AspRecord::getMQ(int index)
 }
 
 
+int AspRecord::getReadNameID(int index)
+{
+    if((index >= myNumBases) || (index < 0))
+    {
+        // Invalid index, so just return -1;
+        return(-1);
+    }
+    return(myReadNames[index]);
+}
+
+
 void AspRecord::writeEmpty(IFILE outputFile)
 {
     // An empty record has no reference base, so no need to add that.
@@ -475,10 +487,15 @@ bool AspRecord::readDetailedRecord(IFILE filePtr)
         throw(std::runtime_error("AspRecord: Failed reading the strands from a detailed record."));
         return(false);
     }
-    readSize = myNumBases;
     if(ifread(filePtr, &myMQs, readSize) != readSize)
     {
         throw(std::runtime_error("AspRecord: Failed reading the MQs from a detailed record."));
+        return(false);
+    }
+    readSize = myNumBases * 2;
+    if(ifread(filePtr, &myReadNames, readSize) != readSize)
+    {
+        throw(std::runtime_error("AspRecord: Failed reading the ReadName IDs from a detailed record."));
         return(false);
     }
     return(true);
@@ -558,26 +575,32 @@ void AspRecord::writeDetailed(IFILE outputFile)
         throw(std::runtime_error("AspRecord: Failed writing num bases to a detailed record."));
     }
 
-    if(ifwrite(outputFile, myBases, myNumBases) != myNumBases)
+    unsigned int writeSize = myNumBases;
+    if(ifwrite(outputFile, myBases, writeSize) != writeSize)
     {
         throw(std::runtime_error("AspRecord: Failed writing bases to a detailed record."));
     }
 
-    if(ifwrite(outputFile, myQuals, myNumBases) != myNumBases)
+    if(ifwrite(outputFile, myQuals, writeSize) != writeSize)
     {
         throw(std::runtime_error("AspRecord: Failed writing qualities to a detailed record."));
     }
-    if(ifwrite(outputFile, myCycles, myNumBases) != myNumBases)
+    if(ifwrite(outputFile, myCycles, writeSize) != writeSize)
     {
         throw(std::runtime_error("AspRecord: Failed writing cycles to a detailed record."));
     }
-    if(ifwrite(outputFile, myStrands, myNumBases) != myNumBases)
+    if(ifwrite(outputFile, myStrands, writeSize) != writeSize)
     {
         throw(std::runtime_error("AspRecord: Failed writing strands to a detailed record."));
     }
-    if(ifwrite(outputFile, myMQs, myNumBases) != myNumBases)
+    if(ifwrite(outputFile, myMQs, writeSize) != writeSize)
     {
         throw(std::runtime_error("AspRecord: Failed writing MQs to a detailed record."));
+    }
+    writeSize = myNumBases * 2;
+    if(ifwrite(outputFile, myReadNames, writeSize) != writeSize)
+    {
+        throw(std::runtime_error("AspRecord: Failed writing Read Name IDs to a detailed record."));
     }
 }
 
