@@ -25,6 +25,9 @@ const std::string HEADER_LINE_SUBSET1="#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FO
 const std::string HEADER_LINE_SUBSET2="#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA00002	NA00003";
 const int NUM_SAMPLES_SUBSET1 = 2;
 const int NUM_SAMPLES_SUBSET2 = 2;
+const std::string HEADER_LINE_EXCLUDE_SUBSET1="#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA00003";
+const int NUM_SAMPLES_EXCLUDE2 = 2;
+const std::string HEADER_LINE_EXCLUDE2="#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NA00001	NA00003";
 
 void testVcfFile()
 {
@@ -414,6 +417,622 @@ void testVcfReadFile()
     assert(sampleInfo->hasAllGenotypeAlleles() == false);
     assert(sampleInfo->isPhased(0) == true);
     assert(sampleInfo->isPhased(1) == true);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.getNumKeptRecords() == 7);
+    assert(reader.getNumRecords() == 7);
+
+
+    //////////////////////////
+    // Subset using an exclude file
+    reader.open("testFiles/vcfFile.vcf", header, NULL, NULL,
+                "testFiles/subset1.txt", ";");
+    
+    assert(header.getHeaderLine() == HEADER_LINE_EXCLUDE_SUBSET1);
+    assert(header.getNumSamples() == NUM_SAMPLES - NUM_SAMPLES_SUBSET1);
+    assert(header.getSampleName(2) == NULL);
+    assert(header.getSampleName(0) == SAMPLES[2]);
+    assert(header.getSampleName(1) == NULL);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == 0);
+
+    // Read the records to make sure they were subset.
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "1/1");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/0");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "2/2");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/0");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "1/1");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == false);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(sampleInfo->getString("GT", 0) == NULL);
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == false);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == true);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "1|1");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == true);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.getNumKeptRecords() == 7);
+    assert(reader.getNumRecords() == 7);
+
+
+    //////////////////////////
+    // Subset with a different exclude.
+    reader.open("testFiles/vcfFile.vcf", header, NULL, NULL,
+                "testFiles/exclude2.txt");
+    
+    assert(header.getHeaderLine() == HEADER_LINE_EXCLUDE2);
+    assert(header.getNumSamples() == NUM_SAMPLES_EXCLUDE2);
+    assert(header.getSampleName(2) == NULL);
+    assert(header.getSampleName(0) == SAMPLES[0]);
+    assert(header.getSampleName(1) == SAMPLES[2]);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == 1);
+
+    // Read the records to make sure they were subset.
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "1/1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/0");
+    assert(*(sampleInfo->getString("GT", 1)) == "0/0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "1|2");
+    assert(*(sampleInfo->getString("GT", 1)) == "2/2");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "0/0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/1");
+    assert(*(sampleInfo->getString("GT", 1)) == "1/1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == false);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(sampleInfo->getString("GT", 0) == NULL);
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == false);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == true);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|1");
+    assert(*(sampleInfo->getString("GT", 1)) == "1|1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == true);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == true);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.getNumKeptRecords() == 7);
+    assert(reader.getNumRecords() == 7);
+
+
+    //////////////////////////
+    // Subset with an exclude sample.
+    reader.open("testFiles/vcfFile.vcf", header, NULL, "NA00002",
+                NULL);
+    
+    assert(header.getHeaderLine() == HEADER_LINE_EXCLUDE2);
+    assert(header.getNumSamples() == NUM_SAMPLES_EXCLUDE2);
+    assert(header.getSampleName(2) == NULL);
+    assert(header.getSampleName(0) == SAMPLES[0]);
+    assert(header.getSampleName(1) == SAMPLES[2]);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == 1);
+
+    // Read the records to make sure they were subset.
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "1/1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/0");
+    assert(*(sampleInfo->getString("GT", 1)) == "0/0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "1|2");
+    assert(*(sampleInfo->getString("GT", 1)) == "2/2");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+    assert(*(sampleInfo->getString("GT", 1)) == "0/0");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/1");
+    assert(*(sampleInfo->getString("GT", 1)) == "1/1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == true);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == false);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(sampleInfo->getString("GT", 0) == NULL);
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == false);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == true);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 2);
+    assert(*(sampleInfo->getString("GT", 0)) == "0|1");
+    assert(*(sampleInfo->getString("GT", 1)) == "1|1");
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == true);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == true);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record) == false);
+
+    assert(reader.getNumKeptRecords() == 7);
+    assert(reader.getNumRecords() == 7);
+
+
+    //////////////////////////
+    // Subset using an exclude file and exclude sample.
+    reader.open("testFiles/vcfFile.vcf", header, NULL, "NA00001",
+                "testFiles/exclude2.txt");
+    
+    assert(header.getHeaderLine() == HEADER_LINE_EXCLUDE_SUBSET1);
+    assert(header.getNumSamples() == NUM_SAMPLES - NUM_SAMPLES_SUBSET1);
+    assert(header.getSampleName(2) == NULL);
+    assert(header.getSampleName(0) == SAMPLES[2]);
+    assert(header.getSampleName(1) == NULL);
+    assert(header.getSampleIndex(SAMPLES[1].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[0].c_str()) == -1);
+    assert(header.getSampleIndex(SAMPLES[2].c_str()) == 0);
+
+    // Read the records to make sure they were subset.
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "1/1");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/0");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "2/2");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "0/0");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == true);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "1/1");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == true);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == true);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == false);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == false);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(sampleInfo->getString("GT", 0) == NULL);
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == false);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == false);
+    assert(sampleInfo->isPhased(0) == false);
+    assert(sampleInfo->isPhased(1) == false);
+    assert(sampleInfo->isPhased(2) == false);
+    assert(sampleInfo->isUnphased(0) == false);
+    assert(sampleInfo->isUnphased(1) == false);
+    assert(sampleInfo->isUnphased(2) == false);
+
+    assert(reader.readRecord(record));
+    assert(record.allPhased() == true);
+    assert(record.allUnphased() == false);
+    assert(record.hasAllGenotypeAlleles() == true);
+    sampleInfo = &(record.getGenotypeInfo());
+    assert(sampleInfo->getNumSamples() == 1);
+    assert(*(sampleInfo->getString("GT", 0)) == "1|1");
+    assert(sampleInfo->getString("GT", 1) == NULL);
+    assert(sampleInfo->getString("GT", 2) == NULL);
+    assert(sampleInfo->allPhased() == true);
+    assert(sampleInfo->allUnphased() == false);
+    assert(sampleInfo->hasAllGenotypeAlleles() == true);
+    assert(sampleInfo->isPhased(0) == true);
+    assert(sampleInfo->isPhased(1) == false);
     assert(sampleInfo->isPhased(2) == false);
     assert(sampleInfo->isUnphased(0) == false);
     assert(sampleInfo->isUnphased(1) == false);
