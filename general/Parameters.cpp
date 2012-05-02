@@ -583,6 +583,13 @@ void ParameterList::Read(int argc, char ** argv, int start)
             warnings += warning;
         }
     }
+
+    if (warnings.Length())
+    {
+        ::warning("Problems encountered parsing command line:\n\n%s",
+                  (const char *) warnings);
+        warnings.Clear();
+    }
 }
 
 int ParameterList::ReadWithTrailer(int argc, char ** argv, int start)
@@ -626,6 +633,13 @@ int ParameterList::ReadWithTrailer(int argc, char ** argv, int start)
         }
     }
 
+    if (warnings.Length())
+    {
+        ::warning("Problems encountered parsing command line:\n\n%s",
+                  (const char *) warnings);
+        warnings.Clear();
+    }
+
     return last_success;
 };
 
@@ -638,13 +652,6 @@ void ParameterList::Status()
         pl[i]->Status();
 
     fprintf(stderr, "\n");
-
-    if (warnings.Length())
-    {
-        ::warning("Problems encountered parsing command line:\n\n%s",
-                  (const char *) warnings);
-        warnings.Clear();
-    }
 
     if (messages.Length())
         fprintf(stderr, "NOTES:\n%s\n", (const char *) messages);
