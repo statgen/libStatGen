@@ -51,16 +51,23 @@ public:
     /// Open the vcf file with the specified filename for reading
     /// subsetting the samples in the file to just the samples specified
     /// in the sample file.
-    /// \param  filename the vcf file to open for reading.
+    /// \param filename the vcf file to open for reading.
     /// \param header to be read from the file
-    /// \param sampleFileName file containing samples to keep
-    /// \param delims deliminators separating the samples in the file ('\n'
+    /// \param includeFileName file containing samples to keep
+    ///                        or NULL if all samples except those specified as
+    ///                        excluded should be included.
+    /// \param excludeSample sample to be excluded or NULL
+    /// \param excludeFileName file containing samples to remove or NULL
+    ///                        or NULL if there is no file containing samples
+    ///                        to exclude.                        
+    /// \param delims deliminators separating the samples in the files ('\n'
     /// is always considered a delimiter even if it isn't specified).  When
     /// any of the specified delimiter characters is found in the file it
     /// indicates the end of a sample name.
     /// \return true = success; false = failure.
     virtual bool open(const char* filename, VcfHeader& header,
-                      const char* sampleFileName, const char* delims = "\n");
+                      const char* includeFileName, const char* excludeSample,
+                      const char* excludeFileName, const char* delims = "\n");
 
     /// Read the specified vcf index file.  It must be read prior to setting a
     /// read section, for seeking and reading portions of a vcf file.

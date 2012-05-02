@@ -70,7 +70,8 @@ bool VcfFileReader::open(const char* filename, VcfHeader& header)
 
 
 bool VcfFileReader::open(const char* filename, VcfHeader& header,
-                         const char* sampleFileName, const char* delims)
+                         const char* includeFileName, const char* excludeSample,
+                         const char* excludeFileName, const char* delims)
 {
     if(!open(filename, header))
     {
@@ -79,8 +80,9 @@ bool VcfFileReader::open(const char* filename, VcfHeader& header,
     }
 
     // Successfully opened and read the header, so setup the sample subset
-    // object based on the specified sample file and the header.
-    if(!mySampleSubset.init(header, sampleFileName, delims))
+    // object based on the specified sample files and the header.
+    if(!mySampleSubset.init(header, includeFileName, excludeSample,
+                            excludeFileName, delims))
     {
         // Failed to setup the subsetting.
         std::cerr << "VcfFileReader - failed to setup sample subsetting\n";

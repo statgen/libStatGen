@@ -17,14 +17,35 @@
 
 #include "VcfSubsetSamples.h"
 
-bool VcfSubsetSamples::init(VcfHeader& header, const char* sampleFileName, 
+bool VcfSubsetSamples::init(VcfHeader& header, 
+                            const char* includeFileName, 
+                            const char* excludeSample, 
+                            const char* excludeFileName,
                             const char* delims)
 {
-    // Setup the sample list.
-    if(!mySampleList.readFromFile(sampleFileName, delims))
+    // Setup the sample lists to include/exclude.
+    std::set<std::string> includeList;
+    std::set<std::string> excludeList;
+    if(includeFileName != NULL)
     {
-        // Failed, so return.
-        return(false);
+        if(!readSamplesFromFile(includeFileName, includeList, delims))
+        {
+            // Failed, so return.
+            return(false);
+        }
+    }
+
+    if(excludeFileName != NULL)
+    {
+        if(!readSamplesFromFile(excludeFileName, excludeList, delims))
+        {
+            // Failed, so return.
+            return(false);
+        }
+    }
+    if(excludeSample != NULL)
+    {
+        excludeList.insert(excludeSample);
     }
 
     int origNumSamples = header.getNumSamples();
@@ -46,16 +67,24 @@ bool VcfSubsetSamples::init(VcfHeader& header, const char* sampleFileName,
         return(true);
     }
 
-    // Now that the sample list is setup and the indicator vector is setup,
-    // subset the header removing samples not found in the subset list.
-    // Loop from the back of the samples to the beginning since
+    // Now that the sample lists to include/exclude are setup and the
+    // indicator vector is setup, subset the header removing samples that 
+    // should not be kept (not in the include list if set or in the exclude 
+    // list). Loop from the back of the samples to the beginning since
     // removing samples changes the index of all following samples.
     for(int i = (origNumSamples-1); i >= 0; i--)
     {
         // Check if the sample should be kept.
-        if(!mySampleList.contains(header.getSampleName(i)))
+        const char* sampleName = header.getSampleName(i);
+        // Remove the sample if the includeList was specified and the sample
+        // was not in it or if the excludeList was specified and the sample 
+        // was in it.
+        if((!includeList.empty() && 
+            (includeList.count(sampleName) == 0)) ||
+           (!excludeList.empty() && 
+            (excludeList.count(sampleName) != 0)))
         {
-            // This sample should be removed since it is not in the subset.
+            // This sample should be removed.
             header.removeSample(i);
             mySampleSubsetIndicator[i] = false;
         }
@@ -77,6 +106,43 @@ bool VcfSubsetSamples::keep(unsigned int sampleIndex)
 
 void VcfSubsetSamples::reset()
 {
-    mySampleList.clear();
     mySampleSubsetIndicator.clear();
 }
+
+
+bool VcfSubsetSamples::readSamplesFromFile(const char* fileName, 
+                                           std::set<std::string>& sampleList,
+                                           const char* delims)
+{
+    // Open the file.
+    IFILE sampleFile = ifopen(fileName, "r");
+
+    if(sampleFile == NULL)
+    {
+        // Failed to open.
+        return(false);
+    }
+
+    // read the file.
+    std::string tempString;
+
+    std::string delimString = delims;
+    delimString += '\n';
+
+    int readResult = 0;
+    while(readResult != -1)
+    {
+        readResult = sampleFile->readTilChar(delimString, tempString);
+
+        // Check to see if something was read (tempString is not empty).
+        if(!tempString.empty())
+        {
+            // sample name found, so add it to the container.
+            sampleList.insert(tempString);
+        }
+        // Clear the string being read into.
+        tempString.clear();
+    }
+    return(true);
+}
+

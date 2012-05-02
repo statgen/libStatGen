@@ -19,20 +19,19 @@
 #define __VCF_SUBSET_SAMPLES_H__
 
 #include <vector>
-#include"SampleList.h"
+#include <set>
+#include <string>
 #include "VcfHeader.h"
 
 class VcfSubsetSamples
 {
 public:
     VcfSubsetSamples()
-        : mySampleList(),
-          mySampleSubsetIndicator()
+        : mySampleSubsetIndicator()
     {}
 
     ~VcfSubsetSamples()
     {
-        mySampleList.clear();
         mySampleSubsetIndicator.clear();
     }
 
@@ -42,6 +41,7 @@ public:
     /// This also initializes this class to identify which samples should
     /// be kept/removed when reading records.
     bool init(VcfHeader& header, const char* sampleFileName, 
+              const char* excludeSample, const char* excludeFileName,
               const char* delims = "\n");
 
     /// Return if the specified original sample index should be kept.
@@ -58,7 +58,12 @@ public:
 private:
     VcfSubsetSamples(const VcfSubsetSamples& vcfSubsetSamples);
 
-    SampleList mySampleList;
+    // Read a list of samples from the specified file delimited by any of the
+    // characters in delims or '\n' and store them in the specified container.
+    bool readSamplesFromFile(const char* fileName, 
+                             std::set<std::string>& sampleList,
+                             const char* delims="\n");
+
 
     std::vector<bool> mySampleSubsetIndicator;
 };

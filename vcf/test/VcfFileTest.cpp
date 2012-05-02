@@ -125,7 +125,8 @@ void testVcfReadFile()
     // Test the subset logic.
     VcfRecordGenotype* sampleInfo = NULL;
 
-    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", ";");
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt",
+                NULL, NULL, ";");
 
     assert(header.getHeaderLine() == HEADER_LINE_SUBSET1);
     assert(header.getNumSamples() == NUM_SAMPLES_SUBSET1);
@@ -272,7 +273,8 @@ void testVcfReadFile()
 
     //////////////////////////
     // Subset with a different file.
-    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset2.txt");
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset2.txt", 
+                NULL, NULL);
     
     assert(header.getHeaderLine() == HEADER_LINE_SUBSET2);
     assert(header.getNumSamples() == NUM_SAMPLES_SUBSET2);
@@ -426,7 +428,8 @@ void testVcfReadFile()
     //////////////////////////
     // Add in discarding non-phased.
     reader.setDiscardRules(VcfFileReader::DISCARD_NON_PHASED);
-    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", ";");
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", 
+                NULL, NULL, ";");
 
     assert(header.getHeaderLine() == HEADER_LINE_SUBSET1);
     assert(header.getNumSamples() == NUM_SAMPLES_SUBSET1);
@@ -500,7 +503,8 @@ void testVcfReadFile()
     //////////////////////////
     // Discard missing GTs.
     reader.setDiscardRules(VcfFileReader::DISCARD_MISSING_GT);
-    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", ";");
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", 
+                NULL, NULL, ";");
 
     assert(header.getHeaderLine() == HEADER_LINE_SUBSET1);
     assert(header.getNumSamples() == NUM_SAMPLES_SUBSET1);
@@ -586,7 +590,8 @@ void testVcfReadFile()
     // Discard missing GTs & non-Phased.
     reader.setDiscardRules(VcfFileReader::DISCARD_MISSING_GT | 
                            VcfFileReader::DISCARD_NON_PHASED);
-    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", ";");
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", 
+                NULL, NULL, ";");
 
     assert(header.getHeaderLine() == HEADER_LINE_SUBSET1);
     assert(header.getNumSamples() == NUM_SAMPLES_SUBSET1);
@@ -880,7 +885,8 @@ void testVcfReadFile()
                            VcfFileReader::DISCARD_FILTERED |
                            VcfFileReader::DISCARD_MISSING_GT | 
                            VcfFileReader::DISCARD_NON_PHASED);
-    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", ";");
+    reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", 
+                NULL, NULL, ";");
 
     assert(header.getHeaderLine() == HEADER_LINE_SUBSET1);
     assert(header.getNumSamples() == NUM_SAMPLES_SUBSET1);
