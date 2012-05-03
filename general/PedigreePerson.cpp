@@ -34,6 +34,7 @@ Person::Person()
     traits = new double [traitCount];
     covariates = new double [covariateCount];
     affections = new char [affectionCount];
+    strings = new String [stringCount];
 
     for (int i = 0; i < traitCount; i++) traits[i] = _NAN_;
     for (int i = 0; i < covariateCount; i++) covariates[i] = _NAN_;
@@ -55,6 +56,7 @@ Person::~Person()
     delete [] traits;
     delete [] affections;
     delete [] covariates;
+    delete [] strings;
 
     if (sibCount) delete [] sibs;
 }
