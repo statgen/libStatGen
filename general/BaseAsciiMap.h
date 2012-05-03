@@ -24,14 +24,6 @@
 class BaseAsciiMap
 {
 public:
-    /// Value associated with 'A' in the ascii to base map.
-    static const int baseAIndex = 000;
-    /// Value associated with 'T' in the ascii to base map.
-    static const int baseTIndex = 001;
-    /// Value associated with 'C' in the ascii to base map.
-    static const int baseCIndex = 002;
-    /// Value associated with 'G' in the ascii to base map.
-    static const int baseGIndex = 003;
     /// Value associated with 'N' in the ascii to base map (bad read).
     static const int baseNIndex = 004;
     /// Value associated with any non-base character in the ascii to base
