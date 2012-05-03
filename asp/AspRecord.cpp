@@ -48,7 +48,7 @@ AspRecord::~AspRecord()
 // Add an entry
 bool AspRecord::add(char refBase, char base, char qual,
                     int cycle, bool strand, int mq,
-                    const char* readName)
+                    uint16_t readNameID)
 {
     // If we are already at the max number of bases, just return.
     if(myNumBases >= MAX_NUM_BASES)
@@ -71,7 +71,7 @@ bool AspRecord::add(char refBase, char base, char qual,
     myCycles[myNumBases] = cycle;
     myStrands[myNumBases] = strand;
     myMQs[myNumBases] = mq;
-    myReadNames[myNumBases] = myReadNameID.getReadNameID(readName);
+    myReadNames[myNumBases] = readNameID;
     ++myNumBases;
 
     myNumNonNBasesSet = true;

@@ -23,7 +23,6 @@
 
 #include "SamFile.h"
 #include "BaseAsciiMap.h"
-#include "AspReadNameID.h"
 
 class AspRecord
 {
@@ -52,7 +51,7 @@ public:
     // 'N' and it is being ignored). 
     bool add(char refBase, char base, char qual,
              int cycle, bool strand, int mq,
-             const char* readName);
+             uint16_t readNameID);
 
     // Sets this record to an empty record type.
     void setEmptyType();
@@ -208,8 +207,6 @@ private:
     int8_t myStrands[MAX_NUM_BASES];
     uint8_t myMQs[MAX_NUM_BASES];
     uint16_t myReadNames[MAX_NUM_BASES];
-
-    AspReadNameID myReadNameID;
 
     // The choromsome & position for this record.
     int32_t myChromID;
