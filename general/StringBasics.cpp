@@ -289,7 +289,7 @@ String & String::operator = (unsigned int rhs)
 {
     Clear();
 
-    unsigned long  base = 10;
+    unsigned long long base = 10;
     int   digits = 1;
 
     while (rhs >= base)
