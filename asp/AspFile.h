@@ -45,6 +45,11 @@ public:
     inline int getNumDetailedRecs() { return(myNumDetailedRecs); }
     inline int getNumUnknownRecs() { return(myNumUnknownRecs); }
 
+    inline bool getChromName(int32_t chromID, std::string& chromName)
+    { return(myHeader.getChromName(chromID,chromName)); }
+    inline const char* getChromName(int32_t chromID)
+    { return(myHeader.getChromName(chromID)); }
+
 protected:
     /// Open the file
     /// \param  filename the file to open.
@@ -168,9 +173,6 @@ private:
     // the chromid/pos for non-pos records.
     int32_t prevChrom;
     int32_t prevPos;
-
-    // Stores the header of mapping chromosome name to id.
-    AspHeader myHeader;
 
     // Used to store a record that is used in the accessor logic that
     // takes a position and returns information or a reference to the record.

@@ -21,7 +21,8 @@
 int AspFileWriter::myGapSize = AspFileWriter::DEFAULT_GAP_SIZE;
 
 AspFile::AspFile()
-    : myFilePtr(NULL)
+    : myFilePtr(NULL),
+      myHeader()
 {
     reset();
 }
@@ -112,7 +113,6 @@ void AspFile::updateRecordCount(AspRecord& record)
 
 AspFileReader::AspFileReader()
     : AspFile(),
-      myHeader(),
       myStoredRecord(),
       myEmptyRecord()
       

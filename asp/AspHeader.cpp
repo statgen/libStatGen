@@ -137,6 +137,7 @@ int32_t AspHeader::getChromID(const char* chromName)
     return((*chromIter).second);
 }
 
+
 bool AspHeader::getChromName(int32_t chromID, std::string& chromName)
 {
     if((chromID < 0) || ((uint32_t)chromID >= myIDToName.size()))
@@ -149,6 +150,21 @@ bool AspHeader::getChromName(int32_t chromID, std::string& chromName)
     chromName = myIDToName[chromID];
     return(true);
 }
+
+
+const char* AspHeader::getChromName(int32_t chromID)
+{
+    if((chromID < 0) || ((uint32_t)chromID >= myIDToName.size()))
+    {
+        return NULL;
+    }
+    else
+    {
+        // Chromosome id is in range, so return the name.
+        myIDToName[chromID].c_str();
+    }
+}
+
 
 void AspHeader::reset()
 {
