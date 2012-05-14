@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #define __BASE_UTILITIES_H__
 
 #include <stdint.h>
+#include <string>
 
 
 /// This class contains static utilities for performing
@@ -41,6 +42,8 @@ public:
 
     /// Get ascii quality from the specified phred quality.
     static char getAsciiQuality(uint8_t phredQuality);
+
+    static void reverseComplement(std::string& sequence);
 
     /// Character used when the quality is unknown.
     static const char UNKNOWN_QUALITY_CHAR = ' ';

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,8 +16,9 @@
  */
 
 #include "BaseUtilities.h"
-
 #include <ctype.h>
+#include "BaseAsciiMap.h"
+
 
 bool BaseUtilities::isAmbiguous(char base)
 {
@@ -80,4 +81,29 @@ char BaseUtilities::getAsciiQuality(uint8_t phredQuality)
         return(UNKNOWN_QUALITY_CHAR);
     }
     return(phredQuality + 33);
+}
+
+
+void BaseUtilities::reverseComplement(std::string& sequence)
+{
+    int start = 0;
+    int end = sequence.size() - 1;
+    char tempChar;
+
+    while(start < end)
+    {
+        tempChar = sequence[start];
+        sequence[start] = BaseAsciiMap::base2complement[(int)(sequence[end])];
+        sequence[end] = BaseAsciiMap::base2complement[(int)tempChar];
+        // Move both pointers.
+        ++start;
+        --end;
+    }
+
+    // there was an odd number of entries, complement the middle one.
+    if(start == end)
+    {
+        tempChar = sequence[start];
+        sequence[start] = BaseAsciiMap::base2complement[(int)tempChar];
+    }
 }
