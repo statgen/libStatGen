@@ -7,7 +7,7 @@
 #                        files change.  These files MUST also be
 #                        included in TOOLBASE or SRCONLY.  Here they are
 #                        just the base name without the extension.
-#   VERSION - if not 0.0.1
+#    VERSION - if not version in Makefile.include
 #   BINDIR if it is not ../bin
 #   USER_INCLUDES if any additional directories need to be included to pick up
 #                 header files (example: USER_INCLUDES=-ImyDir1 -ImyDir2)
