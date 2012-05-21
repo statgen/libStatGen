@@ -26,7 +26,6 @@
 #include "SamHeaderSQ.h"
 #include "SamHeaderRG.h"
 #include "SamHeaderPG.h"
-#include "SamStatus.h"
 
 /// This class allows a user to get/set the fields in a SAM/BAM Header.
 /// Sam/Bam headers contain comments and multiple SamHeaderRecords 
@@ -231,7 +230,7 @@ public:
     ////////////////////////////////////////////////////////////////////////
     //
     ////////////////////////////////////////////////////////////////////////
-    SamStatus::Status setHeaderFromBamFile(IFILE filePtr);
+    bool setHeaderFromBamFile(IFILE filePtr);
     
 
     ////////////////////////////////////////////////////////////////////////
@@ -413,8 +412,11 @@ public:
     //@}
 
 
+    /// Get the failure message if a method returned failure.
+    const char* getErrorMessage()  { return(myErrorMessage.c_str()); }
+
 private:
-    // Parse the header string.
+    // Parse the header string. 
     bool parseHeader(String& header);
 
     // Parse the specified line of the header.
@@ -448,6 +450,8 @@ private:
     std::vector<std::string> myComments;
 
     std::vector<SamHeaderRecord*> myHeaderRecords;
+
+    std::string myErrorMessage;
 
     uint32_t myCurrentSQIndex;
 

@@ -29,21 +29,25 @@ BamInterface::~BamInterface()
 
 
 // Read a BAM file's header.
-SamStatus::Status BamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
+bool BamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
+                              SamStatus& status)
 {
     if(filePtr == NULL)
     {
         // File is not open, return false.
-        return(SamStatus::FAIL_ORDER);
+        status.setStatus(SamStatus::FAIL_ORDER, 
+                           "Cannot read header since the file pointer is null");
+        return(false);
     }
 
     // Clear the passed in header.
     header.resetHeader();
 
-    SamStatus::Status status = header.setHeaderFromBamFile(filePtr);
-    if(status != SamStatus::SUCCESS)
+    if(!header.setHeaderFromBamFile(filePtr))
     {
-        return(status);
+        // Status is set in the method on failure.
+        status.setStatus(SamStatus::FAIL_PARSE, header.getErrorMessage());
+        return(false);
     }
 
     int referenceCount;
@@ -53,7 +57,7 @@ SamStatus::Status BamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
 //     header.referenceContigs.Dimension(referenceCount);
 //     header.referenceLengths.Dimension(referenceCount);
     CharBuffer refName;
-
+    
     // Read each reference sequence
     for (int i = 0; i < referenceCount; i++)
     {
@@ -61,8 +65,11 @@ SamStatus::Status BamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
         int rc;
         // Read the length of the reference name.
         rc = ifread(filePtr, &nameLength, sizeof(int));
-        if(rc != sizeof(int)) {
-            return SamStatus::FAIL_IO;
+        if(rc != sizeof(int))
+        {
+            status.setStatus(SamStatus::FAIL_IO, 
+                             "Failed to read the BAM reference dictionary.");
+            return(false);
         }
       
         // Read the name.
@@ -73,24 +80,28 @@ SamStatus::Status BamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
         rc = ifread(filePtr, &refLen, sizeof(int));
 
         if(rc != sizeof(int)) {
-            return SamStatus::FAIL_IO;
+            status.setStatus(SamStatus::FAIL_IO, 
+                             "Failed to read the BAM reference dictionary.");
+            return(false);
         }
 
         header.addReferenceInfo(refName.c_str(), refLen);
     }
 
     // Successfully read the file.
-    return(SamStatus::SUCCESS);
+    return(true);
 }
 
 
-SamStatus::Status BamInterface::writeHeader(IFILE filePtr, 
-                                            SamFileHeader& header)
+bool BamInterface::writeHeader(IFILE filePtr, SamFileHeader& header,
+                               SamStatus& status)
 {
     if((filePtr == NULL) || (filePtr->isOpen() == false))
     {
-        // File is not open, return failure.
-        return(SamStatus::FAIL_ORDER);
+        // File is not open, return false.
+        status.setStatus(SamStatus::FAIL_ORDER, 
+                         "Cannot write header since the file pointer is null");
+        return(false);
     }
 
     char magic[4];
@@ -116,14 +127,18 @@ SamStatus::Status BamInterface::writeHeader(IFILE filePtr,
     numWrite = ifwrite(filePtr, &headerLen, sizeof(int32_t));
     if(numWrite != sizeof(int32_t))
     {
-        return(SamStatus::FAIL_IO);
+        status.setStatus(SamStatus::FAIL_IO, 
+                         "Failed to write the BAM header length.");
+        return(false);
     }
    
     // Write the header to the file.
     numWrite = ifwrite(filePtr, headerString.c_str(), headerLen);
     if(numWrite != headerLen)
     {
-        return(SamStatus::FAIL_IO);
+        status.setStatus(SamStatus::FAIL_IO, 
+                         "Failed to write the BAM header.");
+        return(false);
     }
     
     ////////////////////////////////////////////////////////
@@ -132,7 +147,9 @@ SamStatus::Status BamInterface::writeHeader(IFILE filePtr,
     if(refInfo == NULL)
     {
         // Failed to get the reference info.
-        return(SamStatus::INVALID);
+        status.setStatus(SamStatus::INVALID, 
+                         "Failed to read the BAM reference dictionary.");
+        return(false);
     }
 
     // Get the number of sequences.    
@@ -163,7 +180,7 @@ SamStatus::Status BamInterface::writeHeader(IFILE filePtr,
         ifwrite(filePtr, &refLen, sizeof(int32_t));
     }
 
-    return(SamStatus::SUCCESS);
+    return(true);
 }
 
 

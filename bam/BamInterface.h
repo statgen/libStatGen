@@ -28,11 +28,14 @@ public:
    
     // Reads the header section from the specified BAM file and stores it in
     // the passed in header.
-    virtual SamStatus::Status readHeader(IFILE filePtr, SamFileHeader& header);
+    // Returns false and updates the status on failure.
+    virtual bool readHeader(IFILE filePtr, SamFileHeader& header,
+                            SamStatus& samStatus);
    
     // Writes the specified header into the specified BAM file.
-    virtual SamStatus::Status writeHeader(IFILE filePtr, 
-                                          SamFileHeader& header);
+    // Returns false and updates the status on failure.
+    virtual bool writeHeader(IFILE filePtr, SamFileHeader& header,
+                             SamStatus& samStatus);
 
     // Reads the next record from the specified BAM file and stores it in
     // the passed in record.

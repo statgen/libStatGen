@@ -169,6 +169,7 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             errorMessage += " for reading";
             myStatus.setStatus(SamStatus::FAIL_IO, errorMessage.c_str());
             delete myFilePtr;
+            myFilePtr = NULL;
             return(false);
         }
         
@@ -424,6 +425,7 @@ bool SamFile::IsEOF()
 // Read the header from the currently opened file.
 bool SamFile::ReadHeader(SamFileHeader& header)
 {
+    myStatus = SamStatus::SUCCESS;
     if(myIsOpenForRead == false)
     {
         // File is not open for read
@@ -440,8 +442,7 @@ bool SamFile::ReadHeader(SamFileHeader& header)
         return(false);
     }
 
-    myStatus = myInterfacePtr->readHeader(myFilePtr, header);
-    if(myStatus == SamStatus::SUCCESS)
+    if(myInterfacePtr->readHeader(myFilePtr, header, myStatus))
     {
         // The header has now been successfully read.
         myHasHeader = true;
@@ -454,6 +455,7 @@ bool SamFile::ReadHeader(SamFileHeader& header)
 // Write the header to the currently opened file.
 bool SamFile::WriteHeader(SamFileHeader& header)
 {
+    myStatus = SamStatus::SUCCESS;
     if(myIsOpenForWrite == false)
     {
         // File is not open for write
@@ -472,8 +474,7 @@ bool SamFile::WriteHeader(SamFileHeader& header)
         return(false);
     }
 
-    myStatus = myInterfacePtr->writeHeader(myFilePtr, header);
-    if(myStatus == SamStatus::SUCCESS)
+    if(myInterfacePtr->writeHeader(myFilePtr, header, myStatus))
     {
         // The header has now been successfully written.
         myHasHeader = true;

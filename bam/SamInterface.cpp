@@ -32,12 +32,15 @@ SamInterface::~SamInterface()
 
 
 // Read a SAM file's header.
-SamStatus::Status SamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
+bool SamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
+                              SamStatus& status)
 {
     if(filePtr == NULL)
     {
         // File is not open.
-        return(SamStatus::FAIL_ORDER);
+        status.setStatus(SamStatus::FAIL_ORDER, 
+                           "Cannot read header since the file pointer is null");
+        return(false);
     }
 
     // Clear the passed in header.
@@ -60,7 +63,8 @@ SamStatus::Status SamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
         if(!header.addHeaderLine(buffer.c_str()))
         {
             // Failed reading the header.
-            return(SamStatus::FAIL_PARSE);
+            status.setStatus(SamStatus::FAIL_PARSE, header.getErrorMessage());
+            return(false);
         }
 
         // Continue to the next line if this line is less than 3 characters
@@ -84,16 +88,18 @@ SamStatus::Status SamInterface::readHeader(IFILE filePtr, SamFileHeader& header)
     myFirstRecord = buffer;
 
     // Successfully read.
-    return(SamStatus::SUCCESS);
+    return(true);
 }
 
-SamStatus::Status SamInterface::writeHeader(IFILE filePtr,
-                                            SamFileHeader& header)
+bool SamInterface::writeHeader(IFILE filePtr, SamFileHeader& header,
+                               SamStatus& status)
 {
     if((filePtr == NULL) || (filePtr->isOpen() == false))
     {
         // File is not open, return failure.
-        return(SamStatus::FAIL_ORDER);
+        status.setStatus(SamStatus::FAIL_ORDER, 
+                         "Cannot write header since the file pointer is null");
+        return(false);
     }
 
     ////////////////////////////////
@@ -110,9 +116,11 @@ SamStatus::Status SamInterface::writeHeader(IFILE filePtr,
     numWrite = ifwrite(filePtr, headerString.c_str(), headerLen);
     if(numWrite != headerLen)
     {
-        return(SamStatus::FAIL_IO);
+        status.setStatus(SamStatus::FAIL_IO, 
+                         "Failed to write the SAM header.");
+        return(false);
     }
-    return(SamStatus::SUCCESS);
+    return(true);
 }
 
 

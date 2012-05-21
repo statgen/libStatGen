@@ -30,16 +30,17 @@ public:
     virtual ~GenericSamInterface();
    
     // Pure virtual method that reads the header section from the specified file
-    // and stores it in the passed in header.
+    // and stores it in the passed in header, returns false and sets the status
+    // on failure.
     // Will be implemented specifically for sam/bam files.
-    virtual SamStatus::Status readHeader(IFILE filePtr, 
-                                         SamFileHeader& header) = 0;
+    virtual bool readHeader(IFILE filePtr, SamFileHeader& header,
+                            SamStatus& status) = 0;
 
     // Pure virtual method that writes the specified header into the specified
-    // file.
+    // file, returns false and sets the status on failure.
     // Will be implemented specifically for sam/bam files.
-    virtual SamStatus::Status writeHeader(IFILE filePtr, 
-                                          SamFileHeader& header) = 0;
+    virtual bool writeHeader(IFILE filePtr, SamFileHeader& header,
+                             SamStatus& status) = 0;
 
     // Pure virtual method that reads the next record from the specified file 
     // and stores it in the passed in record.

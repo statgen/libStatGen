@@ -24,7 +24,8 @@ const std::string SamFileHeader::EMPTY_RETURN = "";
 
 SamFileHeader::SamFileHeader()
     : myHD(NULL),
-      myReferenceInfo()
+      myReferenceInfo(),
+      myErrorMessage("")
 {
     resetHeader();
 }
@@ -235,13 +236,19 @@ bool SamFileHeader::setHDTag(const char* tag, const char* value)
         if(myHD == NULL)
         {
             // New failed, return false.
+            myErrorMessage = "SamFileHeader: Failed to allocate a new HD tag";
             return(false);
         }
         // Succeeded to create the line, add it to the
         // list.
         myHeaderRecords.push_back(myHD);
     }
-    return(myHD->setTag(tag, value));
+    if(!myHD->setTag(tag, value))
+    {
+        myErrorMessage = "SamFileHeader: Failed to set the specified HD tag";
+        return(false);
+    }
+    return(true);
 }
 
 
@@ -261,6 +268,7 @@ bool SamFileHeader::setSQTag(const char* tag, const char* value,
         if(sq == NULL)
         {
             // Could not create the header record.
+            myErrorMessage = "SamFileHeader: Failed to allocate a new SQ tag";
             return(false);
         }
 
@@ -272,11 +280,17 @@ bool SamFileHeader::setSQTag(const char* tag, const char* value,
         if(!sq->addKey(name))
         {
             // Failed to add the key tag, return false.
+            myErrorMessage = "SamFileHeader:Failed to add the specified SQ key";
             return(false);
         }
     }
 
-    return(sq->setTag(tag, value));
+    if(!sq->setTag(tag, value))
+    {
+        myErrorMessage = "Failed to set the specified SQ tag";
+        return(false);
+    }
+    return(true);
 }
 
 
@@ -295,6 +309,7 @@ bool SamFileHeader::setRGTag(const char* tag, const char* value, const char* id)
         if(rg == NULL)
         {
             // Could not create the header record.
+            myErrorMessage = "Failed to allocate a new RG tag";
             return(false);
         }
 
@@ -306,11 +321,17 @@ bool SamFileHeader::setRGTag(const char* tag, const char* value, const char* id)
         if(!rg->addKey(id))
         {
             // Failed to add the key tag, return false.
+            myErrorMessage = "Failed to add the specified RG key";
             return(false);
         }
     }
 
-    return(rg->setTag(tag, value));
+    if(!rg->setTag(tag, value))
+    {
+        myErrorMessage = "Failed to set the specified RG tag";
+        return(false);
+    }
+    return(true);
 }
 
 
@@ -330,6 +351,7 @@ bool SamFileHeader::setPGTag(const char* tag, const char* value, const char* id)
         if(pg == NULL)
         {
             // Could not create the header record.
+            myErrorMessage = "Failed to allocate a new PG tag";
             return(false);
         }
 
@@ -341,11 +363,17 @@ bool SamFileHeader::setPGTag(const char* tag, const char* value, const char* id)
         if(!pg->addKey(id))
         {
             // Failed to add the key tag, return false.
+            myErrorMessage = "Failed to add the specified PG key";
             return(false);
         }
     }
 
-    return(pg->setTag(tag, value));
+    if(!pg->setTag(tag, value))
+    {
+        myErrorMessage = "Failed to set the specified PG tag";
+        return(false);
+    }
+    return(true);
 }
 
 
@@ -354,8 +382,14 @@ bool SamFileHeader::addHD(SamHeaderHD* hd)
 {
     // If there is already an HD header or if null
     // was passed in, return false.
-    if((myHD != NULL) || (hd == NULL))
+    if(myHD != NULL)
     {
+        myErrorMessage = "Failed add an HD tag - there is already one";
+        return(false);
+    }
+    if(hd == NULL)
+    {
+        myErrorMessage = "Failed add an HD tag - no tag specified";
         return(false);
     }
     myHD = hd;
@@ -371,12 +405,14 @@ bool SamFileHeader::addSQ(SamHeaderSQ* sq)
     if(sq == NULL)
     {
         // null pointer passed in, can't add it.
+        myErrorMessage = "SAM/BAM Header line failed to allocate SQ.";
         return(false);
     }
     const char* name = sq->getTagValue("SN");
     if(strcmp(name, EMPTY_RETURN.c_str()) == 0)
     {
         // SN is not set, so can't add it.
+        myErrorMessage = "SAM/BAM Header line failure: Skipping SQ line that is missing the SN field.";
         return(false);
     }
 
@@ -392,6 +428,7 @@ bool SamFileHeader::addSQ(SamHeaderSQ* sq)
     }
 
     // It is already in the hash, so cannot be added.
+    myErrorMessage = "SAM/BAM Header line failure: Skipping SQ line that has a repeated SN field.";
     return(false);
 }
 
@@ -402,12 +439,14 @@ bool SamFileHeader::addRG(SamHeaderRG* rg)
     if(rg == NULL)
     {
         // null pointer passed in, can't add it.
+        myErrorMessage = "SAM/BAM Header line failed to allocate RG.";
         return(false);
     }
     const char* id = rg->getTagValue("ID");
     if(strcmp(id, EMPTY_RETURN.c_str()) == 0)
     {
         // ID is not set, so can't add it.
+        myErrorMessage = "SAM/BAM Header line failure: Skipping RG line that is missing the ID field.";
         return(false);
     }
 
@@ -423,6 +462,7 @@ bool SamFileHeader::addRG(SamHeaderRG* rg)
     }
 
     // It is already in the hash, so cannot be added.
+    myErrorMessage = "SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.";
     return(false);
 }
 
@@ -430,15 +470,17 @@ bool SamFileHeader::addRG(SamHeaderRG* rg)
 // Add the PG record to the header.
 bool SamFileHeader::addPG(SamHeaderPG* pg)
 {
-    // If there is already an PG header, return false.
+    // If a null pointer was passed in, return false.
     if(pg == NULL)
     {
+        myErrorMessage = "SAM/BAM Header line failed to allocate PG.";
         return(false);
     }
     const char* id = pg->getTagValue("ID");
     if(strcmp(id, EMPTY_RETURN.c_str()) == 0)
     {
         // ID is not set, so can't add the header record.
+        myErrorMessage = "SAM/BAM Header line failure: Skipping PG line that is missing the ID field.";
         return(false);
     }
 
@@ -454,6 +496,7 @@ bool SamFileHeader::addPG(SamHeaderPG* pg)
     }
 
     // It is already in the hash, so cannot be added.
+    myErrorMessage = "SAM/BAM Header line failure: Skipping PG line that has a repeated ID field.";
     return(false);
 }
 
@@ -497,7 +540,8 @@ bool SamFileHeader::removeSQ(const char* name)
     {
         // sq is null, this is an error since hashIndex was greater than 0,
         // so it should have been found.
-        return(false);
+        myErrorMessage = "SAM/BAM Header line failed to get SQ object.";
+       return(false);
     }
 
     // Reset the record.  Do not delete it since it is in the headerRecords
@@ -533,7 +577,8 @@ bool SamFileHeader::removeRG(const char* id)
     {
         // rg is null, this is an error since hashIndex was greater than 0,
         // so it should have been found.
-        return(false);
+        myErrorMessage = "SAM/BAM Header line failed to get RG object.";
+       return(false);
     }
 
     // Reset the record.  Do not delete it since it is in the headerRecords
@@ -569,6 +614,7 @@ bool SamFileHeader::removePG(const char* id)
     {
         // pg is null, this is an error since hashIndex was greater than 0,
         // so it should have been found.
+        myErrorMessage = "SAM/BAM Header line failed to get PG object.";
         return(false);
     }
 
@@ -585,12 +631,13 @@ bool SamFileHeader::removePG(const char* id)
 }
 
 
-SamStatus::Status SamFileHeader::setHeaderFromBamFile(IFILE filePtr)
+bool SamFileHeader::setHeaderFromBamFile(IFILE filePtr)
 {
     if((filePtr == NULL) || (filePtr->isOpen() == false))
     {
         // File is not open, return failure.
-        return(SamStatus::FAIL_ORDER);
+        myErrorMessage = "BAM file was not open, so can't read header";
+        return(false);
     }
 
     int headerLength;
@@ -600,7 +647,8 @@ SamStatus::Status SamFileHeader::setHeaderFromBamFile(IFILE filePtr)
     if(readSize != sizeof(int))
     {
         // Failed to read the header length.
-        return(SamStatus::FAIL_IO);
+        myErrorMessage = "Failed to read the BAM header length.";
+        return(false);
     }
    
     String header;
@@ -614,16 +662,13 @@ SamStatus::Status SamFileHeader::setHeaderFromBamFile(IFILE filePtr)
         if(readSize != headerLength)
         {
             // Failed to read the header.
-            return(SamStatus::FAIL_IO);
+            myErrorMessage = "Failed to read the BAM header.";
+            return(false);
         }
     }
 
     // Parse the header that was read.
-    if(parseHeader(header))
-    {
-        return(SamStatus::SUCCESS);
-    }
-    return(SamStatus::FAIL_PARSE);
+    return(parseHeader(header));
 }
 
 
@@ -982,6 +1027,7 @@ bool SamFileHeader::parseHeaderLine(const String& headerLine)
     {
         // The header type string is incorrect.  Should be 3 characters
         // with the first one @.
+        myErrorMessage = "SAM/BAM Header line does not start with @ & at least 2 chars.";
         return(false);
     }
    
@@ -995,14 +1041,20 @@ bool SamFileHeader::parseHeaderLine(const String& headerLine)
             if(myHD == NULL)
             {
                 // Failed to allocate HD, so return false.
+                myErrorMessage = "SAM/BAM Header line failed to allocate HD.";
                 return(false);
             }
             myHeaderRecords.push_back(myHD);
-            status &= myHD->setFields(tokens);
+            if(!myHD->setFields(tokens))
+            {
+                myErrorMessage = "SAM/BAM Header line failed to store HD record.";
+                status = false;
+            }
         }
         else
         {
             // HD already set, so return false.
+            myErrorMessage = "SAM/BAM Header line failure: multiple HD records.";
             status = false;
         }
     }
@@ -1015,10 +1067,12 @@ bool SamFileHeader::parseHeaderLine(const String& headerLine)
         {
             // sq fields were properly set, so add it to the list of
             // SQ lines.
+            // myStatus set in the method.
             status &= addSQ(sq);
         }
         else
         {
+            myErrorMessage = "SAM/BAM Header line failed to store SQ record.";
             status = false;
         }
     }
@@ -1031,10 +1085,12 @@ bool SamFileHeader::parseHeaderLine(const String& headerLine)
         {
             // rg fields were properly set, so add it to the list of
             // RG lines.
+            // myStatus set in the method.
             status &= addRG(rg);
         }
         else
         {
+            myErrorMessage = "SAM/BAM Header line failed to store RG record.";
             status = false;
         }
     }
@@ -1047,10 +1103,12 @@ bool SamFileHeader::parseHeaderLine(const String& headerLine)
         {
             // pg fields were properly set, so add it to the list of
             // PG lines.
+            // myStatus set in the method.
             status &= addPG(pg);
         }
         else
         {
+            myErrorMessage = "SAM/BAM Header line failed to store PG record.";
             status = false;
         }
     }
@@ -1061,9 +1119,11 @@ bool SamFileHeader::parseHeaderLine(const String& headerLine)
     else
     {
         // Unknown header type.
+        myErrorMessage = 
+            "SAM/BAM Header line failure: Skipping unknown header type, ";
+        myErrorMessage += (const char*)(tokens[0]);
         status = false;
     }
-   
     return(status);
 }
 
