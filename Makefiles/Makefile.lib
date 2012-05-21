@@ -2,7 +2,7 @@
 #   TOOLBASE - the base filename for files with .h & .cpp versions
 #   SRCONLY - any cpp files without headers.
 #   HDRONLY - any header files without cpp
-#   VERSION - if not 0.0.1
+#   VERSION - if not version in Makefile.include
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
 
