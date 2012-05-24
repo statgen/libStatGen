@@ -34,7 +34,7 @@ ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 	echo "make install INSTALLDIR=directory_for_binaries";\
 	echo "                  Install binaries in directory_for_binaries"
 
-.PHONY: install
+.PHONY: install $(STAT_GEN_LIB_OPT) $(STAT_GEN_LIB_DEBUG) $(STAT_GEN_LIB_PROFILE)
 
 # Build the appropriate program
 opt: $(PROG_OPT)
@@ -52,7 +52,7 @@ $(PROG_PROFILE): $(BINDIR_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) $(OBJECTS_PR
 # Build the statgen lib if necessary
 $(STAT_GEN_LIB_OPT):
 	$(MAKE) -C $(@D) --no-print-directory opt
- $(STAT_GEN_LIB_DEBUG): 
+$(STAT_GEN_LIB_DEBUG): 
 	$(MAKE) -C $(@D) --no-print-directory debug
 $(STAT_GEN_LIB_PROFILE): 
 	$(MAKE) -C $(@D) --no-print-directory profile

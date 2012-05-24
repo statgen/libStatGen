@@ -13,7 +13,7 @@ HEADERS=$(TOOLHDR)
 
 
 
-.PHONY: all test clean debug profile param install specific_clean
+.PHONY: all test clean debug profile param install specific_clean $(STAT_GEN_LIB) $(STAT_GEN_LIB_DEBUG) $(STAT_GEN_LIB_PROFILE)
 
 # make everything, ensure headers are in the include direcotry.
 opt debug profile : $(addprefix $(INCLUDE_PATH)/, $(HEADERS)) 
