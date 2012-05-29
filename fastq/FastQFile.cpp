@@ -19,7 +19,7 @@
 
 #include "InputFile.h"
 #include "FastQFile.h"
-
+#include "BaseUtilities.h"
 
 // Constructor.
 // minReadLength - The minimum length that a base sequence must be for
@@ -30,6 +30,8 @@
 FastQFile::FastQFile(int minReadLength, int numPrintableErrors)
    : myFile(NULL),
      myBaseComposition(),
+     myQualPerCycle(),
+     myCountPerCycle(),
      myCheckSeqID(true),
      myMinReadLength(minReadLength),
      myNumPrintableErrors(numPrintableErrors),
@@ -86,6 +88,8 @@ FastQStatus::Status FastQFile::openFile(const char* fileName,
 
    myBaseComposition.resetBaseMapType();
    myBaseComposition.setBaseMapType(spaceType);
+   myQualPerCycle.clear();
+   myCountPerCycle.clear();
 
    FastQStatus::Status status = FastQStatus::FASTQ_SUCCESS;
 
@@ -190,7 +194,8 @@ bool FastQFile::keepReadingFile()
 // Validate the specified fastq file
 FastQStatus::Status FastQFile::validateFastQFile(const String& filename,
                                                  bool printBaseComp,
-                                                 BaseAsciiMap::SPACE_TYPE spaceType)
+                                                 BaseAsciiMap::SPACE_TYPE spaceType,
+                                                 bool printQualAvg)
 {
    // Open the fastqfile.
    if(openFile(filename, spaceType) != FastQStatus::FASTQ_SUCCESS)
@@ -230,6 +235,11 @@ FastQStatus::Status FastQFile::validateFastQFile(const String& filename,
    if(printBaseComp)
    {
       myBaseComposition.print();
+   }
+
+   if(printQualAvg)
+   {
+      printAvgQual();
    }
 
    std::string finishMessage = "Finished processing ";
@@ -798,6 +808,11 @@ bool FastQFile::validateSequencePlus()
 bool FastQFile::validateQualityString(int offset)
 {
    bool valid = true;
+   if(myQualityString.Length() > (int)(myQualPerCycle.size()))
+   {
+       myQualPerCycle.resize(myQualityString.Length());
+       myCountPerCycle.resize(myQualityString.Length());
+   }
    // For each character in the line, verify that it is ascii > 32.
    for(int i=offset; i < myQualityString.Length(); i++)
    {
@@ -813,6 +828,11 @@ bool FastQFile::validateQualityString(int offset)
          {
             return(false);
          }
+      }
+      else
+      {
+          myQualPerCycle[i] += BaseUtilities::getPhredBaseQuality(myQualityString[i]);
+          myCountPerCycle[i] += 1;
       }
    }
    return(valid);
@@ -851,6 +871,8 @@ void FastQFile::reset()
    myFileName.SetLength(0);  // reset the filename string.
    myIdentifierMap.clear(); // per fastqfile
    myBaseComposition.clear(); // clear the base composition.
+   myQualPerCycle.clear();
+   myCountPerCycle.clear();
    myFileProblem = false;
 }
 
@@ -890,4 +912,40 @@ bool FastQFile::isTimeToQuit()
       return(true);
    }
    return(false);
+}
+
+
+void FastQFile::printAvgQual()
+{
+   std::cout << std::endl << "Average Phred Quality by Read Index (starts at 0):" << std::endl;
+   std::cout.precision(2);
+   std::cout << "Read Index\tAverage Quality" 
+             << std::endl;
+   if(myQualPerCycle.size() != myCountPerCycle.size())
+   {
+       // This is a code error and should NEVER happen.
+       std::cerr << "ERROR calculating the average Qualities per cycle\n";
+   }
+
+   double sumQual = 0;
+   double count = 0;
+   double avgQual = 0;
+   for(unsigned int i = 0; i < myQualPerCycle.size(); i++)
+   {
+       avgQual = 0;
+       if(myCountPerCycle[i] != 0)
+       {
+           avgQual = myQualPerCycle[i] / (double)(myCountPerCycle[i]);
+       }
+       std::cout << i << "\t" << avgQual << "\n";
+       sumQual += myQualPerCycle[i];
+       count += myCountPerCycle[i];
+   }
+   std::cout << std::endl;
+   avgQual = 0;
+   if(count != 0)
+   {
+       avgQual = sumQual / count;
+   }
+   std::cout << "Overall Average Phred Quality = " << avgQual << std::endl;
 }

@@ -83,11 +83,14 @@ class FastQFile
     ///                  or UNKNOWN (UNKNOWN means to determine the spaceType to
     ///                  validate against from the first character of the first
     ///                  sequence).
+    /// \param printQualAvg  whether or not to print the quality averages for the file.
+    ///                      true means to print it, false (default) means do not.
     /// \return the fastq validation status,  SUCCESS on a successfully
     /// validated fastq file.
     FastQStatus::Status validateFastQFile(const String &filename,  
                                           bool printBaseComp,
-                                          BaseAsciiMap::SPACE_TYPE spaceType);
+                                          BaseAsciiMap::SPACE_TYPE spaceType,
+                                          bool printQualAvg = false);
 
     /// Read 1 FastQSequence, validating it.
     FastQStatus::Status readFastQSequence();
@@ -111,7 +114,6 @@ class FastQFile
     }
     
 private:
-
     // Validates a single fastq sequence from myFile.
     bool validateFastQSequence();
 
@@ -162,6 +164,8 @@ private:
     // certain number of errors and that many errors have been encountered.
     bool isTimeToQuit();
 
+    void printAvgQual();
+
     //////////////////////////////////////////////////////////////////////
     // Following member data elements are reset for each validated sequence.
     //
@@ -184,6 +188,8 @@ private:
     int myNumErrors;   // Tracks the number of errors.
     unsigned int myLineNum;    // Track the line number - used for reporting errors.
     BaseComposition myBaseComposition;  // Tracks the base composition.
+    std::vector<int> myQualPerCycle;  // Tracks the quality by cycle.
+    std::vector<int> myCountPerCycle;  // Tracks the number of entries by cycle.
 
     // Whether or not to check the sequence identifier for uniqueness.
     // Checking may use up a lot of memory.
