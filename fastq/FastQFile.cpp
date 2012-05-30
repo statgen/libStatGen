@@ -919,7 +919,7 @@ void FastQFile::printAvgQual()
 {
    std::cout << std::endl << "Average Phred Quality by Read Index (starts at 0):" << std::endl;
    std::cout.precision(2);
-   std::cout << "Read Index\tAverage Quality" 
+   std::cout << std::fixed << "Read Index\tAverage Quality" 
              << std::endl;
    if(myQualPerCycle.size() != myCountPerCycle.size())
    {
