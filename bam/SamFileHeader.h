@@ -50,6 +50,7 @@ public:
     SamFileHeader & operator = (const SamFileHeader& header);
 
     /// Copy method copies the passed in header into this header.
+    /// Returns true if at least one header line was successfully copied.
     bool copy(const SamFileHeader& header);
     //@}
 
@@ -108,9 +109,13 @@ public:
     /// and a different method should be used.
     bool addHeaderLine(const char* type, const char* tag, const char* value); 
 
-    /// Add a header line that is already preformatted in a const char* without
-    /// a trailing "\n".
+    /// Add a header line that is already preformatted in a const char*.
+    /// Returns true if at least one header line was successfully added.
     bool addHeaderLine(const char* headerLine);
+
+    /// Add a header that is already preformatted in a const char*.
+    /// Returns true if at least one header line was successfully added.
+    bool addHeader(const char* header);
 
     /// Add the specified comment to the header (do not include "@CO" or "\n").
     /// \return true if successfully added, false if not.
@@ -177,25 +182,25 @@ public:
     /// Add the HD record to the header.
     /// Note: it adds a pointer to the passed in header record.  The header
     /// record will be deleted when it is cleaned up from this header.
-    /// \ returns true if the record was successfully added, false otherwise.
+    /// \return true if the record was successfully added, false otherwise.
     bool addHD(SamHeaderHD* hd);
 
     /// Add the SQ record to the header.
     /// Note: it adds a pointer to the passed in header record.  The header
     /// record will be deleted when it is cleaned up from this header.
-    /// \ returns true if the record was successfully added, false otherwise.
+    /// \return true if the record was successfully added, false otherwise.
     bool addSQ(SamHeaderSQ* sq);
 
     /// Add the RG record to the header.
     /// Note: it adds a pointer to the passed in header record.  The header
     /// record will be deleted when it is cleaned up from this header.
-    /// \ returns true if the record was successfully added, false otherwise.
+    /// \return true if the record was successfully added, false otherwise.
     bool addRG(SamHeaderRG* rg);
 
     /// Add the PG record to the header.
     /// Note: it adds a pointer to the passed in header record.  The header
     /// record will be deleted when it is cleaned up from this header.
-    /// \ returns true if the record was successfully added, false otherwise.
+    /// \return true if the record was successfully added, false otherwise.
     bool addPG(SamHeaderPG* pg);
 
     //@}
@@ -225,13 +230,6 @@ public:
     bool removePG(const char* id);
 
     //@}
-
-
-    ////////////////////////////////////////////////////////////////////////
-    //
-    ////////////////////////////////////////////////////////////////////////
-    bool setHeaderFromBamFile(IFILE filePtr);
-    
 
     ////////////////////////////////////////////////////////////////////////
     /// @name  Get a Specific Tag

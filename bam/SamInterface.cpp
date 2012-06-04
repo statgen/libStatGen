@@ -46,6 +46,10 @@ bool SamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
     // Clear the passed in header.
     header.resetHeader();
 
+    int numValid = 0;
+    int numInvalid = 0;
+    std::string errorMessages = "";
+
     do {
         StringIntHash tags;
         StringArray   values;
@@ -60,11 +64,20 @@ bool SamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
         }
       
         // This is a header line, so add it to header.
-        if(!header.addHeaderLine(buffer.c_str()))
+        if(header.addHeaderLine(buffer.c_str()))
         {
+            if(buffer.Length() != 0)
+            {
+                ++numValid;
+            }
+        }
+        else
+        {
+            ++numInvalid;
             // Failed reading the header.
-            status.setStatus(SamStatus::FAIL_PARSE, header.getErrorMessage());
-            return(false);
+            errorMessages += header.getErrorMessage();
+            // Skip further processing on this line since it was an error.
+            continue;
         }
 
         // Continue to the next line if this line is less than 3 characters
@@ -87,6 +100,20 @@ bool SamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
     // Store the first record since it was read.
     myFirstRecord = buffer;
 
+    if(numInvalid > 0)
+    {
+        if(numValid == 0)
+        {
+            std::cerr << "Failed to parse " << numInvalid << " header lines";
+            std::cerr << ".  No valid header lines.\n";
+            status.setStatus(SamStatus::FAIL_PARSE, errorMessages.c_str());
+            return(false);
+        }
+        std::cerr << numInvalid
+                  << " invalid SAM/BAM Header lines were skipped due to:\n"
+                  << errorMessages << std::endl;
+    }
+ 
     // Successfully read.
     return(true);
 }

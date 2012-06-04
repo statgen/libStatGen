@@ -49,6 +49,9 @@ public:
                                           SamFileHeader& header,
                                           SamRecord& record,
                                           SamRecord::SequenceTranslation translation);
+
+private:
+    
 };
 
 #endif

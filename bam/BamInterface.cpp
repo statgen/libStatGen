@@ -39,11 +39,43 @@ bool BamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
                            "Cannot read header since the file pointer is null");
         return(false);
     }
+    if(filePtr->isOpen() == false)
+    {
+        status.setStatus(SamStatus::FAIL_ORDER, 
+                         "Cannot read header since the file is not open");
+        return(false);
+    }
 
     // Clear the passed in header.
     header.resetHeader();
 
-    if(!header.setHeaderFromBamFile(filePtr))
+    int32_t headerLength;
+    int readSize = ifread(filePtr, &headerLength, sizeof(headerLength));
+    
+    if(readSize != sizeof(headerLength))
+    {
+        status.setStatus(SamStatus::FAIL_IO, "Failed to read the BAM header length.");
+        return(false);
+    }
+
+    String headerStr;
+    if(headerLength > 0)
+    {
+        // Read the header.
+        readSize = 
+            ifread(filePtr, headerStr.LockBuffer(headerLength + 1), headerLength);
+        headerStr[headerLength] = 0;
+        headerStr.UnlockBuffer();
+        if(readSize != headerLength)
+        {
+            // Failed to read the header.
+            status.setStatus(SamStatus::FAIL_IO, "Failed to read the BAM header.");
+            return(false);
+        }
+    }
+    
+    // Parse the header that was read.
+    if(!header.addHeader(headerStr))
     {
         // Status is set in the method on failure.
         status.setStatus(SamStatus::FAIL_PARSE, header.getErrorMessage());

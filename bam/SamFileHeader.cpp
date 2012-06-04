@@ -205,11 +205,19 @@ bool SamFileHeader::addHeaderLine(const char* type, const char* tag,
 
 
 // Add a header line that is already preformatted in a const char*.
-// It is assumed that the line does not contain a \n.
 bool SamFileHeader::addHeaderLine(const char* headerLine)
 {
     // Parse the added header line.
     String headerString = headerLine;
+    return(parseHeader(headerString));
+}
+
+
+// Add a header line that is already preformatted in a const char*.
+bool SamFileHeader::addHeader(const char* header)
+{
+    // Parse the added header line.
+    String headerString = header;
     return(parseHeader(headerString));
 }
 
@@ -631,47 +639,6 @@ bool SamFileHeader::removePG(const char* id)
 }
 
 
-bool SamFileHeader::setHeaderFromBamFile(IFILE filePtr)
-{
-    if((filePtr == NULL) || (filePtr->isOpen() == false))
-    {
-        // File is not open, return failure.
-        myErrorMessage = "BAM file was not open, so can't read header";
-        return(false);
-    }
-
-    int headerLength;
-    // Read the header length.
-    int readSize = ifread(filePtr, &headerLength, sizeof(int));
-   
-    if(readSize != sizeof(int))
-    {
-        // Failed to read the header length.
-        myErrorMessage = "Failed to read the BAM header length.";
-        return(false);
-    }
-   
-    String header;
-    if (headerLength > 0)
-    {
-        // Read the header.
-        readSize = 
-            ifread(filePtr, header.LockBuffer(headerLength + 1), headerLength);
-        header[headerLength] = 0;
-        header.UnlockBuffer();
-        if(readSize != headerLength)
-        {
-            // Failed to read the header.
-            myErrorMessage = "Failed to read the BAM header.";
-            return(false);
-        }
-    }
-
-    // Parse the header that was read.
-    return(parseHeader(header));
-}
-
-
 const char* SamFileHeader::getHDTagValue(const char* tag)
 {
     if(myHD == NULL)
@@ -984,11 +951,10 @@ void SamFileHeader::resetCommentIter()
 
 // Parse the header.
 bool SamFileHeader::parseHeader(String& header)
-{
-    // Track the parsing status.
-    // If there are any badly formatted fields found in parsing
-    // it will be set to false.
-    bool status = true;
+{    
+    std::string errorMessage = "";
+    int numErrors = 0;
+    int numValid = 0;
 
     // Split the header into lines.
     std::vector<String>* types = header.Split('\n');
@@ -997,14 +963,39 @@ bool SamFileHeader::parseHeader(String& header)
     for(uint32_t index = 0; index < types->size(); index++)
     {
         // Parse the header line.
-        status &= parseHeaderLine(types->at(index));
+        if(!parseHeaderLine(types->at(index)))
+        {
+            errorMessage += myErrorMessage;
+            errorMessage += "\n";
+            ++numErrors;
+        }
+        else
+        {
+            // valid header line
+            ++numValid;
+        }
     }
-   
+
     // Delete the types vector.
     delete types;
     types = NULL;
 
-    return(status);
+    myErrorMessage = errorMessage;
+    if((numErrors > 0) && (numValid == 0))
+    {
+        // Only errors.
+        return(false);
+    }
+    else if(numErrors > 0)
+    {
+        // Some valid & some invalid.
+        // Going to return true, but add note about the invalid lines.
+        std::cerr << numErrors
+                  << " invalid SAM/BAM Header lines were skipped due to:\n"
+                  << errorMessage << std::endl;
+    }
+
+    return(true);
 }
 
 
