@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "Error.h"
 
 StringHash::StringHash(int startsize)
+    : StringHashBase()
 {
     count = 0;
     size  = startsize;
@@ -88,7 +89,7 @@ void StringHash::SetSize(int newsize)
                 unsigned int h   = key & newmask;
 
                 while (newstrings[h] != NULL &&
-                        (newkeys[h] != key || newstrings[h]->SlowCompare(*strings[i]) != 0))
+                        (newkeys[h] != key || (!stringsEqual(*(newstrings[h]), *(strings[i])))))
                     h = (h + 1) & newmask;
 
                 newkeys[h] = key;
@@ -109,7 +110,7 @@ void StringHash::SetSize(int newsize)
 
 int StringHash::Add(const String & string, void * object)
 {
-    unsigned int key = hash_no_case((unsigned char *)(const char *) string, string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)
@@ -128,7 +129,7 @@ int StringHash::Add(const String & string, void * object)
 
 int StringHash::Find(const String & string,  void *(*create_object)())
 {
-    unsigned int key = hash_no_case(string.uchar(), string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL && create_object == NULL)
@@ -151,7 +152,7 @@ int StringHash::Find(const String & string,  void *(*create_object)())
 
 int StringHash::Find(const String & string) const
 {
-    unsigned int key = hash_no_case(string.uchar(), string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)
@@ -237,6 +238,7 @@ void StringHash::ReadLinesFromFile(IFILE & f)
 // StringIntHash implementation
 
 StringIntHash::StringIntHash(int startsize)
+    : StringHashBase()
 {
     count = 0;
     size  = startsize;
@@ -283,7 +285,7 @@ void StringIntHash::SetSize(int newsize)
             unsigned int h   = key & newmask;
 
             while (newstrings[h] != NULL &&
-                    (newkeys[h] != key || newstrings[h]->SlowCompare(*strings[i]) != 0))
+                   (newkeys[h] != key || (!stringsEqual(*(newstrings[h]), *(strings[i])))))
                 h = (h + 1) & newmask;
 
             newkeys[h] = key;
@@ -319,7 +321,7 @@ void StringIntHash::Clear()
 
 int StringIntHash::Add(const String & string, int value)
 {
-    unsigned int key = hash_no_case((unsigned char *)(const char *) string, string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)
@@ -338,7 +340,7 @@ int StringIntHash::Add(const String & string, int value)
 
 int StringIntHash::Find(const String & string,  int defaultValue)
 {
-    unsigned int key = hash_no_case(string.uchar(), string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)
@@ -358,7 +360,7 @@ int StringIntHash::Find(const String & string,  int defaultValue)
 
 int StringIntHash::Find(const String & string) const
 {
-    unsigned int key = hash_no_case(string.uchar(), string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)
@@ -407,6 +409,7 @@ void StringIntHash::Delete(unsigned int index)
 // StringDoubleHash implementation
 
 StringDoubleHash::StringDoubleHash(int startsize)
+    : StringHashBase()
 {
     count = 0;
     size  = startsize;
@@ -453,7 +456,7 @@ void StringDoubleHash::SetSize(int newsize)
             unsigned int h   = key & newmask;
 
             while (newstrings[h] != NULL &&
-                    (newkeys[h] != key || newstrings[h]->SlowCompare(*strings[i]) != 0))
+                    (newkeys[h] != key || (!stringsEqual(*(newstrings[h]), *(strings[i])))))
                 h = (h + 1) & newmask;
 
             newkeys[h] = key;
@@ -474,7 +477,7 @@ void StringDoubleHash::SetSize(int newsize)
 
 int StringDoubleHash::Add(const String & string, double value)
 {
-    unsigned int key = hash_no_case((unsigned char *)(const char *) string, string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)
@@ -493,7 +496,7 @@ int StringDoubleHash::Add(const String & string, double value)
 
 int StringDoubleHash::Find(const String & string, double defaultValue)
 {
-    unsigned int key = hash_no_case(string.uchar(), string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)
@@ -513,7 +516,7 @@ int StringDoubleHash::Find(const String & string, double defaultValue)
 
 int StringDoubleHash::Find(const String & string) const
 {
-    unsigned int key = hash_no_case(string.uchar(), string.Length(), 0);
+    unsigned int key = getKey(string);
     unsigned int h   = Iterate(key, string);
 
     if (strings[h] == NULL)

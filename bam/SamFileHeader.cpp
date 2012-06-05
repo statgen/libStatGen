@@ -28,6 +28,10 @@ SamFileHeader::SamFileHeader()
       myErrorMessage("")
 {
     resetHeader();
+
+    mySQs.setCaseSensitive(true);
+    myRGs.setCaseSensitive(true);
+    myPGs.setCaseSensitive(true);
 }
 
 

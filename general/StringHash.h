@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,47 @@
 #include "Constant.h"
 #include "Hash.h"
 
-class StringHash
+
+class StringHashBase
+{
+public:
+    inline void setCaseSensitive(bool caseSensitive) {myCaseSensitive = caseSensitive;}
+    StringHashBase()
+        : myCaseSensitive(false)
+    {}
+
+    virtual ~StringHashBase() {}
+
+    // Make pure virtual
+    virtual void SetSize(int newsize) = 0;
+
+protected:
+    inline bool stringsEqual(const String& string1, const String& string2) const
+    {
+        if(myCaseSensitive)
+        {
+            // Case sensitive is faster.
+            return(string1.FastCompare(string2) == 0);
+        }
+        // Case insensitive - slow compare - convert to same case.
+        return(string1.SlowCompare(string2) == 0);
+    }
+
+    inline unsigned int getKey(const String& string) const
+    {
+        if(myCaseSensitive)
+        {
+            return(hash(string.uchar(), string.Length(), 0));
+        }
+        // Case insensitive.
+        return(hash_no_case(string.uchar(), string.Length(), 0));
+    }
+
+    bool myCaseSensitive;
+};
+
+
+class StringHash : public StringHashBase
 {
 protected:
     String        ** strings;
@@ -135,8 +175,8 @@ private:
         unsigned int h = key & mask;
 
         while (strings[h] != NULL &&
-                (keys[h] != key ||
-                 strings[h]->SlowCompare(string) != 0))
+               (keys[h] != key ||
+                (!stringsEqual(*(strings[h]), string))))
             h = (h + 1) & mask;
 
         return h;
@@ -152,7 +192,7 @@ private:
     }
 };
 
-class StringIntHash
+class StringIntHash : public StringHashBase
 {
 protected:
     String        ** strings;
@@ -250,8 +290,8 @@ private:
         unsigned int h = key & mask;
 
         while (strings[h] != NULL &&
-                (keys[h] != key ||
-                 strings[h]->SlowCompare(string) != 0))
+               (keys[h] != key ||
+                (!stringsEqual(*(strings[h]), string))))
             h = (h + 1) & mask;
 
         return h;
@@ -267,7 +307,7 @@ private:
     }
 };
 
-class StringDoubleHash
+class StringDoubleHash : public StringHashBase
 {
 protected:
     String        ** strings;
@@ -356,8 +396,8 @@ private:
         unsigned int h = key & mask;
 
         while (strings[h] != NULL &&
-                (keys[h] != key ||
-                 strings[h]->SlowCompare(string) != 0))
+               (keys[h] != key ||
+                (!stringsEqual(*(strings[h]), string))))
             h = (h + 1) & mask;
 
         return h;
@@ -372,5 +412,6 @@ private:
         count++;
     }
 };
+
 
 #endif
