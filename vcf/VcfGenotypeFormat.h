@@ -50,6 +50,10 @@ public:
     /// Return true if the specified subField should be read/stored.
     bool storeIndex(unsigned int index);
 
+    /// Get Original number of fields - this is different than the number
+    /// of stored fields.
+    int getOrigNumFields() { return(myStoreIndices.size()); }
+
 protected:
     /// reset the sample for a new entry.
     virtual void internal_reset();

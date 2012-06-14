@@ -158,6 +158,7 @@ private:
     // The status of the last failed command.
     StatGenStatus myStatus;
 
+    std::string myDummyString;
     // Set Pointers to each piece.
 
 };

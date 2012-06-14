@@ -105,6 +105,12 @@ bool VcfGenotypeSample::read(IFILE filePtr, VcfGenotypeFormat& format)
         ++subFieldIndex;
     }
 
+    // subFieldIndex contains the number of fields in this sample.
+    if(subFieldIndex != format.getOrigNumFields())
+    {
+        throw(std::runtime_error("VCF Number of Fields in a Sample does not match the Format."));
+    }
+
     // Return true if there is a tab - it is just END_OF_FIELD.
     return(readStatus == END_OF_FIELD);
 }

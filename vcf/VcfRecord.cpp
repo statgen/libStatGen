@@ -138,7 +138,17 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo)
     {
         // Not yet at the end of the line, so read the genotype fields
         // (format & samples)
-        myGenotype.read(filePtr, subsetInfo);
+        try
+        {
+            myGenotype.read(filePtr, subsetInfo);
+        }
+        catch(std::exception& e)
+        {
+            myDummyString = "Failed parsing the Genotype Fields of " + myChrom + ":" + 
+                my1BasedPos + " (chr:pos) - " + e.what();
+            myStatus.setStatus(StatGenStatus::FAIL_PARSE, myDummyString.c_str());
+            return(false);
+        }
     }
     // Found the end of the line, return true since all required fields
     // were read.
