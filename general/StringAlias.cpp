@@ -41,6 +41,28 @@ const String & StringAlias::GetAlias(const String & string) const
         return aliases[index];
 }
 
+
+int StringAlias::GetAliases(StringArray & list) const
+{
+    if(lookup.Entries() == 0)
+    {
+        return 0;
+    }
+
+    int edits = 0;
+    for(int i = 0; i < list.Length(); i++)
+    {
+        int index = lookup.Integer(list[i]);
+        if(index >= 0)
+        {
+            list[i] = aliases[index];
+            edits++;
+        }
+    }
+    return edits;
+}
+
+
 bool StringAlias::ReadFromFile(const char * filename)
 {
     IFILE input = ifopen(filename, "rt");
