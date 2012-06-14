@@ -189,6 +189,20 @@ bool GenomeSequence::open(bool isColorSpace, int flags)
         _umfaFilename = _baseFilename + "-bs.umfa";
     }
 
+    if(access(_umfaFilename.c_str(), R_OK) != 0)
+    {
+        // umfa file doesn't exist, so try to create it.
+        if(create(isColorSpace))
+        {
+            // Couldon't access or create the umfa.
+            std::cerr << "GenomeSequence::open: failed to open file "
+                      << _umfaFilename
+                      << " also failed creating it."
+                      << std::endl;
+            return true;
+        }
+    }
+
     rc = genomeSequenceArray::open(_umfaFilename.c_str(), flags);
     if (rc)
     {
