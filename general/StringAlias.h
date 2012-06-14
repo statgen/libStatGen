@@ -30,6 +30,7 @@ public:
     void SetAlias(String & string, String & alias);
 
     const String & GetAlias(const String & string) const;
+    int            GetAliases(StringArray & list) const;
 
     bool  ReadFromFile(const char * filename);
     bool  ReadFromFile(IFILE & input);
