@@ -55,15 +55,15 @@ bool VcfRecordInfo::read(IFILE filePtr)
     while(stopPos >= contPos)
     {
         // Get the next element to write the key into.
-        InfoContainer::InfoKeyValue& nextKeyVal = myInfo.getNextEmpty();
+        InfoElement& nextElement = myInfo.getNextEmpty();
         // Read the next key.
-        stopPos = filePtr->readTilChar(keyStopChars, nextKeyVal.first);
+        stopPos = filePtr->readTilChar(keyStopChars, nextElement.key);
 
         if(keyStopChars[stopPos] == '=')
         {
             // Stoped at the value part, so read the value
             // associated with the key.
-            stopPos = filePtr->readTilChar(valueStopChars, nextKeyVal.second);
+            stopPos = filePtr->readTilChar(valueStopChars, nextElement.value);
         }
     }
 
@@ -75,11 +75,38 @@ bool VcfRecordInfo::read(IFILE filePtr)
 bool VcfRecordInfo::write(IFILE filePtr)
 {
     // If there are no entries, write '.'.
-    if(myInfo.size() == 0)
+    int infoSize = myInfo.size();
+    if(infoSize <= 0)
     {
         return(ifprintf(filePtr, "%c", EMPTY_INFO) == 1);
     }
-    return(myInfo.write(filePtr));
+
+    int numWritten = 0;
+    int numExpected = 0;
+
+    for(int i = 0; i < infoSize; i++)
+    {
+        if(i != 0)
+        {
+            numWritten += ifprintf(filePtr, ";");
+            ++numExpected;
+        }
+        InfoElement& info = myInfo.get(i);
+        if(info.value.empty())
+        {
+            // No value, just a key.
+            numWritten += ifprintf(filePtr, "%s", info.key.c_str());
+            numExpected += info.key.size();
+        }
+        else
+        {
+            // write the key & the value.
+            numWritten += ifprintf(filePtr, "%s=%s", info.key.c_str(),
+                                  info.value.c_str());
+            numExpected += info.key.size() + info.value.size() + 1;
+        }
+    }
+    return(numWritten == numExpected);
 }
 
 
@@ -89,146 +116,54 @@ void VcfRecordInfo::reset()
 }
 
 
-const std::string* VcfRecordInfo::getString(const char* key)
-{
-    const InfoContainer::InfoKeyValue* pairPtr = myInfo.find(key);
-    if(pairPtr == NULL)
-    {
-        // Not found, return NULL.
-        return(NULL);
-    }
-    // Found, so return the value.
-    return(&(pairPtr->second));
-}
-
-
 void VcfRecordInfo::setString(const char* key, const char* stringVal)
 {
-    InfoContainer::InfoKeyValue* pairPtr = myInfo.find(key);
-    if(pairPtr == NULL)
+    // Check if the field is already there.
+    int infoSize = myInfo.size();
+    for(int i = 0; i < infoSize; i++)
     {
-        // Not found, so get the next element to write the key into.
-        InfoContainer::InfoKeyValue& nextKeyVal = myInfo.getNextEmpty();
-        nextKeyVal.first = key;
-        nextKeyVal.second = stringVal;
-    }
-    else
-    {
-        // Key was found, so replace the value.
-        pairPtr->second = stringVal;
-    }
-}
-
-
-/////////////////////////////////////////////////////////////
-// Info Container
-VcfRecordInfo::InfoContainer::InfoContainer()
-    : myCont(),
-      mySize(0)
-{
-    myNextEmpty = myCont.end();
-}
-
-
-void VcfRecordInfo::InfoContainer::reset()
-{
-    // Set the next empty element to be the first one on the list.
-    // That means there are none used.
-    myNextEmpty = myCont.begin();
-    mySize = 0;
-}
-
-
-VcfRecordInfo::InfoContainer::InfoKeyValue& VcfRecordInfo::InfoContainer::getNextEmpty()
-{
-    // Increment the size.
-    ++mySize;
-    if(myNextEmpty == myCont.end())
-    {
-        // We are at the end of the list of available entries, so add a new one.
-        myCont.resize(myCont.size() + 1);
-        // The next empty one will also be the new end.
-        myNextEmpty = myCont.end();
-        // The default constructors will initialize both key & value to
-        // the empty strings.
-        // return the last element (the one that was just added).
-        return(myCont.back());
-    }
-    // myNextEmpty is an element, and not the end.
-    // So, clear out the strings.
-    myNextEmpty->first.clear();
-    myNextEmpty->second.clear();
-    InfoKeyValue& returnVal = *myNextEmpty;
-    // Increment next empty to the next element.
-    ++myNextEmpty;
-    // return the element to be used.
-    return(returnVal);
-}
-
-
-VcfRecordInfo::InfoContainer::InfoKeyValue* VcfRecordInfo::InfoContainer::find(const char* key)
-{
-    for(InfoContainerIter iter = myCont.begin();
-        iter != myNextEmpty; iter++)
-    {
-        if(iter->first == key)
+        InfoElement& info = myInfo.get(i);
+        if(info.key == key)
         {
-            // Found it.
-            return(&(*iter));
+            // Set the value and return.
+            info.value = stringVal;
+            return;
         }
     }
 
-    // Did not find it, so return null.
+    // Not found, so add a new entry.
+    InfoElement& newElement = myInfo.getNextEmpty();
+    newElement.key = key;
+    newElement.value = stringVal;
+}
+
+
+const std::string* VcfRecordInfo::getString(const char* key)
+{
+    // Check if the field is already there.
+    int infoSize = myInfo.size();
+    for(int i = 0; i < infoSize; i++)
+    {
+        InfoElement& info = myInfo.get(i);
+        if(info.key == key)
+        {
+            // Found, so return the value.
+            return(&(info.value));
+        }
+    }
+
+    // Not found, so return NULL..
     return(NULL);
 }
 
 
-bool VcfRecordInfo::InfoContainer::write(IFILE filePtr)
+const std::string* VcfRecordInfo::getString(int index)
 {
-    int numWritten = 0;
-    int numExpected = 0;
-
-    for(InfoContainerIter iter = myCont.begin();
-        iter != myNextEmpty; iter++)
+    if(index >= myInfo.size())
     {
-        if(iter == myCont.begin())
-        {
-            // First entry, so no ';'
-            // Check if there is a value.
-            if(iter->second.empty())
-            {
-                // write just the key, no value.
-                numWritten = ifprintf(filePtr, "%s", iter->first.c_str());
-                numExpected = iter->first.size();
-            }
-            else
-            {
-                // write the key, and the value.
-                numWritten = ifprintf(filePtr, "%s=%s", 
-                                      iter->first.c_str(), 
-                                      iter->second.c_str());
-                numExpected = iter->first.size() + iter->second.size() + 1;
-            }
-        }
-        else
-        {
-            // Not first entry, so use a ';'
-            // Check if there is a value.
-            if(iter->second.empty())
-            {
-                // write the ';' and just the key, no value.
-                numWritten = ifprintf(filePtr, ";%s", iter->first.c_str());
-                numExpected = 1 + iter->first.size();
-            }
-            else
-            {
-                // write the ';', the key, and the value
-                numWritten = ifprintf(filePtr, ";%s=%s", 
-                                      iter->first.c_str(), 
-                                      iter->second.c_str());
-                numExpected = 1 + iter->first.size() + iter->second.size() + 1;
-            }
-        }
-    } // End loop through entries.
-    return(numWritten == numExpected);
+        // Out of range.
+        return(NULL);
+    }
+
+    return(&(myInfo.get(index).value));
 }

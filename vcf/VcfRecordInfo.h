@@ -24,7 +24,7 @@
 #include <list>
 
 #include "VcfRecordField.h"
-
+#include "ReusableVector.h"
 
 /// This header file provides interface to read/write VCF files.
 class VcfRecordInfo : public VcfRecordField
@@ -53,6 +53,15 @@ public:
     /// reset the field for a new entry.
     void clear() {reset();}
 
+    int getNumInfoFields() { return(myInfo.size()); }
+
+    /// Set the string value associated with the specified key.  
+    /// \param key to set the value for.
+    /// \param const pointer to the string value for this key, NULL if
+    /// the key was not found, a pointer to an empty string if the key
+    /// was found, but does not have a value.
+    void setString(const char* key, const char* stringVal);
+
     /// Get a pointer to the string containing the value associated with the
     /// specified key (the pointer will be invalid if the field is
     /// changed/reset).  
@@ -62,37 +71,32 @@ public:
     /// was found, but does not have a value.
     const std::string* getString(const char* key);
 
-    /// Set the string value associated with the specified key.  
-    /// \param key to set the value for.
-    /// \param const pointer to the string value for this key, NULL if
-    /// the key was not found, a pointer to an empty string if the key
-    /// was found, but does not have a value.
-    void setString(const char* key, const char* stringVal);
+    /// Get a pointer to the string containing the value associated with the
+    /// specified info index (the pointer will be invalid if the field is
+    /// changed/reset).  
+    /// \param index to get the value for.
+    /// \return const pointer to the string value for this index, NULL if
+    /// the index is out of range, a pointer to an empty string if the index
+    /// is in range, but does not have a value.
+    const std::string* getString(int index);
 
 protected:
 
 private:
     static const char EMPTY_INFO = '.';
 
-    class InfoContainer
+    class InfoElement
     {
     public:
-        typedef std::pair<std::string, std::string> InfoKeyValue;
-        InfoContainer();
-        void reset();
-        InfoKeyValue& getNextEmpty();
-        InfoKeyValue* find(const char* key);
-        int size() { return(mySize); }
-        // Does not print the starting/trailing '\t'
-        bool write(IFILE filePtr);
-    private:
-        typedef std::list<InfoKeyValue>::iterator InfoContainerIter;
-        std::list<InfoKeyValue> myCont;
-        InfoContainerIter myNextEmpty;
-        int mySize;
+        InfoElement() {key.clear(); value.clear();}
+
+        std::string key;
+        std::string value;
+
+        void clear() {key.clear(); value.clear();}
     };
 
-    InfoContainer myInfo;
+    ReusableVector<InfoElement> myInfo;
 };
 
 
