@@ -142,6 +142,10 @@ void testVcfReadFile()
  
     // Read the records to make sure they were subset.
     assert(reader.readRecord(record));
+    assert(strcmp(record.getAlleles(0), "G") == 0);
+    assert(strcmp(record.getAlleles(1), "A") == 0);
+    assert(record.getNumAlts() == 1);
+    assert(record.getAlleles(2) == NULL);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -160,6 +164,10 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 1);
 
     assert(reader.readRecord(record));
+    assert(record.getNumAlts() == 1);
+    assert(strcmp(record.getAlleles(0), "T") == 0);
+    assert(strcmp(record.getAlleles(1), "A") == 0);
+    assert(record.getAlleles(2) == NULL);
     assert(record.allPhased() == false);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -178,6 +186,11 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 1);
 
     assert(reader.readRecord(record));
+    assert(strcmp(record.getAlleles(0), "A") == 0);
+    assert(strcmp(record.getAlleles(1), "G") == 0);
+    assert(strcmp(record.getAlleles(2), "T") == 0);
+    assert(record.getNumAlts() == 2);
+    assert(record.getAlleles(3) == NULL);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -196,6 +209,9 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 2);
 
     assert(reader.readRecord(record));
+    assert(strcmp(record.getAlleles(0), "T") == 0);
+    assert(record.getAlleles(1) == NULL);
+    assert(record.getNumAlts() == 0);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -214,6 +230,11 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 0);
 
     assert(reader.readRecord(record));
+    assert(strcmp(record.getAlleles(0), "GTC") == 0);
+    assert(strcmp(record.getAlleles(1), "G") == 0);
+    assert(record.getNumAlts() == 2);
+    assert(strcmp(record.getAlleles(2), "GTCT") == 0);
+    assert(record.getAlleles(3) == NULL);
     assert(record.allPhased() == false);
     assert(record.allUnphased() == true);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -232,6 +253,11 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 2);
 
     assert(reader.readRecord(record));
+    assert(strcmp(record.getAlleles(0), "GTC") == 0);
+    assert(record.getNumAlts() == 2);
+    assert(strcmp(record.getAlleles(1), "G") == 0);
+    assert(strcmp(record.getAlleles(2), "GTCT") == 0);
+    assert(record.getAlleles(3) == NULL);
     assert(record.allPhased() == false);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == false);
@@ -250,6 +276,10 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 2);
 
     assert(reader.readRecord(record));
+    assert(record.getNumAlts() == 1);
+    assert(strcmp(record.getAlleles(0), "GTC") == 0);
+    assert(strcmp(record.getAlleles(1), "G") == 0);
+    assert(record.getAlleles(2) == NULL);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == false);

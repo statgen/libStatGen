@@ -21,11 +21,11 @@
 #define __VCF_RECORD_H__
 
 #include <vector>
+#include <stdlib.h>
 #include "VcfRecordFilter.h"
 #include "VcfRecordInfo.h"
 #include "VcfRecordGenotype.h"
 #include "StatGenStatus.h"
-#include <stdlib.h>
 
 /// This header file provides interface to read/write VCF files.
 class VcfRecord
@@ -72,6 +72,14 @@ public:
     const char* getRefStr() {return(myRef.c_str());}
     int getNumRefBases() {return(myRef.size());}
     const char* getAltStr() {return(myAlt.c_str());}
+    /// Return a pointer to the alleles at the specified index with index 0
+    /// being the reference string for this position and index 1 starting
+    /// the alternate alleles.
+    /// \param index allele index (0 for reference, 1 for first alt, 
+    ///  2 for second, etc)
+    /// \return string of the alleles at the specified index or NULL if the
+    /// index is out of range.
+    const char* getAlleles(int index);
     /// Return the number of alternates listed in the Alts string.
     int getNumAlts();
 
@@ -112,7 +120,7 @@ public:
     void set1BasedPosition(int pos) {my1BasedPosNum = pos;}
     void setID(const char* id) {myID = id;}
     void setRef(const char* ref) {myRef = ref;}
-    void setAlt(const char* alt) {myAlt = alt;}
+    void setAlt(const char* alt) {myAlt = alt; myAltArray.clear();}
     //    void setQual(float qual) {myQualNum = qual; }
     void setQual(const char* qual)
     {
@@ -154,6 +162,8 @@ private:
     VcfRecordFilter myFilter;
     VcfRecordInfo myInfo;
     VcfRecordGenotype myGenotype;
+    ReusableVector<std::string> myAltArray;
+
 
     // The status of the last failed command.
     StatGenStatus myStatus;

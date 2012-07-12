@@ -89,6 +89,7 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo)
         return(false);
     }
     // Read the Alt.
+    myAltArray.clear();
     if(!readTilTab(filePtr, myAlt))
     {
         myStatus.setStatus(StatGenStatus::FAIL_PARSE, 
@@ -266,6 +267,7 @@ void VcfRecord::reset()
     myID.clear();
     myRef.clear();
     myAlt.clear();
+    myAltArray.clear();
     myQualNum = 0;;
     myQual.clear();
     myFilter.clear();
@@ -282,10 +284,30 @@ const StatGenStatus& VcfRecord::getStatus()
 }
 
 
+const char* VcfRecord::getAlleles(int index)
+{
+    if(index == 0)
+    {
+        return(myRef.c_str());
+    }
+    if(index > getNumAlts())
+    {
+        // Index out of range.
+        return(NULL);
+    }
+    // Alternate allele, so return the alternate.
+    return(myAltArray.get(index-1).c_str());
+}
+
+
 int VcfRecord::getNumAlts()
 {
-    size_t pos = 0;
-    
+    int numAlts = myAltArray.size();
+    if(numAlts != 0)
+    {
+        // Already parsed so just return the number of alternates.
+        return(numAlts);
+    }
     // Check if it is just '.'.
     if((myAlt.length() == 1) && (myAlt == "."))
     {
@@ -293,16 +315,20 @@ int VcfRecord::getNumAlts()
         return(0);
     }
 
-    // Loop looking for commas.
-    int numAlts = 0;
-    while(pos != std::string::npos)
+    // Parse the alternates by looping looking for commas.
+    std::string* altStr = &(myAltArray.getNextEmpty());
+    for(std::string::iterator iter = myAlt.begin(); iter != myAlt.end(); iter++)
     {
-        ++numAlts;
-        // Can start reading at the pos = 1 since the
-        // first position should not be a ','
-        pos = myAlt.find(ALT_DELIM, pos + 1);
+        if(*iter == ',')
+        {
+            altStr = &(myAltArray.getNextEmpty());
+        }
+        else
+        {
+            altStr->push_back(*iter);
+        }
     }
-    return(numAlts);
+    return(myAltArray.size());
 }
 
 
