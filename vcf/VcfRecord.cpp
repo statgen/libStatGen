@@ -284,7 +284,7 @@ const StatGenStatus& VcfRecord::getStatus()
 }
 
 
-const char* VcfRecord::getAlleles(int index)
+const char* VcfRecord::getAlleles(unsigned int index)
 {
     if(index == 0)
     {
@@ -293,6 +293,8 @@ const char* VcfRecord::getAlleles(int index)
     if(index > getNumAlts())
     {
         // Index out of range.
+        // Throw an exception.
+        throw(std::runtime_error("VcfRecord::getAlleles called with an index that is greater than the number of alternates."));
         return(NULL);
     }
     // Alternate allele, so return the alternate.
@@ -300,7 +302,7 @@ const char* VcfRecord::getAlleles(int index)
 }
 
 
-int VcfRecord::getNumAlts()
+unsigned int VcfRecord::getNumAlts()
 {
     int numAlts = myAltArray.size();
     if(numAlts != 0)

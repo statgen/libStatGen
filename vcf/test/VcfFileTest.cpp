@@ -145,7 +145,16 @@ void testVcfReadFile()
     assert(strcmp(record.getAlleles(0), "G") == 0);
     assert(strcmp(record.getAlleles(1), "A") == 0);
     assert(record.getNumAlts() == 1);
-    assert(record.getAlleles(2) == NULL);
+    try
+    {
+        caughtException = false;
+        assert(record.getAlleles(2) == NULL);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -167,7 +176,16 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 1);
     assert(strcmp(record.getAlleles(0), "T") == 0);
     assert(strcmp(record.getAlleles(1), "A") == 0);
-    assert(record.getAlleles(2) == NULL);
+    try
+    {
+        caughtException = false;
+        assert(record.getAlleles(2) == NULL);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
     assert(record.allPhased() == false);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -190,7 +208,16 @@ void testVcfReadFile()
     assert(strcmp(record.getAlleles(1), "G") == 0);
     assert(strcmp(record.getAlleles(2), "T") == 0);
     assert(record.getNumAlts() == 2);
-    assert(record.getAlleles(3) == NULL);
+    try
+    {
+        caughtException = false;
+        assert(record.getAlleles(3) == NULL);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -210,7 +237,16 @@ void testVcfReadFile()
 
     assert(reader.readRecord(record));
     assert(strcmp(record.getAlleles(0), "T") == 0);
-    assert(record.getAlleles(1) == NULL);
+    try
+    {
+        caughtException = false;
+        assert(record.getAlleles(1) == NULL);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
     assert(record.getNumAlts() == 0);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
@@ -234,7 +270,16 @@ void testVcfReadFile()
     assert(strcmp(record.getAlleles(1), "G") == 0);
     assert(record.getNumAlts() == 2);
     assert(strcmp(record.getAlleles(2), "GTCT") == 0);
-    assert(record.getAlleles(3) == NULL);
+    try
+    {
+        caughtException = false;
+        assert(record.getAlleles(3) == NULL);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
     assert(record.allPhased() == false);
     assert(record.allUnphased() == true);
     assert(record.hasAllGenotypeAlleles() == true);
@@ -257,7 +302,16 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 2);
     assert(strcmp(record.getAlleles(1), "G") == 0);
     assert(strcmp(record.getAlleles(2), "GTCT") == 0);
-    assert(record.getAlleles(3) == NULL);
+    try
+    {
+        caughtException = false;
+        assert(record.getAlleles(3) == NULL);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
     assert(record.allPhased() == false);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == false);
@@ -279,7 +333,16 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 1);
     assert(strcmp(record.getAlleles(0), "GTC") == 0);
     assert(strcmp(record.getAlleles(1), "G") == 0);
-    assert(record.getAlleles(2) == NULL);
+    try
+    {
+        caughtException = false;
+        assert(record.getAlleles(2) == NULL);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == false);
