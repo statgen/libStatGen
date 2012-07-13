@@ -256,6 +256,7 @@ void GenomeSequence::sanityCheck(MemoryMap &fasta) const
 // referenceFilename is  either a fasta or a UM fasta (.fa or .umfa)
 // filename.  In both cases, the suffix gets removed and the
 // base name is kept for later use depending on context.
+// @return always return false
 //
 bool GenomeSequence::setReferenceName(std::string referenceFilename)
 {
@@ -283,6 +284,13 @@ bool GenomeSequence::setReferenceName(std::string referenceFilename)
     }
     _fastaFilename = _baseFilename + ".fa";
 
+    if (HAS_SUFFIX(referenceFilename, ".fasta"))
+    {
+        _referenceFilename = referenceFilename;
+        _baseFilename = _referenceFilename.substr(0, referenceFilename.size() - 6);
+        _fastaFilename = _baseFilename + ".fasta";        
+    }
+    
     return false;
 }
 
