@@ -29,6 +29,8 @@ VcfFileReader::VcfFileReader()
       mySectionOverlap(false),
       mySampleSubset(),
       myUseSubset(false),
+      myMinAltAlleleCount(UNSET_MIN_ALT_ALLELE_COUNT),
+      myAltAlleleCountSubset(NULL),
       myDiscardRules(0),
       myNumKeptRecords(0)
 {
@@ -270,6 +272,36 @@ bool VcfFileReader::readRecord(VcfRecord& record)
             continue;
         }
 
+        // Check to see if the minimum alternate allele count is met.
+        if(myMinAltAlleleCount != UNSET_MIN_ALT_ALLELE_COUNT)
+        {
+            // Count the number of alternates.
+            int32_t numAlts = 0;
+            for(int sampleNum = 0; sampleNum < record.getNumSamples(); 
+                sampleNum++)
+            {
+                if((myAltAlleleCountSubset != NULL) &&
+                   !(myAltAlleleCountSubset->keep(sampleNum)))
+                {
+                    // Skip this sample.
+                    continue;
+                }
+                for(int gtNum = 0; gtNum < record.getNumGTs(sampleNum); gtNum++)
+                {
+                    if(record.getGT(sampleNum, gtNum) > 0)
+                    {
+                        // Alternate, so increment the count.
+                        ++numAlts;
+                    }
+                }
+            }
+            if(numAlts < myMinAltAlleleCount)
+            {
+                // Not enough alternates so continue to the next sample.
+                continue;
+            }
+        }
+
         // Record was not discarded.
         recordFound = true;
     }
@@ -312,6 +344,18 @@ bool VcfFileReader::isEOF()
     return true;
 }
 
+void VcfFileReader::addDiscardMinAltAlleleCount(int32_t minAltAlleleCount, 
+                                                VcfSubsetSamples* subset)
+{
+    myMinAltAlleleCount = minAltAlleleCount;
+    myAltAlleleCountSubset = subset;
+}
+
+void VcfFileReader::rmDiscardMinAltAlleleCount()
+{
+    myMinAltAlleleCount = UNSET_MIN_ALT_ALLELE_COUNT;
+    myAltAlleleCountSubset = NULL;
+}
 
 void VcfFileReader::resetFile()
 {

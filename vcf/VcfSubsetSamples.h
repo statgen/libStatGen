@@ -27,13 +27,35 @@ class VcfSubsetSamples
 {
 public:
     VcfSubsetSamples()
-        : mySampleSubsetIndicator()
+        : mySampleSubsetIndicator(),
+          mySampleNames()
     {}
 
     ~VcfSubsetSamples()
     {
         mySampleSubsetIndicator.clear();
     }
+
+    void reset();
+
+    /// Read the samples from the header initiallizing them all to be
+    /// included/excluded based on the include paramater.  The header is
+    /// not stored or updated based on any include/excludes.  The mapping
+    /// between sampleNames & indexes is stored to be used for addIncludeSample
+    /// and addExcludeSample.
+    void init(const VcfHeader& header, bool include);
+
+    /// Include the specified sample.  initSample must first be called to 
+    /// specify the header mapping between index and sample.  
+    /// \return true if the sample could be included, false if the sample
+    /// was not found in the sample list so cannot be included.
+    bool addIncludeSample(const char* sampleName);
+
+    /// Exclude the specified sample.  initSample must first be called to 
+    /// specify the header mapping between index and sample.  
+    /// \return true if the sample was found in teh sample list and could be
+    /// excluded, false if the sample was not found in the sample list.
+    bool addExcludeSample(const char* sampleName);
 
     /// Initialize this object based on the sample names found in sampleFileName
     /// delimited by any of the characters in delims or '\n' and update the
@@ -53,8 +75,6 @@ public:
     /// the index is out of range.
     bool keep(unsigned int sampleIndex);
 
-    void reset();
-
 private:
     VcfSubsetSamples(const VcfSubsetSamples& vcfSubsetSamples);
 
@@ -66,6 +86,11 @@ private:
 
 
     std::vector<bool> mySampleSubsetIndicator;
+
+    // Used for initSample & addIncludeSample & addExcludeSample for
+    // mapping between original sample names and indexes in
+    // mySampleSubsetIndicator.
+    std::vector<std::string>mySampleNames;
 };
 
 #endif

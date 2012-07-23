@@ -142,6 +142,12 @@ void testVcfReadFile()
  
     // Read the records to make sure they were subset.
     assert(reader.readRecord(record));
+    assert(record.getGT(0,0) == 0);
+    assert(record.getGT(1,1) == 0);
+    assert(record.getGT(1,0) == 1);
+    assert(record.getGT(0,1) == 0);
+    assert(record.getGT(1,2) == VcfGenotypeSample::INVALID_GT);
+    assert(record.getGT(2,0) == VcfGenotypeSample::INVALID_GT);
     assert(strcmp(record.getAlleles(0), "G") == 0);
     assert(strcmp(record.getAlleles(1), "A") == 0);
     assert(record.getNumAlts() == 1);
@@ -173,6 +179,12 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 1);
 
     assert(reader.readRecord(record));
+    assert(record.getGT(0,0) == 0);
+    assert(record.getGT(1,1) == 1);
+    assert(record.getGT(1,0) == 0);
+    assert(record.getGT(0,1) == 0);
+    assert(record.getGT(1,2) == VcfGenotypeSample::INVALID_GT);
+    assert(record.getGT(2,0) == VcfGenotypeSample::INVALID_GT);
     assert(record.getNumAlts() == 1);
     assert(strcmp(record.getAlleles(0), "T") == 0);
     assert(strcmp(record.getAlleles(1), "A") == 0);
@@ -204,6 +216,12 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 1);
 
     assert(reader.readRecord(record));
+    assert(record.getGT(0,0) == 1);
+    assert(record.getGT(1,1) == 1);
+    assert(record.getGT(1,0) == 2);
+    assert(record.getGT(0,1) == 2);
+    assert(record.getGT(1,2) == VcfGenotypeSample::INVALID_GT);
+    assert(record.getGT(2,0) == VcfGenotypeSample::INVALID_GT);
     assert(strcmp(record.getAlleles(0), "A") == 0);
     assert(strcmp(record.getAlleles(1), "G") == 0);
     assert(strcmp(record.getAlleles(2), "T") == 0);
@@ -330,6 +348,12 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 2);
 
     assert(reader.readRecord(record));
+    assert(record.getGT(0,0) == 0);
+    assert(record.getGT(1,1) == VcfGenotypeSample::MISSING_GT);
+    assert(record.getGT(1,0) == 0);
+    assert(record.getGT(0,1) == 1);
+    assert(record.getGT(1,2) == VcfGenotypeSample::INVALID_GT);
+    assert(record.getGT(2,0) == VcfGenotypeSample::INVALID_GT);
     assert(record.getNumAlts() == 1);
     assert(strcmp(record.getAlleles(0), "GTC") == 0);
     assert(strcmp(record.getAlleles(1), "G") == 0);
@@ -1564,6 +1588,14 @@ void testVcfReadFile()
     assert(record.getNumAlts() == 0);
 
     assert(reader.readRecord(record));
+    assert(record.getGT(0,0) == 0);
+    assert(record.getGT(1,1) == VcfGenotypeSample::MISSING_GT);
+    assert(record.getGT(1,0) == 0);
+    assert(record.getGT(0,1) == 1);
+    assert(record.getGT(2,0) == 1);
+    assert(record.getGT(2,1) == 1);
+    assert(record.getGT(1,2) == VcfGenotypeSample::INVALID_GT);
+    assert(record.getGT(3,0) == VcfGenotypeSample::INVALID_GT);
     assert(record.allPhased() == true);
     assert(record.allUnphased() == false);
     assert(record.hasAllGenotypeAlleles() == false);
@@ -1652,6 +1684,166 @@ void testVcfReadFile()
     assert(reader.getNumRecords() == 7);
 
     reader.close();
+
+   //////////////////////////
+   // Discard missing GTs & non-Phased and filtering 
+   // AND discard without at least 2 alternates with no additional subsetting.
+   reader.setDiscardRules(VcfFileReader::DISCARD_MISSING_GT | 
+                          VcfFileReader::DISCARD_NON_PHASED);
+   reader.addDiscardMinAltAlleleCount(2, NULL);
+   reader.open("testFiles/vcfFile.vcf", header, "testFiles/subset1.txt", 
+               NULL, NULL, ";");
+   
+   assert(header.getHeaderLine() == HEADER_LINE_SUBSET1);
+   assert(header.getNumSamples() == NUM_SAMPLES_SUBSET1);
+   assert(header.getSampleName(2) == NULL);
+   assert(header.getSampleName(0) == SAMPLES[0]);
+   assert(header.getSampleName(1) == SAMPLES[1]);
+   assert(header.getSampleIndex(SAMPLES[1].c_str()) == 1);
+   assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+   assert(header.getSampleIndex(SAMPLES[2].c_str()) == -1);
+   
+   // Read the records to make sure they were subset.
+   assert(reader.readRecord(record));
+   sampleInfo = &(record.getGenotypeInfo());
+   assert(sampleInfo->getNumSamples() == 2);
+   assert(*(sampleInfo->getString("GT", 0)) == "1|2");
+   assert(*(sampleInfo->getString("GT", 1)) == "2|1");
+   assert(sampleInfo->getString("GT", 2) == NULL);
+   assert(sampleInfo->isPhased(0) == true);
+   assert(sampleInfo->isPhased(1) == true);
+   assert(sampleInfo->isPhased(2) == false);
+   assert(sampleInfo->isUnphased(0) == false);
+   assert(sampleInfo->isUnphased(1) == false);
+   assert(sampleInfo->isUnphased(2) == false);
+
+   assert(reader.readRecord(record) == false);
+   
+   assert(reader.getNumKeptRecords() == 1);
+   assert(reader.getNumRecords() == 7);
+   
+   reader.close();
+
+   ////////////////////////////////
+   // Test Discarding multiple Alts without subsetting
+   // and discard any without at least 3 alts.
+   reader.open("testFiles/vcfFile.vcf", header);
+   reader.addDiscardMinAltAlleleCount(3, NULL);
+   reader.setDiscardRules(VcfFileReader::DISCARD_MULTIPLE_ALTS); 
+
+   assert(header.getHeaderLine() == HEADER_LINE);
+   assert(header.getNumSamples() == NUM_SAMPLES);
+   assert(header.getSampleName(2) == SAMPLES[2]);
+   assert(header.getSampleName(0) == SAMPLES[0]);
+   assert(header.getSampleName(1) == SAMPLES[1]);
+   assert(header.getSampleIndex(SAMPLES[1].c_str()) == 1);
+   assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+   assert(header.getSampleIndex(SAMPLES[2].c_str()) == 2);
+ 
+   // Read the records.
+   assert(reader.readRecord(record));
+   assert(record.allPhased() == false);
+   assert(record.allUnphased() == false);
+   assert(record.hasAllGenotypeAlleles() == true);
+   sampleInfo = &(record.getGenotypeInfo());
+   assert(sampleInfo->getNumSamples() == 3);
+   assert(*(sampleInfo->getString("GT", 0)) == "0|0");
+   assert(*(sampleInfo->getString("GT", 1)) == "1|0");
+   assert(*(sampleInfo->getString("GT", 2)) == "1/1");
+   assert(sampleInfo->isPhased(0) == true);
+   assert(sampleInfo->isPhased(1) == true);
+   assert(sampleInfo->isPhased(2) == false);
+   assert(sampleInfo->isUnphased(0) == false);
+   assert(sampleInfo->isUnphased(1) == false);
+   assert(sampleInfo->isUnphased(2) == true);
+   assert(record.passedAllFilters() == true);
+   assert(record.getNumAlts() == 1);
+
+   assert(reader.readRecord(record));
+   assert(record.getGT(0,0) == 0);
+   assert(record.getGT(1,1) == VcfGenotypeSample::MISSING_GT);
+   assert(record.getGT(1,0) == 0);
+   assert(record.getGT(0,1) == 1);
+   assert(record.getGT(2,0) == 1);
+   assert(record.getGT(2,1) == 1);
+   assert(record.getGT(1,2) == VcfGenotypeSample::INVALID_GT);
+   assert(record.getGT(3,0) == VcfGenotypeSample::INVALID_GT);
+   assert(record.allPhased() == true);
+   assert(record.allUnphased() == false);
+   assert(record.hasAllGenotypeAlleles() == false);
+   sampleInfo = &(record.getGenotypeInfo());
+   assert(sampleInfo->getNumSamples() == 3);
+   assert(*(sampleInfo->getString("GT", 0)) == "0|1");
+   assert(*(sampleInfo->getString("GT", 1)) == "0|.");
+   assert(*(sampleInfo->getString("GT", 2)) == "1|1");
+   assert(sampleInfo->isPhased(0) == true);
+   assert(sampleInfo->isPhased(1) == true);
+   assert(sampleInfo->isPhased(2) == true);
+   assert(sampleInfo->isUnphased(0) == false);
+   assert(sampleInfo->isUnphased(1) == false);
+   assert(sampleInfo->isUnphased(2) == false);
+   assert(record.passedAllFilters() == true);
+   assert(record.getNumAlts() == 1);
+
+   assert(reader.readRecord(record) == false);
+
+   assert(reader.getNumKeptRecords() == 2);
+   assert(reader.getNumRecords() == 7);
+
+   reader.close();
+
+   ////////////////////////////////
+   // Test Discarding multiple Alts without subsetting
+   // and discard any without at least 3 alts and only samples 1 & 2.
+   reader.open("testFiles/vcfFile.vcf", header);
+   VcfSubsetSamples minAltAlleleSubset;
+   minAltAlleleSubset.init(header, true);
+   minAltAlleleSubset.addExcludeSample("NA00002");
+   reader.addDiscardMinAltAlleleCount(3, &minAltAlleleSubset);
+   reader.setDiscardRules(VcfFileReader::DISCARD_MULTIPLE_ALTS); 
+
+   assert(header.getHeaderLine() == HEADER_LINE);
+   assert(header.getNumSamples() == 3);
+   assert(header.getSampleName(0) == SAMPLES[0]);
+   assert(header.getSampleName(2) == SAMPLES[2]);
+   assert(header.getSampleName(1) == SAMPLES[1]);
+   assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
+   assert(header.getSampleIndex(SAMPLES[1].c_str()) == 1);
+   assert(header.getSampleIndex(SAMPLES[2].c_str()) == 2);
+ 
+   // Read the records.
+   assert(reader.readRecord(record));
+   assert(record.getGT(0,0) == 0);
+   assert(record.getGT(1,1) == VcfGenotypeSample::MISSING_GT);
+   assert(record.getGT(1,0) == 0);
+   assert(record.getGT(0,1) == 1);
+   assert(record.getGT(2,0) == 1);
+   assert(record.getGT(2,1) == 1);
+   assert(record.getGT(1,2) == VcfGenotypeSample::INVALID_GT);
+   assert(record.getGT(3,0) == VcfGenotypeSample::INVALID_GT);
+   assert(record.allPhased() == true);
+   assert(record.allUnphased() == false);
+   assert(record.hasAllGenotypeAlleles() == false);
+   sampleInfo = &(record.getGenotypeInfo());
+   assert(sampleInfo->getNumSamples() == 3);
+   assert(*(sampleInfo->getString("GT", 0)) == "0|1");
+   assert(*(sampleInfo->getString("GT", 1)) == "0|.");
+   assert(*(sampleInfo->getString("GT", 2)) == "1|1");
+   assert(sampleInfo->isPhased(0) == true);
+   assert(sampleInfo->isPhased(1) == true);
+   assert(sampleInfo->isPhased(2) == true);
+   assert(sampleInfo->isUnphased(0) == false);
+   assert(sampleInfo->isUnphased(1) == false);
+   assert(sampleInfo->isUnphased(2) == false);
+   assert(record.passedAllFilters() == true);
+   assert(record.getNumAlts() == 1);
+
+   assert(reader.readRecord(record) == false);
+
+   assert(reader.getNumKeptRecords() == 1);
+   assert(reader.getNumRecords() == 7);
+
+   reader.close();
 }
 
 

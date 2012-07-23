@@ -29,11 +29,10 @@
 class VcfFileReader : public VcfFile
 {
 public:
-    static const int DISCARD_NON_PHASED = 0x1;
-    static const int DISCARD_MISSING_GT = 0x2;
-    static const int DISCARD_FILTERED = 0x4;
-    static const int DISCARD_MULTIPLE_ALTS = 0x8;
-
+    static const uint64_t DISCARD_NON_PHASED = 0x1;
+    static const uint64_t DISCARD_MISSING_GT = 0x2;
+    static const uint64_t DISCARD_FILTERED = 0x4;
+    static const uint64_t DISCARD_MULTIPLE_ALTS = 0x8;
 
     /// Default Constructor, initializes the variables, but does not open
     /// any files.
@@ -118,26 +117,51 @@ public:
     /// so far excluding any discarded records.
     int getNumKeptRecords() {return(myNumKeptRecords);}
 
+    /////////////////////////////
+    /// @name  Discard Rules Methods
+    /// Methods for setting up the automatic discard rules when reading the file
+    //@{
+
     /// Set which rules should be applied for discarding records.
     /// OR in all discard rules to be applied.
     /// For example:: reader.setDiscards(DISCARD_NON_PHASED | 
     ///                                  DISCARD_MISSING_GT);
     /// NOTE: Discard rules are NOT reset when a file is reset, closed, or a new
     /// one opened, but are reset when this is called.
-    void setDiscardRules(uint32_t discards) { myDiscardRules = discards; }
-
+    void setDiscardRules(uint64_t discards) { myDiscardRules = discards; }
+    
     /// Add additional discard rule,  OR in all additional discard rules to
     /// be applied.
     /// For example:: reader.setDiscards(DISCARD_NON_PHASED | 
     ///                                  DISCARD_MISSING_GT);
     /// NOTE: Discard rules are NOT reset when a file is reset, closed, or a new
     /// one opened, and are NOT reset when this is called.
-    void addDiscardRules(uint32_t discards) { myDiscardRules |= discards; }
+    void addDiscardRules(uint64_t discards) { myDiscardRules |= discards; }
+    
+    /// Add a discard rule based on the minimum allele count of alternate
+    /// alleles in the specified samples.  If the sum of all alternate allele
+    /// counts in the specified samples (or in all samples if NULL is passed)
+    ///is greater than or equal to the amount specified, the record is kept.
+    /// If not, then the record is discarded.
+    /// \param minAltAlleleCount minimum count of all alternate alleles for
+    /// a record that should be kept, any with fewer will be discarded.
+    /// \param subset only count alternate alleles in samples within the
+    /// specified subset or NULL if all samples should be counted.  The
+    /// pointer is stored in this object, but is not cleaned up by this object.
+    void addDiscardMinAltAlleleCount(int32_t minAltAlleleCount,
+                                     VcfSubsetSamples* subset);
+
+    /// Remove the discard rule for minimum alternate allele count.
+    void rmDiscardMinAltAlleleCount();
+
+    //@}
 
 protected: 
     virtual void resetFile();
 
 private:
+    static const int32_t UNSET_MIN_ALT_ALLELE_COUNT = -1;
+
     // Set1BasedReadSection was called so process the section prior to reading.
     bool processNewSection();
 
@@ -152,7 +176,10 @@ private:
     VcfSubsetSamples mySampleSubset;
     bool myUseSubset;
 
-    uint32_t myDiscardRules;
+    int32_t myMinAltAlleleCount;
+    VcfSubsetSamples* myAltAlleleCountSubset;
+
+    uint64_t myDiscardRules;
 
     // Number of records read/written so far that were not discarded.
     int myNumKeptRecords;

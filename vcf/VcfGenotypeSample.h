@@ -25,6 +25,9 @@
 class VcfGenotypeSample : public VcfGenotypeField
 {
 public:
+    static const int INVALID_GT;
+    static const int MISSING_GT;
+
     /// Default Constructor, initializes the variables.
     VcfGenotypeSample();
 
@@ -53,11 +56,20 @@ public:
     inline bool isUnphased()            { return(myUnphased); }
     inline bool hasAllGenotypeAlleles() { return(myHasAllGenotypeAlleles); }
 
+    /// Return the integer allele at the specified index of the GT field.
+    /// For example, a GT of 0/3, getGT(1) returns 3 and getGT(0) returns 0.
+    /// Returns INVALID_GT if there is no GT at the specified index or GT was
+    /// not specified and returns MISSING_GT if it is '.'.
+    int getGT(unsigned int index);
+
+    /// Return the number of GT fields for this sample.
+    int getNumGTs();
+
 protected:
     /// reset the sample for a new entry.
     virtual void internal_reset();
 
-    void parseGT();
+    bool parseGT();
 
 private:
     VcfGenotypeFormat* myFormatPtr;
@@ -65,6 +77,8 @@ private:
     bool myPhased;
     bool myUnphased;
     bool myHasAllGenotypeAlleles;
+
+    std::vector<int> myGTs;
 };
 
 #endif

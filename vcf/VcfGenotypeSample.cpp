@@ -16,13 +16,18 @@
  */
 
 #include "VcfGenotypeSample.h"
+#include <stdlib.h>
+
+const int VcfGenotypeSample::INVALID_GT = -1;
+const int VcfGenotypeSample::MISSING_GT = -2;
 
 VcfGenotypeSample::VcfGenotypeSample()
     : VcfGenotypeField(),
       myFormatPtr(NULL),
       myPhased(false),
       myUnphased(false),
-      myHasAllGenotypeAlleles(false)
+      myHasAllGenotypeAlleles(false),
+      myGTs()
 {
 }
 
@@ -70,6 +75,7 @@ bool VcfGenotypeSample::read(IFILE filePtr, VcfGenotypeFormat& format)
                 // Read until a new subfield is found.
                 while(stopChar > END_GT)
                 {
+                    // TODO  have an option to autoparse the genotypes?
                     // todo - store the previous nextType len in order to
                     // do string conversion to ints...
                     stopChar = filePtr->readTilChar(GT_DELIM, *nextType);
@@ -152,10 +158,86 @@ bool VcfGenotypeSample::setString(const std::string& key, const std::string& val
 }
 
 
+int VcfGenotypeSample::getGT(unsigned int index)
+{
+    if(myGTs.empty())
+    {
+        if(!parseGT())
+        {
+            // Failed to parse GT, so return INVALID_GT.
+            return(INVALID_GT);
+        }
+    }
+    
+    if(index < myGTs.size())
+    {
+        return(myGTs[index]);
+    }
+    // Out of range index.
+    return(INVALID_GT);
+}
+
+
+int VcfGenotypeSample::getNumGTs()
+{
+    if(myGTs.empty())
+    {
+        if(!parseGT())
+        {
+            return(0);
+        }
+    }
+    return(myGTs.size());
+}
+
+
 void VcfGenotypeSample::internal_reset()
 {
     myFormatPtr = NULL;
     myPhased = false;
     myUnphased = false;
     myHasAllGenotypeAlleles = false;
+    myGTs.clear();
+}
+
+
+bool VcfGenotypeSample::parseGT()
+{
+    // Parse the GT.
+    const std::string* gtStr = getString("GT");
+    myGTs.clear();
+    if(gtStr == NULL)
+    {
+        // GT field not found.
+        return(false);
+    }
+
+    // Parse til the end of the GT string
+    char* startPos = NULL;
+    char* endPos = (char*)gtStr->c_str();
+    while((endPos != NULL) && (*endPos != '\0'))
+    {
+        startPos = endPos;
+        if(*startPos == '.')
+        {
+            endPos = startPos + 1;
+            // unknown, so set this index to be MISSING_GT.
+            myGTs.push_back(MISSING_GT);
+            continue;
+        }
+        if(*startPos == '|')
+        {
+            endPos = startPos + 1;
+            continue;
+        }
+        if(*startPos == '/')
+        {
+            endPos = startPos + 1;
+            continue;
+        }
+        // Should be an int, so parse it.
+        unsigned long gtLong = strtoul(startPos, &endPos, 10);
+        myGTs.push_back((int)gtLong);
+    }
+    return(true);
 }

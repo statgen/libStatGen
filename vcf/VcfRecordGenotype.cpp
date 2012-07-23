@@ -183,6 +183,19 @@ bool VcfRecordGenotype::setString(const std::string& key,
 }
 
 
+int VcfRecordGenotype::getGT(int sampleNum, unsigned int gtIndex)
+{
+    if(sampleNum >= mySamples.size())
+    {
+        // Out of range sample index.
+        return(VcfGenotypeSample::INVALID_GT);
+    }
+    // Get the field from the sample.
+    return(mySamples.get(sampleNum).getGT(gtIndex));
+
+}
+
+
 bool VcfRecordGenotype::allPhased()
 {
     for(int i = 0; i < mySamples.size(); i++)

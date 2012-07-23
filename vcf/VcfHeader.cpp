@@ -174,7 +174,7 @@ const char* VcfHeader::getHeaderLine()
 }
 
 
-int VcfHeader::getNumSamples()
+int VcfHeader::getNumSamples() const
 {
     if(!myHasHeaderLine)
     {
@@ -194,7 +194,7 @@ int VcfHeader::getNumSamples()
 }
 
 
-const char* VcfHeader::getSampleName(unsigned int index)
+const char* VcfHeader::getSampleName(unsigned int index) const
 {
     if(!myHasHeaderLine)
     {
@@ -213,7 +213,7 @@ const char* VcfHeader::getSampleName(unsigned int index)
 }
 
 
-int VcfHeader::getSampleIndex(const char* sampleName)
+int VcfHeader::getSampleIndex(const char* sampleName) const
 {
     if(!myHasHeaderLine)
     {

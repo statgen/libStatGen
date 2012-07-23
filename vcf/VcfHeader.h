@@ -69,15 +69,15 @@ public:
 
     /// Returns the number of samples in the header line or 0 if the header
     /// line has not yet been read.
-    int getNumSamples();
+    int getNumSamples() const;
 
     /// Returns the name of the specified sample or NULL if the sample number
     /// is out of range (first sample is index 0).
-    const char* getSampleName(unsigned int index);
+    const char* getSampleName(unsigned int index) const;
 
     /// Returns the index of the specified sample or -1 if the sample name
     /// is not found (first sample is index 0).
-    int getSampleIndex(const char* sampleName);
+    int getSampleIndex(const char* sampleName) const;
 
     /// Remove the sample at the specified index.
     void removeSample(unsigned int index);

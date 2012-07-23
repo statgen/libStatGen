@@ -97,6 +97,13 @@ public:
     /// Get a reference to the genotype fields.
     VcfRecordGenotype& getGenotypeInfo() {return myGenotype;}
 
+    inline int getNumSamples() { return(myGenotype.getNumSamples()); }
+
+    inline int getNumGTs(int index) { return(myGenotype.getNumSamples()); }
+
+    inline int getGT(int sampleNum, unsigned int gtIndex)
+    { return(myGenotype.getGT(sampleNum, gtIndex)); }
+
     /// Return true if all of the samples are phased and none are unphased,
     /// false if any are unphased or not phased.
     inline bool allPhased() { return(myGenotype.allPhased()); }

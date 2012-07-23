@@ -17,6 +17,82 @@
 
 #include "VcfSubsetSamples.h"
 
+void VcfSubsetSamples::reset()
+{
+    mySampleSubsetIndicator.clear();
+    mySampleNames.clear();
+}
+
+
+void VcfSubsetSamples::init(const VcfHeader& header, bool include)
+{
+    // Get the number of samples from the header.
+    unsigned int origNumSamples = header.getNumSamples();
+
+    // Resize the sampleSubsetIndicator to nothing to clear it out.
+    mySampleSubsetIndicator.resize(0);
+
+    // Now resize sampleSubsetIndicator to indicate that all of the original
+    // samples are to be kept or not kept based on the include parameter.
+    // mySampleSubsetIndicator is sized to the original number of samples
+    // so it can be used when reading records to determine which ones should
+    // be removed/kept.
+    mySampleSubsetIndicator.resize(origNumSamples, include);
+
+    // Copy the vector of original sample names.
+    mySampleNames.clear();
+    mySampleNames.resize(origNumSamples);
+    for(unsigned int i = 0; i < origNumSamples; i++)
+    {
+        mySampleNames[i] = header.getSampleName(i);
+    }
+}
+
+
+bool VcfSubsetSamples::addIncludeSample(const char* sampleName)
+{
+    // Look for the sample name.
+    for(unsigned int i = 0; i < mySampleNames.size(); i++)
+    {
+        if(mySampleNames[i] == sampleName)
+        {
+            // Found the sample index.
+            if(mySampleSubsetIndicator.size() <= i)
+            {
+                // SampleSubsetIndicator not setup properly.
+                return(false);
+            }
+            mySampleSubsetIndicator[i] = true;
+            return(true);
+        }
+    }
+    // Did not find the sample, so can't include it.
+    return(false);
+}
+
+
+bool VcfSubsetSamples::addExcludeSample(const char* sampleName)
+{
+    // Look for the sample name.
+    for(unsigned int i = 0; i < mySampleNames.size(); i++)
+    {
+        if(mySampleNames[i] == sampleName)
+        {
+            // Found the sample index.
+            if(mySampleSubsetIndicator.size() <= i)
+            {
+                // SampleSubsetIndicator not setup properly.
+                return(false);
+            }
+            mySampleSubsetIndicator[i] = false;
+            return(true);
+        }
+    }
+    // Did not find the sample, so can't include it.
+    return(false);
+}
+
+
 bool VcfSubsetSamples::init(VcfHeader& header, 
                             const char* includeFileName, 
                             const char* excludeSample, 
@@ -50,7 +126,7 @@ bool VcfSubsetSamples::init(VcfHeader& header,
 
     int origNumSamples = header.getNumSamples();
 
-    // Resise the sampleSubsetIndicator to nothing to clear it out.
+    // Resize the sampleSubsetIndicator to nothing to clear it out.
     mySampleSubsetIndicator.resize(0);
 
     // Now resize sampleSubsetIndicator to indicate that all of the original
@@ -104,12 +180,6 @@ bool VcfSubsetSamples::keep(unsigned int sampleIndex)
 }
 
 
-void VcfSubsetSamples::reset()
-{
-    mySampleSubsetIndicator.clear();
-}
-
-
 bool VcfSubsetSamples::readSamplesFromFile(const char* fileName, 
                                            std::set<std::string>& sampleList,
                                            const char* delims)
@@ -145,4 +215,3 @@ bool VcfSubsetSamples::readSamplesFromFile(const char* fileName,
     }
     return(true);
 }
-
