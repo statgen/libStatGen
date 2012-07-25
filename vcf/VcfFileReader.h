@@ -153,6 +153,22 @@ public:
 
     /// Remove the discard rule for minimum alternate allele count.
     void rmDiscardMinAltAlleleCount();
+    
+    /// Add a discard rule based on the minimum allele count of alternate
+    /// alleles in the specified samples.  If the sum of all alternate allele
+    /// counts in the specified samples (or in all samples if NULL is passed)
+    ///is greater than or equal to the amount specified, the record is kept.
+    /// If not, then the record is discarded.
+    /// \param minAltAlleleCount minimum count of all alternate alleles for
+    /// a record that should be kept, any with fewer will be discarded.
+    /// \param subset only count alternate alleles in samples within the
+    /// specified subset or NULL if all samples should be counted.  The
+    /// pointer is stored in this object, but is not cleaned up by this object.
+    void addDiscardMinMinorAlleleCount(int32_t minMinorAlleleCount,
+                                       VcfSubsetSamples* subset);
+
+    /// Remove the discard rule for minimum alternate allele count.
+    void rmDiscardMinMinorAlleleCount();
 
     //@}
 
@@ -160,6 +176,7 @@ protected:
     virtual void resetFile();
 
 private:
+    static const int32_t UNSET_MIN_MINOR_ALLELE_COUNT = -1;
     static const int32_t UNSET_MIN_ALT_ALLELE_COUNT = -1;
 
     // Set1BasedReadSection was called so process the section prior to reading.
@@ -179,10 +196,16 @@ private:
     int32_t myMinAltAlleleCount;
     VcfSubsetSamples* myAltAlleleCountSubset;
 
+    int32_t myMinMinorAlleleCount;
+    VcfSubsetSamples* myMinorAlleleCountSubset;
+    // Number of times each alternate is found in a record 
+    std::vector<int> myMinorAlleleCount;
+
     uint64_t myDiscardRules;
 
     // Number of records read/written so far that were not discarded.
     int myNumKeptRecords;
+
 };
 
 #endif

@@ -99,7 +99,7 @@ public:
 
     inline int getNumSamples() { return(myGenotype.getNumSamples()); }
 
-    inline int getNumGTs(int index) { return(myGenotype.getNumSamples()); }
+    inline int getNumGTs(int index) { return(myGenotype.getNumGTs(index)); }
 
     inline int getGT(int sampleNum, unsigned int gtIndex)
     { return(myGenotype.getGT(sampleNum, gtIndex)); }

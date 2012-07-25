@@ -196,6 +196,19 @@ int VcfRecordGenotype::getGT(int sampleNum, unsigned int gtIndex)
 }
 
 
+int VcfRecordGenotype::getNumGTs(int sampleNum)
+{
+    if(sampleNum >= mySamples.size())
+    {
+        // Out of range sample index, no GTs.
+        return(0);
+    }
+    // Get the field from the sample.
+    return(mySamples.get(sampleNum).getNumGTs());
+
+}
+
+
 bool VcfRecordGenotype::allPhased()
 {
     for(int i = 0; i < mySamples.size(); i++)

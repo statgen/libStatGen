@@ -31,6 +31,9 @@ VcfFileReader::VcfFileReader()
       myUseSubset(false),
       myMinAltAlleleCount(UNSET_MIN_ALT_ALLELE_COUNT),
       myAltAlleleCountSubset(NULL),
+      myMinMinorAlleleCount(UNSET_MIN_MINOR_ALLELE_COUNT),
+      myMinorAlleleCountSubset(NULL),
+      myMinorAlleleCount(),
       myDiscardRules(0),
       myNumKeptRecords(0)
 {
@@ -272,11 +275,11 @@ bool VcfFileReader::readRecord(VcfRecord& record)
             continue;
         }
 
-        // Check to see if the minimum alternate allele count is met.
+        // Check allele counts for discarding.
         if(myMinAltAlleleCount != UNSET_MIN_ALT_ALLELE_COUNT)
         {
             // Count the number of alternates.
-            int32_t numAlts = 0;
+            int32_t altCount = 0;
             for(int sampleNum = 0; sampleNum < record.getNumSamples(); 
                 sampleNum++)
             {
@@ -291,13 +294,71 @@ bool VcfFileReader::readRecord(VcfRecord& record)
                     if(record.getGT(sampleNum, gtNum) > 0)
                     {
                         // Alternate, so increment the count.
-                        ++numAlts;
+                        ++altCount;
                     }
                 }
             }
-            if(numAlts < myMinAltAlleleCount)
+            if(altCount < myMinAltAlleleCount)
             {
                 // Not enough alternates so continue to the next sample.
+                continue;
+            }
+        }
+
+        // Check to see if the minimum alternate allele count is met.
+        if(myMinMinorAlleleCount != UNSET_MIN_MINOR_ALLELE_COUNT)
+        {
+            // Initialize the vector.
+            // Get the number of possible alternates.
+            unsigned int numAlts = record.getNumAlts();
+            unsigned int gt = 0;
+
+            // clear the count array.
+            for(unsigned int i = 0; i < myMinorAlleleCount.size(); i++)
+            {
+                myMinorAlleleCount[i] = 0;
+            }
+            if(numAlts >= myMinorAlleleCount.size())
+            {
+                myMinorAlleleCount.resize(numAlts+1, 0);
+            }
+
+            // Count the number of each alternate.
+            for(int sampleNum = 0; sampleNum < record.getNumSamples(); 
+                sampleNum++)
+            {
+                if((myMinorAlleleCountSubset != NULL) &&
+                   !(myMinorAlleleCountSubset->keep(sampleNum)))
+                {
+                    // Skip this sample.
+                    continue;
+                }
+                for(int gtNum = 0; gtNum < record.getNumGTs(sampleNum); gtNum++)
+                {
+                    gt = record.getGT(sampleNum, gtNum);
+                    if((gt < 0) || (gt > numAlts))
+                    {
+                        // Not a gt we want to count, so continue to the next gt
+                        continue;
+                    }
+                    // Increment the minor allele count
+                    ++myMinorAlleleCount[gt];
+                }
+            }
+            // Verify that each allele has the min count.
+            bool failMinorAlleleCount = false;
+            for(unsigned int i = 0; i <= numAlts; i++)
+            {
+                if(myMinorAlleleCount[i] < myMinMinorAlleleCount)
+                {
+                    // Not enough of one gt, so not ok.
+                    failMinorAlleleCount = true;
+                    break;
+                }
+            }
+            if(failMinorAlleleCount)
+            {
+                // not enough alleles, so continue to the next record.
                 continue;
             }
         }
@@ -344,6 +405,7 @@ bool VcfFileReader::isEOF()
     return true;
 }
 
+
 void VcfFileReader::addDiscardMinAltAlleleCount(int32_t minAltAlleleCount, 
                                                 VcfSubsetSamples* subset)
 {
@@ -351,11 +413,28 @@ void VcfFileReader::addDiscardMinAltAlleleCount(int32_t minAltAlleleCount,
     myAltAlleleCountSubset = subset;
 }
 
+
 void VcfFileReader::rmDiscardMinAltAlleleCount()
 {
     myMinAltAlleleCount = UNSET_MIN_ALT_ALLELE_COUNT;
     myAltAlleleCountSubset = NULL;
 }
+
+
+void VcfFileReader::addDiscardMinMinorAlleleCount(int32_t minMinorAlleleCount, 
+                                                  VcfSubsetSamples* subset)
+{
+    myMinMinorAlleleCount = minMinorAlleleCount;
+    myMinorAlleleCountSubset = subset;
+}
+
+
+void VcfFileReader::rmDiscardMinMinorAlleleCount()
+{
+    myMinMinorAlleleCount = UNSET_MIN_ALT_ALLELE_COUNT;
+    myMinorAlleleCountSubset = NULL;
+}
+
 
 void VcfFileReader::resetFile()
 {

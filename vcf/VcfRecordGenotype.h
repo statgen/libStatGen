@@ -91,6 +91,8 @@ public:
 
     int getGT(int sampleNum, unsigned int gtIndex);
 
+    int getNumGTs(int sampleNum);
+
     /// Determine if all samples are phased.  Returns true if all are phased
     /// and false if any are not phased or if any are unphased.
     bool allPhased();
