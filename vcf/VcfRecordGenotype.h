@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2011  Regents of the University of Michigan,
+ *  Copyright (C) 2011-2012  Regents of the University of Michigan,
  *                      Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
  *                      and Goncalo Abecasis
  *
@@ -127,6 +127,9 @@ public:
 protected:
 
 private:
+    VcfRecordGenotype(const VcfRecordGenotype& gt);
+    VcfRecordGenotype& operator=(const VcfRecordGenotype& gt);
+
     // Fields that should be stored when reading for all records.
     static std::set<std::string> ourStoreFields;
 

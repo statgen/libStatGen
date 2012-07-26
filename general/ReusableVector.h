@@ -55,6 +55,9 @@ public:
 protected:
     std::vector<DATA_TYPE*> myCont;
     unsigned int myNextEmpty;
+private:
+    ReusableVector& operator=(const ReusableVector& rv);
+    ReusableVector(const ReusableVector& rv);
 };
 
 
