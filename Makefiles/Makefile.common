@@ -37,9 +37,9 @@ OBJECTS_PROFILE := $(patsubst %,$(OBJDIR_PROFILE)/%,$(TOOLOBJ))
 # Tests go in the test directory.
 TESTDIR ?= test
 
-ALWAYS_COMP_OBJ_OPT = $(patsubst %,$(OBJDIR_OPT)/%,$(COMPILE_ANY_CHANGE:=.o))'
-ALWAYS_COMP_OBJ_DEBUG = $(patsubst %,$(OBJDIR_DEBUG)/%,$(COMPILE_ANY_CHANGE:=.o))'
-ALWAYS_COMP_OBJ_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(COMPILE_ANY_CHANGE:=.o))'
+ALWAYS_COMP_OBJ_OPT = $(patsubst %,$(OBJDIR_OPT)/%,$(COMPILE_ANY_CHANGE:=.o))
+ALWAYS_COMP_OBJ_DEBUG = $(patsubst %,$(OBJDIR_DEBUG)/%,$(COMPILE_ANY_CHANGE:=.o))
+ALWAYS_COMP_OBJ_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(COMPILE_ANY_CHANGE:=.o))
 
 CCOMPILE=$(CC) $(CFLAGS) -o $@ -c $*.c 
 CXXCOMPILE=$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
