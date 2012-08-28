@@ -189,7 +189,7 @@ private:
         int32_t n_mapped; // Number of mapped reads.
         int32_t n_unmapped; // Number of unmapped reads.
 
-        static const uint64_t UNSET_MIN_CHUNK_OFFSET = 0xFFFFFFFFFFFFFFFF;
+        static const uint64_t UNSET_MIN_CHUNK_OFFSET = 0xFFFFFFFFFFFFFFFFULL;
     };
 
     // Add the bins associated with the specified region to the passed in list.
