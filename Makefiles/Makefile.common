@@ -16,7 +16,7 @@ MAKE_DEPENDS=Makefile.depends
 # Source File Set
 TOOLHDR = $(TOOLBASE:=.h) $(HDRONLY)
 TOOLSRC = $(TOOLBASE:=.cpp) $(SRCONLY)
-TOOLOBJ = $(TOOLSRC:.cpp=.o)
+TOOLOBJ = $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(TOOLSRC)))
 
 # Define the directory structure for opt/debug/profile for objs & bins
 SUBDIR_OPT ?= 
