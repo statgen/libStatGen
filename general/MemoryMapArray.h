@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h> // for gethostname()
 
 #include <string>
 #include <sys/types.h>

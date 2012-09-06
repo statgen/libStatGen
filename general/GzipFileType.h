@@ -30,6 +30,7 @@
 #include <stdio.h>  // for NULL!
 #endif
 
+#include <cstddef> // for NULL on Mac
 #include <zlib.h>
 #include "FileType.h"
 
