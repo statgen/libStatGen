@@ -299,7 +299,7 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
 
    // Read past eof.
    numBytesRead = ifread(myTestBuffer, MAX_TEST_BUFFER_SIZE);
-   std::cerr << numBytesRead << std::endl;
+   //   std::cerr << numBytesRead << std::endl;
    assert(numBytesRead == 0);
    // Eof.
    assert(ifeof() != 0);
