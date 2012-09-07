@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,6 +38,120 @@ InputFile::InputFile(const char * filename, const char * mode,
     myFileName.clear();
 
     openFile(filename, mode, compressionMode);
+}
+
+
+int InputFile::readTilChar(const std::string& stopChars, std::string& stringRef)
+{
+    int charRead = 0;
+    size_t pos = std::string::npos;
+    // Loop until the character was not found in the stop characters.
+    while(pos == std::string::npos)
+    {
+        charRead = ifgetc();
+
+        // First Check for EOF.  If EOF is found, just return -1
+        if(charRead == EOF)
+        {
+            return(-1);
+        }
+        
+        // Try to find the character in the stopChars.
+        pos = stopChars.find(charRead);
+
+        if(pos == std::string::npos)
+        {
+            // Didn't find a stop character and it is not an EOF, 
+            // so add it to the string.
+            stringRef += charRead;
+        }
+    }
+    return(pos);
+}
+
+
+int InputFile::readTilChar(const std::string& stopChars)
+{
+    int charRead = 0;
+    size_t pos = std::string::npos;
+    // Loop until the character was not found in the stop characters.
+    while(pos == std::string::npos)
+    {
+        charRead = ifgetc();
+
+        // First Check for EOF.  If EOF is found, just return -1
+        if(charRead == EOF)
+        {
+            return(-1);
+        }
+        
+        // Try to find the character in the stopChars.
+        pos = stopChars.find(charRead);
+    }
+    return(pos);
+}
+
+
+int InputFile::discardLine()
+{
+    int charRead = 0;
+    size_t pos = std::string::npos;
+    // Loop until the character was not found in the stop characters.
+    while((charRead != EOF) && (charRead != '\n'))
+    {
+        charRead = ifgetc();
+    }
+    // First Check for EOF.  If EOF is found, just return -1
+    if(charRead == EOF)
+    {
+        return(-1);
+    }
+    return(0);
+}
+
+
+int InputFile::readLine(std::string& line)
+{
+    int charRead = 0;
+    while(!ifeof())
+    {
+        charRead = ifgetc();
+        if(charRead == EOF)
+        {
+            return(-1);
+        }
+        if(charRead == '\n')
+        {
+            return(0);
+        }
+        line += charRead;
+    }
+    // Should never get here.
+    return(-1);
+}
+
+
+int InputFile::readTilTab(std::string& field)
+{
+    int charRead = 0;
+    while(!ifeof())
+    {
+        charRead = ifgetc();
+        if(charRead == EOF)
+        {
+            return(-1);
+        }
+        if(charRead == '\n')
+        {
+            return(0);
+        }
+        if(charRead == '\t')
+        {
+            return(1);
+        }
+        field += charRead;
+    }
+    return(-1);
 }
 
 

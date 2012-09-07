@@ -19,21 +19,31 @@
 #include <iostream>
 #include "StringBasics.h"
 
+void testAdditional(const char *extension);
 #ifdef __ZLIB_AVAILABLE__
 void testWrite();
-
+#endif
 
 int main(int argc, char ** argv)
 {
+#ifdef __ZLIB_AVAILABLE__
 
    IFILE_Test myFile;
 
    myFile.test();
 
    testWrite();
+#endif
+
+   std::cout << "\nAdditional Tests: " << std::endl;
+
+   testAdditional("txt");
+#ifdef __ZLIB_AVAILABLE__
+   testAdditional("gz");
+#endif
 }
 
-
+#ifdef __ZLIB_AVAILABLE__
 const int IFILE_Test::TEST_FILE_SIZE = 37;
 const int IFILE_Test::BGZF_TEST_FILE_SIZE = 93;
 const std::string IFILE_Test::TEST_FILE_CONTENTS = "ABCDabcd1234\nEFGefg567\nhijklHIJKL8910";
@@ -64,7 +74,7 @@ void IFILE_Test::test()
    test_ifseek("bam");
    test_noExistRead("bam");
 
-   std::cout << "\n .glf file Tests:" << std::endl;
+   std::cout << "\n.glf file Tests:" << std::endl;
    test_readFromFile("glf");
    test_ifeof_ifrewind("glf");
    test_ifread_ifgetc("glf");
@@ -1208,5 +1218,54 @@ void testWrite()
     // correct format - rather than hand checking.
 }
 
-
 #endif
+
+
+void testAdditional(const char* extension)
+{
+    std::string fileName = "data/InputFileTest2.";
+    fileName += extension;
+    IFILE testFile = ifopen(fileName.c_str(), "r");
+    assert(testFile != NULL);
+
+    std::string buffer = "989";
+    std::string stopChars = "C5F2";
+
+    // Test readTilChar that stores the string.
+    assert(testFile->readTilChar(stopChars, buffer) == 0);
+    assert(buffer == "989AB");
+    buffer.clear();
+    assert(testFile->readTilChar(stopChars, buffer) == 2);
+    assert(buffer == "DE");
+    assert(testFile->readTilChar(stopChars, buffer) == 3);
+    assert(buffer == "DEG\tabcdefg\n1");
+
+    // Test readTilChar that discards the string.
+    assert(testFile->readTilChar(stopChars) == 1);
+    buffer.clear();
+    buffer = "t";
+    assert(testFile->readTilTab(buffer) == 1);
+    assert(buffer == "t6");
+    assert(testFile->readTilTab(buffer) == 0);
+    assert(buffer == "t6hijklm");
+    assert(testFile->readTilTab(buffer) == 0);
+    assert(buffer == "t6hijklm1");
+    assert(testFile->readTilTab(buffer) == 1);
+    assert(buffer == "t6hijklm1NOP");
+    assert(testFile->readLine(buffer) == 0);
+    assert(buffer == "t6hijklm1NOPQRST\tUVW");
+    assert(testFile->readTilTab(buffer) == 0);
+    assert(buffer == "t6hijklm1NOPQRST\tUVW");
+    buffer.clear();
+    assert(testFile->discardLine() == 0);
+    assert(testFile->readLine(buffer) == -1);
+    assert(buffer == "@#$");
+    assert(testFile->discardLine() == -1);
+    assert(testFile->readTilTab(buffer) == -1);
+    assert(testFile->readTilChar(stopChars, buffer) == -1);
+    assert(testFile->readTilChar(stopChars) == -1);
+    assert(buffer == "@#$");
+
+    ifclose(testFile);
+
+}

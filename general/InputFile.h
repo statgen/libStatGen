@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -280,6 +280,49 @@ public:
         return(returnSize);
     }
 
+    /// Read until the specified characters, returning which character was
+    /// found causing the stop, -1 returned for EOF, storing the other read
+    /// characters into the specified string.
+    /// Note: If stopChars is just '\n', readLine is faster and if
+    /// stopChars is just '\n' and '\t', readTilTab is faster.
+    /// \param stopChars characters to stop reading when they are hit.
+    /// \param stringRef reference to a string that the read characters should
+    /// be apppended to (does not include the stopchar).
+    /// \return index of the character in stopChars that caused it to stop
+    /// reading or -1 for EOF.
+    int readTilChar(const std::string& stopChars, std::string& stringRef);
+
+    /// Read until the specified characters, returning which character was
+    /// found causing the stop, -1 returned for EOF, dropping all read chars.
+    /// Note: If stopChars is just '\n', discardLine is faster.
+    /// \param stopChars characters to stop reading when they are hit.
+    /// \return index of the character in stopChars that caused it to stop
+    /// reading or -1 for EOF.
+    int readTilChar(const std::string& stopChars);
+
+    /// Read until the end of the line, discarding the characters,
+    /// returning -1 returned for EOF and returning 0 if the end of the line
+    /// was found.
+    /// \return 0 if the end of the line was found before EOF or -1 for EOF.
+    int discardLine();
+
+    /// Read, appending the characters into the specified string until new
+    /// line or EOF is found, returning -1 if EOF is found first and 0 if new
+    /// line is found first.  The new line and EOF are not written into the 
+    /// specified string.
+    /// \param line reference to a string that the read characters should
+    /// be apppended to (does not include the new line or eof).
+    /// \return 0 if new line and -1 for EOF.
+    int readLine(std::string& line);
+
+    /// Read, appending the characters into the specified string until tab, new
+    /// line, or EOF is found, returning -1 if EOF is found first, 0 if new
+    /// line is found first, or 1 if a tab is found first.  The tab, new line,
+    /// and EOF are not written into the specified string.
+    /// \param field reference to a string that the read characters should
+    /// be apppended to (does not include the tab, new line, or eof).
+    /// \return 1 if tab is found, 0 if new line, and -1 for EOF.
+    int readTilTab(std::string& field);
 
     /// Get a character from the file.  Read a character from the internal
     /// buffer, or if the end of the buffer has been reached, read from the

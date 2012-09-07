@@ -544,7 +544,7 @@ public:
         std::string &result
     ) const;
 
-    bool populateDBSNP(mmapArrayBool_t &dbSNP, std::ifstream &inputFile) const;
+    bool populateDBSNP(mmapArrayBool_t &dbSNP, IFILE inputFile) const;
 
     /// user friendly dbSNP loader.
     ///
