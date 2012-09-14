@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1276,43 +1276,76 @@ void GenomeSequence::getChromosomeAndIndex(String& s, genomeIndex_t i) const
 //   False: if not succeed
 bool GenomeSequence::populateDBSNP(
     mmapArrayBool_t &dbSNP,
-    std::ifstream &inputFile) const
+    IFILE inputFile) const
 {
-    std::string inputLine;
-
     assert(dbSNP.getElementCount() == getNumberBases());
 
+    if(inputFile == NULL)
+    {
+        // FAIL, file not opened.
+        return(false);
+    }
+
     std::string chromosomeName;
+    std::string position;
     genomeIndex_t chromosomePosition1;  // 1-based
     uint64_t    ignoredLineCount = 0;
 
-    while (getline(inputFile, inputLine))
+    // Read til the end of the file.
+    char* postPosPtr = NULL;
+    while(!inputFile->ifeof())
     {
-        std::istringstream inputLine2(inputLine);
-        genomeIndex_t genomeIndex;  // 1-based
-
-        inputLine2 >> chromosomeName;
-        inputLine2 >> chromosomePosition1;
-
-        // check for a comment line
-        if (chromosomeName.size()>0 && chromosomeName[0]=='#')
+        chromosomeName.clear();
+        position.clear();
+        // Read the chromosome
+        if(inputFile->readTilTab(chromosomeName) <= 0)
         {
+            // hit either eof or end of line, check if
+            // it is a header.
+            if(chromosomeName.size()>0 && chromosomeName[0]=='#')
+            {
+                // header, so just continue.
+                continue;
+            }
+            // Not the header, so this line is poorly formatted.
+            ++ignoredLineCount;
+            // Continue to the next line.
             continue;
         }
 
-#if 0
-        //
-        // enable this check if we want only chromosomes
-        // 1-22.  Some code is sensitive to this, so we may
-        // need to make it an option.
-        //
-        if (!isdigit(chromosomeName[0])) continue;
-#endif
+        // Check if it is a header line.
+        if(chromosomeName.size()>0 && chromosomeName[0]=='#')
+        {
+            // did not hit eof or end of line, 
+            // so discard the rest of the line.
+            inputFile->discardLine();
+            continue;
+        }
 
-        genomeIndex = getGenomePosition(chromosomeName.c_str(), chromosomePosition1);
+        // Not a header, so read the position.
+        if(inputFile->readTilTab(position) > 0)
+        {
+            // Additional data on the line, so discard it.
+            inputFile->discardLine();
+        }
+
+        // Convert the position to a string.
+        chromosomePosition1 = strtoul(position.c_str(), &postPosPtr, 0);
+
+
+        if(postPosPtr == position.c_str())
+        {
+            ++ignoredLineCount;
+            continue;
+        }
+
+        // 1-based genome index.
+        genomeIndex_t genomeIndex = 
+            getGenomePosition(chromosomeName.c_str(), chromosomePosition1);
 
         // if the genome index is invalid, ignore it
-        if (genomeIndex == INVALID_GENOME_INDEX)
+        if((genomeIndex == INVALID_GENOME_INDEX) || 
+           (genomeIndex > getNumberBases()))
         {
             ignoredLineCount++;
             continue;
@@ -1320,8 +1353,6 @@ bool GenomeSequence::populateDBSNP(
 
         dbSNP.set(genomeIndex, true);
     }
-
-    inputFile.close();
 
     if (ignoredLineCount > 0)
     {
@@ -1369,9 +1400,8 @@ bool GenomeSequence::loadDBSNP(
             //
             // we have a file, assume we can load it as a text file
             //
-            std::ifstream inputFile;
-            inputFile.open(inputFileName);
-            if (inputFile.fail())
+            IFILE inputFile = ifopen(inputFileName, "r");
+            if(inputFile == NULL)
             {
                 std::cerr << "Error: failed to open " << inputFileName << std::endl;
                 exit(1);
@@ -1384,7 +1414,7 @@ bool GenomeSequence::loadDBSNP(
 
             // now load it into RAM
             populateDBSNP(dbSNP, inputFile);
-            inputFile.close();
+            ifclose(inputFile);
 
         }
         else
