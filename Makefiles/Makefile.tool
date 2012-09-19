@@ -15,7 +15,7 @@ ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 package : 
 # the touch gets rid of a tar warning
 	touch $(RELEASE_FILE)
-	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/,' * --show-transformed-names 
+	tar chvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs -f $(RELEASE_FILE) --transform 's,^,$(DIR_NAME)_$(VERSION)/,' * --show-transformed-names 
 
 BASE_LIB_PARTS := $(subst /, , $(BASE_LIB_PATH))
 BASE_LIB_DIRNAME := $(word $(words $(BASE_LIB_PARTS)), $(BASE_LIB_PARTS))

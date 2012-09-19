@@ -23,4 +23,4 @@ RELEASE_FILE?=libStatGen.$(VERSION).tgz
 package : 
 # the touch gets rid of a tar warning
 	touch $(RELEASE_FILE)
-	tar cvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs -f $(RELEASE_FILE) --transform 's,^,libStatGen_$(VERSION)/,' * --show-transformed-names 
+	tar chvz --exclude="*~" --exclude=$(RELEASE_FILE) --exclude='obj/*' --exclude='*.a'  --exclude='include/*' --exclude='bin/*' --exclude='test/results/*' --exclude-vcs -f $(RELEASE_FILE) --transform 's,^,libStatGen_$(VERSION)/,' * --show-transformed-names 
