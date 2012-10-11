@@ -35,7 +35,8 @@ VcfFileReader::VcfFileReader()
       myMinorAlleleCountSubset(NULL),
       myMinorAlleleCount(),
       myDiscardRules(0),
-      myNumKeptRecords(0)
+      myNumKeptRecords(0),
+      myTotalRead(0)
 {
   myFilePtr = NULL;
 }
@@ -191,11 +192,30 @@ bool VcfFileReader::readRecord(VcfRecord& record)
     }
 
     // Check to see if a new region has been set.  If so, setup for that region.
+    bool searchChrom = false;
     if(myNewSection)
     {
-        if(!processNewSection())
+        if(myVcfIndex != NULL)
         {
-            myStatus = StatGenStatus::NO_MORE_RECS;
+            // Have an index file so use
+            if(!processNewSection())
+            {
+                // processNewSection sets the status appropriately on failure.
+                return(false);
+            }
+        }
+        else if(myTotalRead == 0)
+        {
+            // ReadSection without an index only works if no records
+            // have been read.
+            searchChrom = true;
+            myNewSection = false;
+        }
+        else
+        {
+            myNewSection = false;
+            myStatus.setStatus(StatGenStatus::FAIL_ORDER, 
+                               "Cannot set read section with no index after reading records");
             return(false);
         }
     }
@@ -210,14 +230,24 @@ bool VcfFileReader::readRecord(VcfRecord& record)
             return(false);
         }
 
+        ++myTotalRead;
+
         // Check to see if the record is in the section.
         // First check the chromosome.
         if(!mySectionChrom.empty() && (mySectionChrom != record.getChromStr()))
         {
+            if(searchChrom)
+            {
+                // Still searching for the chromosome, so continue
+                // to the next record.
+                continue;
+            }
+
             // Record is not within the correct chromosome, so return failure.
             myStatus = StatGenStatus::NO_MORE_RECS;
            return(false);
         }
+        searchChrom = false;
 
         // Check if the record is after the section end if applicable.
         if((mySection1BasedEndPos != -1) && 
@@ -441,6 +471,7 @@ void VcfFileReader::resetFile()
     mySampleSubset.reset();
     myUseSubset = false;
     myNumKeptRecords = 0;
+    myTotalRead = 0;
     myNewSection = false;
     mySectionChrom = "";
     mySection1BasedStartPos = -1;
@@ -486,6 +517,7 @@ bool VcfFileReader::processNewSection()
                                 startPos))
     {
         // Didn't find the position.
+        myStatus = StatGenStatus::NO_MORE_RECS;
         return(false);
     }
     if(startPos != (uint64_t)iftell(myFilePtr))

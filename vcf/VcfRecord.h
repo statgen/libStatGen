@@ -156,6 +156,9 @@ protected:
     bool readTilTab(IFILE filePtr, std::string& stringRef);
 
 private:
+    VcfRecord(const VcfRecord& vcfRecord);
+    VcfRecord& operator=(const VcfRecord& vcfRecord);
+
     static const char ALT_DELIM = ',';
 
     std::string myChrom;

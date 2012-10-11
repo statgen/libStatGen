@@ -57,6 +57,8 @@ protected:
     virtual void resetFile() {}
 
 private:
+    VcfFileWriter(const VcfFileWriter& vcfFileWriter);
+    VcfFileWriter& operator=(const VcfFileWriter& vcfFileWriter);
 };
 
 #endif

@@ -59,6 +59,9 @@ protected:
     virtual void internal_reset();
 
 private:
+    VcfGenotypeFormat(const VcfGenotypeFormat& vcfGenotypeFormat);
+    VcfGenotypeFormat& operator=(const VcfGenotypeFormat& vcfGenotypeFormat);
+
     int myGTIndex;
 
     // Set when reading the format by checking the readFields in

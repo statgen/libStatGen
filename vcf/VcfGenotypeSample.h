@@ -72,6 +72,9 @@ protected:
     bool parseGT();
 
 private:
+    VcfGenotypeSample(const VcfGenotypeSample& vcfGenotypeSample);
+    VcfGenotypeSample& operator=(const VcfGenotypeSample& vcfGenotypeSample);
+
     VcfGenotypeFormat* myFormatPtr;
 
     bool myPhased;

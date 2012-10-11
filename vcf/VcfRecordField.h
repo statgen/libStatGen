@@ -48,8 +48,8 @@ public:
 protected: 
 
 private:
-    VcfRecordField(const VcfRecordField& gt);
-    VcfRecordField& operator=(const VcfRecordField& gt);
+    VcfRecordField(const VcfRecordField& field);
+    VcfRecordField& operator=(const VcfRecordField& field);
 };
 
 #endif

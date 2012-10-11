@@ -35,6 +35,7 @@ void testVcfFile()
     testVcfWriteFile();
 
     testVcfReadSection();
+    testVcfReadSectionNoIndex();
 }
 
 
@@ -2507,6 +2508,193 @@ void testVcfReadSection()
     assert(reader.readRecord(record) == false);
     assert(reader.readRecord(record) == false);
 
+    assert(reader.set1BasedReadSection("3", 0, 65538, true));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+   reader.close();
+}
+
+
+void testVcfReadSectionNoIndex()
+{
+    // Test open for read via the constructor with return.
+    VcfFileReader reader;
+    VcfHeader header;
+    VcfRecord record;
+    bool caughtException = false;
+
+    ////////////////////////////////
+    // Test the read section logic.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    
+    reader.set1BasedReadSection("10", 16384, 32767);
+    assert(reader.readRecord(record) == false);
+
+     // Can't call setReadSection after reading a record a second time with no index.
+    try
+    {
+        caughtException = false;
+        assert(reader.set1BasedReadSection("1", 16384, 32769));
+        assert(reader.readRecord(record) == true);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException == true);
+
+    // Reopen to begining to check chrom 1.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+
+    reader.set1BasedReadSection("1", 16384, 32768);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check valid range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("1", 16384, 32769);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("1", 32769, 32767);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("1", 32769, 65537);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    assert(reader.set1BasedReadSection("1", 32768, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    assert(reader.set1BasedReadSection("1", 32769, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    assert(reader.set1BasedReadSection("1", 0, 65538));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+
+    ////////////////////////////////////////
+    // Test selecting whole chroms
+    try
+    {
+        caughtException = false;
+        assert(reader.setReadSection("1"));
+        assert(reader.readRecord(record) == true);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    assert(reader.setReadSection("10"));
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    assert(reader.setReadSection("1"));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 65537);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    assert(reader.setReadSection("3"));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    ////////////////////////////////////////
+    // Test selecting sections with deletions
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("3", 16384, 32767);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("3", 16384, 32768);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("3", 16384, 32769);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("3", 32768, 32769);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    ////////////////////////////////////////
+    // Test selecting sections with deletions for overlapping
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("3", 16384, 32767, true);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("3", 16384, 32768, true);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    reader.set1BasedReadSection("3", 16384, 32769, true);
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32768);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
+    assert(reader.set1BasedReadSection("3", 32771, 65538, true));
+    assert(reader.readRecord(record) == true);
+    assert(record.get1BasedPosition() == 32780);
+    assert(reader.readRecord(record) == false);
+    assert(reader.readRecord(record) == false);
+
+    // Reopen to begining to check another range.
+    reader.open("testFiles/testTabix.vcf.bgzf", header);
     assert(reader.set1BasedReadSection("3", 0, 65538, true));
     assert(reader.readRecord(record) == true);
     assert(record.get1BasedPosition() == 32768);

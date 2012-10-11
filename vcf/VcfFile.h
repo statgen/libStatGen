@@ -81,6 +81,8 @@ protected:
     int myNumRecords;
 
 private:
+    VcfFile(const VcfFile& vcfFile);
+    VcfFile& operator=(const VcfFile& vcfFile);
 };
 
 #endif

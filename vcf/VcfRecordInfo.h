@@ -83,6 +83,9 @@ public:
 protected:
 
 private:
+    VcfRecordInfo(const VcfRecordInfo& vcfRecordInfo);
+    VcfRecordInfo& operator=(const VcfRecordInfo& vcfRecordInfo);
+
     static const char EMPTY_INFO = '.';
 
     class InfoElement

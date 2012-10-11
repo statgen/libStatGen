@@ -91,9 +91,13 @@ public:
     bool readRecord(VcfRecord& record);
 
     /// Only read the specified chromosome when readRecord is called.
+    /// If an index is not used, the read section can only be set prior to 
+    /// reading any records.
     bool setReadSection(const char* chromName);
 
     /// Only read the specified chromosome/positions when readRecord is called.
+    /// If an index is not used, the read section can only be set prior to 
+    /// reading any records.
     /// \param chromName chromosome name to read.
     /// \param start inclusive 1-based start positions of records that should be
     /// read for this chromosome.
@@ -116,6 +120,10 @@ public:
     /// Get the number of VCF records that have been processed (read/written)
     /// so far excluding any discarded records.
     int getNumKeptRecords() {return(myNumKeptRecords);}
+
+    /// Get the number of VCF records that were read, even those outside
+    /// a specified region and those discarded.
+    int getTotalReadRecords() {return(myTotalRead);}
 
     /////////////////////////////
     /// @name  Discard Rules Methods
@@ -176,6 +184,9 @@ protected:
     virtual void resetFile();
 
 private:
+    VcfFileReader(const VcfFileReader& vcfFileReader);
+    VcfFileReader& operator=(const VcfFileReader& vcfFileReader);
+
     static const int32_t UNSET_MIN_MINOR_ALLELE_COUNT = -1;
     static const int32_t UNSET_MIN_ALT_ALLELE_COUNT = -1;
 
@@ -205,7 +216,7 @@ private:
 
     // Number of records read/written so far that were not discarded.
     int myNumKeptRecords;
-
+    int myTotalRead;
 };
 
 #endif
