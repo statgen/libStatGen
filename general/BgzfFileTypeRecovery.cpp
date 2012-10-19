@@ -48,7 +48,16 @@ private:
     uint8_t m_OS;
     uint16_t m_XLEN;
 public:
-    RecoveryGzipHeader() {;}
+    RecoveryGzipHeader() :
+        m_ID1(0),
+        m_ID2(0),
+        m_CM(0),
+        m_FLG(0),
+        m_MTIME(0),
+        m_XFL(0),
+        m_OS(0),
+        m_XLEN(0)
+    {;}
 
     void defaults() {
         m_ID1 = 31;
