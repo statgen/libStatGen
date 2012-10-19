@@ -988,6 +988,9 @@ bool SamFileHeader::parseHeader(String& header)
     if((numErrors > 0) && (numValid == 0))
     {
         // Only errors.
+        std::cerr << numErrors
+                  << " invalid SAM/BAM Header lines were skipped due to:\n"
+                  << errorMessage << std::endl;
         return(false);
     }
     else if(numErrors > 0)
