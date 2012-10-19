@@ -501,6 +501,8 @@ int String::ReadLine(FILE * f)
 
     int returnValue = 1;
 
+    int io = 0;
+
     while (check[0] != '\n' && check[0] != '\r')
     {
         if (clen)
@@ -510,11 +512,11 @@ int String::ReadLine(FILE * f)
         }
         clen += step;
 
-        int io = fscanf(f, format, LockBuffer(clen) + len, check);
+        io = fscanf(f, format, LockBuffer(clen) + len, check);
         UnlockBuffer();
         // Avoid getting stuck on zero length lines (system specific!)
         if (io == 0 && check[0] != '\n' && check[0] != '\r')
-            fscanf(f, "%1[\n\r]", check);
+            io = fscanf(f, "%1[\n\r]", check);
         if (io == 0 || io == EOF)
         {
             // Set return value to indicate error/EOF
@@ -523,8 +525,8 @@ int String::ReadLine(FILE * f)
         }
     }
 
-    if (check[0] == '\n') fscanf(f, "%*1[\r]");
-    if (check[0] == '\r') fscanf(f, "%*1[\n]");
+    if (check[0] == '\n') io = fscanf(f, "%*1[\r]");
+    if (check[0] == '\r') io = fscanf(f, "%*1[\n]");
 
     return returnValue;
 }
@@ -1445,8 +1447,12 @@ int String::my_vsnprintf(char * buffer, int bufsize, const char * format, va_lis
 
     if (len < bufsize)
         buffer[bufsize = len] = 0;
-    fread(buffer, 1, bufsize, my_vsnprintf_file);
-
+    int numRead = fread(buffer, 1, bufsize, my_vsnprintf_file);
+    if(numRead != bufsize)
+    {
+        std::cerr
+            << "Warning, StringBasics failed reading stream in my_vsnprintf\n";
+    }
     return len;
 }
 

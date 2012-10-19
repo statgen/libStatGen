@@ -95,7 +95,6 @@ int InputFile::readTilChar(const std::string& stopChars)
 int InputFile::discardLine()
 {
     int charRead = 0;
-    size_t pos = std::string::npos;
     // Loop until the character was not found in the stop characters.
     while((charRead != EOF) && (charRead != '\n'))
     {

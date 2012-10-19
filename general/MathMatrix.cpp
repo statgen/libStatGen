@@ -340,23 +340,30 @@ void Matrix::Read(FILE * f)
 {
     int  r, c;
     char buffer[100];
+    int numItems = 0;
 
-    fscanf(f, " %s =", buffer);
+    numItems = fscanf(f, " %s =", buffer);
+    if(numItems != 1) { }
     buffer[strlen(buffer) - 1] = 0;
     SetLabel(buffer);
 
-    fscanf(f, " [ %d x %d ]", &r, &c);
+    numItems = fscanf(f, " [ %d x %d ]", &r, &c);
+    if(numItems != 2) { }
     Dimension(r, c);
 
     for (int c = 0; c < cols; c++)
     {
-        fscanf(f, " %s", buffer);
+        numItems = fscanf(f, " %s", buffer);
+        if(numItems != 1) { }
         SetColumnLabel(c, buffer);
     }
 
     for (int r = 0; r < rows; r++)
         for (int c = 0; c < cols; c++)
-            fscanf(f, " %lf", &((*this)[r][c]));
+        {
+            numItems = fscanf(f, " %lf", &((*this)[r][c]));
+            if(numItems != 1) { }
+        }
 }
 
 
