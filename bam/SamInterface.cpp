@@ -109,9 +109,6 @@ bool SamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
             status.setStatus(SamStatus::FAIL_PARSE, errorMessages.c_str());
             return(false);
         }
-        std::cerr << numInvalid
-                  << " invalid SAM/BAM Header lines were skipped due to:\n"
-                  << errorMessages << std::endl;
     }
  
     // Successfully read.
