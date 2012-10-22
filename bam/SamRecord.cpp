@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2011  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -800,6 +800,21 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
     // First check to see if the tag is already there.
     key = MAKEKEY(tag[0], tag[1], vtype);
     unsigned int hashIndex = extras.Find(key);
+    if(hashIndex == LH_NOTFOUND)
+    {
+        // The key was not found.  If this is a 'B'/'Z', check for
+        // the key with 'Z'/'B'.
+        if(vtype == 'Z')
+        {
+            int tmpkey = MAKEKEY(tag[0], tag[1], 'B');
+            hashIndex = extras.Find(tmpkey);
+        }
+        else if(vtype == 'B')
+        {
+            int tmpkey = MAKEKEY(tag[0], tag[1], 'Z');
+            hashIndex = extras.Find(tmpkey);
+        }
+    }
     if(hashIndex != LH_NOTFOUND)
     {
         // The key was found in the hash, so get the lookup index.
@@ -823,6 +838,7 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
                 }
                 break;
             case 'Z' :
+            case 'B' :
                 // First check to see if the value changed.
                 if(strings[index] == valuePtr)
                 {
@@ -853,7 +869,7 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
                 break;
             default :
                 fprintf(stderr,
-                        "samFile::ReadSAM() - Unknown custom field of type %c\n",
+                        "samRecord::addTag() - Unknown custom field of type %c\n",
                         vtype);
                 myStatus.setStatus(SamStatus::FAIL_PARSE, 
                                    "Unknown custom field in a tag");
@@ -863,7 +879,7 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
     }
     else
     {
-        // The key was found not found in the hash, so add it.
+        // The key was not found in the hash, so add it.
         switch (vtype)
         {
             case 'A' :
@@ -873,6 +889,7 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
                 tagBufferSize += 4;
                 break;
             case 'Z' :
+            case 'B' :
                 index = strings.Length();
                 strings.Push(valuePtr);
                 tagBufferSize += 4 + strings.Last().Length();
@@ -884,7 +901,7 @@ bool SamRecord::addTag(const char* tag, char vtype, const char* valuePtr)
                 break;
             default :
                 fprintf(stderr,
-                        "samFile::ReadSAM() - Unknown custom field of type %c\n",
+                        "samRecord::addTag() - Unknown custom field of type %c\n",
                         vtype);
                 myStatus.setStatus(SamStatus::FAIL_PARSE, 
                                    "Unknown custom field in a tag");
@@ -993,6 +1010,7 @@ bool SamRecord::rmTag(const char* tag, char type)
             rmBuffSize = 7;
             break;
         case 'Z':
+        case 'B':
             rmBuffSize = 4 + getString(offset).Length();
             break;
         default:
@@ -1087,6 +1105,7 @@ bool SamRecord::rmTags(const char* tags)
                     rmBuffSize += 7;
                     break;
                 case 'Z':
+                case 'B':
                     rmBuffSize += 4 + getString(offset).Length();
                     break;
                 default:
@@ -1941,6 +1960,7 @@ bool SamRecord::getNextSamTag(char* tag, char& vtype, void** value)
                     }
                     break;
                 case 'Z' :
+                case 'B' :
                     *value = getStringPtr(myLastTagIndex);
                     break;
                 default:
@@ -2001,7 +2021,7 @@ bool SamRecord::isCharType(char vtype)
 
 bool SamRecord::isStringType(char vtype)
 {
-    if(vtype == 'Z')
+    if((vtype == 'Z') || (vtype == 'B'))
     {
         return(true);
     }
@@ -2073,6 +2093,7 @@ bool SamRecord::getTagsString(const char* tags, String& returnString, char delim
                     returnString += *(double*)getDoublePtr(offset);
                     break;
                 case 'Z':
+                case 'B':
                     returnString += *(String*)getStringPtr(offset);
                     break;
                 default:
@@ -2126,8 +2147,14 @@ String* SamRecord::getStringTag(const char * tag)
     int value;
     if (offset < 0)
     {
-        // Tag not found.
-        return(NULL);
+        // Check for 'B' tag.
+        key = MAKEKEY(tag[0], tag[1], 'B');
+        offset = extras.Find(key);
+        if(offset < 0)
+        {
+            // Tag not found.
+            return(NULL);
+        }
     }
 
     // Offset is valid, so return the tag.
@@ -2221,11 +2248,16 @@ String & SamRecord::getString(const char * tag)
     int value;
     if (offset < 0)
     {
-        // TODO - what do we want to do on failure?
-        return(NOT_FOUND_TAG_STRING);
+    
+        key = MAKEKEY(tag[0], tag[1], 'B');
+        offset = extras.Find(key);
+        if (offset < 0)
+        {
+            // TODO - what do we want to do on failure?
+            return(NOT_FOUND_TAG_STRING);
+        }
     }
-    else
-        value = extras[offset];
+    value = extras[offset];
 
     return strings[value];
 }
@@ -2982,6 +3014,7 @@ bool SamRecord::setTagsFromBuffer()
                 tagBufferSize += 7;
                 break;
             case 'Z' :
+            case 'B' :
                 value = strings.Length();
                 strings.Push((const char *) content);
                 extraPtr += 4 + strings.Last().Length();
@@ -3100,6 +3133,7 @@ bool SamRecord::setTagsInBuffer()
                         extraPtr += 4;
                         break;
                     case 'Z' :
+                    case 'B' :
                         sprintf(extraPtr, "%s", getString(i).c_str());
                         extraPtr += getString(i).Length() + 1;
                         break;

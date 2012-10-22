@@ -542,7 +542,7 @@ public:
     /// Returns whether or not the specified vtype is a string type.
     /// Does not set SamStatus.
     /// \param vtype value type to check.
-    /// \return true if the passed in vtype is a string ('Z'), false othwerise.
+    /// \return true if the passed in vtype is a string ('Z'/'B'), false othwerise.
     static bool isStringType(char vtype);
 
     /// Get the string representation of the tags from the record, formatted
@@ -585,7 +585,8 @@ public:
     /// Does not set SamStatus.
     /// \param tag SAM tag to check contents of.
     /// \return true if the value associated with the tag is a string.
-    bool checkString(const char * tag)    { return checkTag(tag, 'Z'); }
+    bool checkString(const char * tag)
+    { return(checkTag(tag, 'Z') || checkTag(tag, 'B')); }
     
     /// Check if the specified tag contains a string.
     /// Does not set SamStatus.
