@@ -932,7 +932,9 @@ int main(int argc, const char **argv)
                 exit(1);
         }
     }
-
+    if(showAllCasesFlag)
+    {
+    }
 
     //
     // do cigar roller tests first
