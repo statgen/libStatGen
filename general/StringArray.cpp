@@ -115,7 +115,6 @@ void StringArray::WriteLine(FILE * f)
         fprintf(f, "%s%c", (const char *)(*strings[i]), i == count-1 ? '\n' : '\t');
 }
 
-#ifdef __ZLIB_AVAILABLE__
 void StringArray::Read(IFILE & f)
 {
     while (!ifeof(f))
@@ -131,7 +130,6 @@ void StringArray::Read(IFILE & f)
         count++;
     }
 }
-#endif
 
 void StringArray::Grow(int newsize)
 {

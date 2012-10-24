@@ -44,9 +44,7 @@ public:
     void Write(const char * filename);
     void WriteLine(const char * filename);
 
-#ifdef __ZLIB_AVAILABLE__
     void Read(IFILE & f);
-#endif
 
     // Write all strings to the screen
     void Print();

@@ -26,7 +26,9 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#ifdef __ZLIB_AVAILABLE__
 #include <zlib.h>
+#endif
 #ifdef _USE_KNETFILE
 #include "knetfile.h"
 #endif

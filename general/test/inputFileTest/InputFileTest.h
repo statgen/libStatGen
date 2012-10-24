@@ -18,9 +18,6 @@
 #include "InputFile.h"
 
 
-// This test class is only for when zlib is available.
-#ifdef __ZLIB_AVAILABLE__
-
 class IFILE_Test : public InputFile
 {
 public:
@@ -55,5 +52,3 @@ private:
     char myTestBuffer[MAX_TEST_BUFFER_SIZE];
 
 };
-
-#endif

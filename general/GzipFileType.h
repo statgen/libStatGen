@@ -18,12 +18,6 @@
 #ifndef __GZFILETYPE_H__
 #define __GZFILETYPE_H__
 
-#ifdef  __gnu_linux__
-#ifndef __ZLIB_AVAILABLE__
-#define __ZLIB_AVAILABLE__
-#endif
-#endif
-
 #ifdef  __ZLIB_AVAILABLE__
 
 #if defined(WIN32)

@@ -222,7 +222,6 @@ void StringHash::ReadLinesFromFile(FILE * f)
     }
 }
 
-#ifdef __ZLIB_AVAILABLE__
 void StringHash::ReadLinesFromFile(IFILE & f)
 {
     String buffer;
@@ -233,7 +232,6 @@ void StringHash::ReadLinesFromFile(IFILE & f)
         Add(buffer.Trim());
     }
 }
-#endif
 
 // StringIntHash implementation
 

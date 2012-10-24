@@ -20,20 +20,16 @@
 #include "StringBasics.h"
 
 void testAdditional(const char *extension);
-#ifdef __ZLIB_AVAILABLE__
 void testWrite();
-#endif
+
 
 int main(int argc, char ** argv)
 {
-#ifdef __ZLIB_AVAILABLE__
-
    IFILE_Test myFile;
 
    myFile.test();
 
    testWrite();
-#endif
 
    std::cout << "\nAdditional Tests: " << std::endl;
 
@@ -43,7 +39,7 @@ int main(int argc, char ** argv)
 #endif
 }
 
-#ifdef __ZLIB_AVAILABLE__
+
 const int IFILE_Test::TEST_FILE_SIZE = 37;
 const int IFILE_Test::BGZF_TEST_FILE_SIZE = 93;
 const std::string IFILE_Test::TEST_FILE_CONTENTS = "ABCDabcd1234\nEFGefg567\nhijklHIJKL8910";
@@ -58,6 +54,7 @@ void IFILE_Test::test()
    test_ifseek("txt");
    test_noExistRead("txt");
 
+#ifdef __ZLIB_AVAILABLE__
    std::cout << "\nGzipFileType Tests:" << std::endl;
    test_readFromFile("gz");
    test_ifeof_ifrewind("gz");
@@ -81,6 +78,7 @@ void IFILE_Test::test()
    test_ifclose("glf");
    test_ifseek("glf");
    test_noExistRead("glf");
+#endif
 }
 
 
@@ -1218,7 +1216,6 @@ void testWrite()
     // correct format - rather than hand checking.
 }
 
-#endif
 
 
 void testAdditional(const char* extension)

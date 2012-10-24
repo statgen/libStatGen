@@ -23,6 +23,7 @@
 
 void testIndex(BamIndex& bamIndex)
 {
+#ifdef __ZLIB_AVAILABLE__
     assert(bamIndex.getNumMappedReads(1) == 2);
     assert(bamIndex.getNumUnMappedReads(1) == 0);
     assert(bamIndex.getNumMappedReads(0) == 4);
@@ -223,11 +224,14 @@ void testIndex(BamIndex& bamIndex)
     assert(samRecord.getNumOverlaps(1010, 1011) == 0);
     assert(samRecord.getNumOverlaps(1011, 1012) == 0);
     assert(inFile.ReadRecord(samHeader, samRecord) == false);
+#endif
 }
 
 
 void testBamIndex()
 {
+    // BAM indexes are compressed, so can't be tested without zlib.
+#ifdef __ZLIB_AVAILABLE__
     // Create a bam index.
     BamIndex bamIndex;
     bamIndex.readIndex("testFiles/sortedBam.bam.bai");
@@ -273,7 +277,7 @@ void testBamIndex()
     index = test1.getBamIndex();
     assert(index != NULL);
     testIndex(*index);
-
+#endif
 }
 
 

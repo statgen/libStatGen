@@ -15,6 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef __ZLIB_AVAILABLE__
+
 #include "BgzfFileTypeRecovery.h"
 
 #include <stdio.h>
@@ -596,3 +598,4 @@ bool BgzfFileTypeRecovery::attemptRecoverySync(bool (*checkSignature)(void *data
     return false;
 }
 
+#endif

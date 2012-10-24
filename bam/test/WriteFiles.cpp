@@ -25,7 +25,10 @@
 void testWrite()
 {
     testHeaderWrite();
-    testWriteCopiedHeader();
+    testWriteCopiedHeader("testFiles/testSam.sam");
+#ifdef __ZLIB_AVAILABLE__
+    testWriteCopiedHeader("testFiles/testBam.bam");
+#endif
 }
 
 void testHeaderWrite()
@@ -919,10 +922,10 @@ void testHeaderWrite()
 }
 
 
-void testWriteCopiedHeader()
+void testWriteCopiedHeader(const char* fileName)
 {
     SamFile samIn;
-    assert(samIn.OpenForRead("testFiles/testBam.bam"));
+    assert(samIn.OpenForRead(fileName));
 
     SamFile samOut;
     assert(samOut.OpenForWrite("results/MyTestOut2.bam"));

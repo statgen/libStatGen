@@ -351,7 +351,8 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
 // No zlib, so just treat all files as std files.
 // Open a file. Called by the constructor.
 // Returns true if the file was successfully opened, false otherwise.
-bool InputFile::openFile(const char * filename, const char * mode)
+bool InputFile::openFile(const char * filename, const char * mode,
+                         InputFile::ifileCompression compressionMode)
 {
     //  No zlib, so it is a uncompressed, uncompressed file.
     myFileTypePtr = new UncompressedFileType(filename, mode);

@@ -21,8 +21,10 @@
 void testShiftIndels()
 {
     ShiftIndelsTest::testShift("testFiles/testShift.sam", "results/testShift.sam");
+#ifdef __ZLIB_AVAILABLE__
     ShiftIndelsTest::testShift("testFiles/testShift.bam", "results/testShift.bam");
     ShiftIndelsTest::testShift("testFiles/testShift.bam", "results/testShiftFromBam.sam");
+#endif
     ShiftIndelsTest::testShift("testFiles/testShift.sam", "results/testShiftFromSam.bam");
 }
 

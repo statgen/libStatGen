@@ -42,7 +42,11 @@ void SamCoordOutputTest::testSamCoordOutput()
     SamRecord* rec3 = NULL;
 
     // Open input file and read the header.
+#ifdef __ZLIB_AVAILABLE__
     assert(inSam.OpenForRead("testFiles/testBam.bam"));
+#else
+    assert(inSam.OpenForRead("testFiles/testSam.sam"));
+#endif
     assert(inSam.ReadHeader(samHeader));
     validateHeader(samHeader);
 

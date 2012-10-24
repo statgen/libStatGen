@@ -26,6 +26,7 @@
   2009-06-25 by lh3: optionally use my knetfile library to access file on a FTP.
   2009-06-12 by lh3: support a mode string like "wu" where 'u' for uncompressed output */
 
+#ifdef __ZLIB_AVAILABLE__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -627,12 +628,15 @@ int bgzf_close(BGZF* fp)
     if (fp->open_mode == 'w') {
         if (bgzf_flush(fp) != 0) return -1;
 		{ // add an empty block
-			int count, block_length = deflate_block(fp, 0);
+                    int count, block_length = deflate_block(fp, 0);
 #ifdef _USE_KNETFILE
 			count = fwrite(fp->compressed_block, 1, block_length, fp->x.fpw);
 #else
 			count = fwrite(fp->compressed_block, 1, block_length, fp->file);
 #endif
+                        if(count != 0)
+                        {// something was written
+                        }
 		}
 #ifdef _USE_KNETFILE
         if (fflush(fp->x.fpw) != 0) {
@@ -723,3 +727,4 @@ int64_t bgzf_seek(BGZF* fp, int64_t pos, int where)
     fp->block_offset = block_offset;
     return 0;
 }
+#endif

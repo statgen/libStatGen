@@ -559,7 +559,6 @@ String & String::Read()
     return Read(stdin);
 }
 
-#ifdef __ZLIB_AVAILABLE__
 String & String::Read(IFILE & f)
 {
     len = 0;
@@ -598,7 +597,6 @@ String & String::Read(IFILE & f)
 
     return *this;
 }
-#endif
 
 int String::ReadLine()
 {
@@ -666,7 +664,6 @@ int String::ReadLine()
 }
 
 
-#ifdef __ZLIB_AVAILABLE__
 // Read line using getc.
 
 #if defined(WIN32)
@@ -765,8 +762,6 @@ int String::ReadLine(IFILE & f)
     }
     return 1;
 }
-#endif
-
 #endif
 
 void String::Write(FILE * f)

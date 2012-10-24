@@ -162,9 +162,7 @@ public:
     void ReadLinesFromFile(FILE * file);
     void ReadLinesFromFile(const char * filename);
 
-#ifdef __ZLIB_AVAILABLE__
     void ReadLinesFromFile(IFILE & file);
-#endif
 
     void Swap(StringHash & s);
 

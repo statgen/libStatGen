@@ -37,19 +37,23 @@ int main(int argc, char ** argv)
     if(argc == 1)
     {
         testReadSam();
+#ifdef __ZLIB_AVAILABLE__
         testReadBam();
         testReadBam();
+#endif
         testAddHeaderAndTagToFile("testFiles/testSam.sam",
                                   "results/addedTagToSam.bam");
         testAddHeaderAndTagToFile("testFiles/testSam.sam",
                                   "results/addedTagToSam.sam");
+// Can't read bams without zlib
+#ifdef __ZLIB_AVAILABLE__
         testAddHeaderAndTagToFile("testFiles/testBam.bam",
                                   "results/addedTagToBam.sam");
         testAddHeaderAndTagToFile("testFiles/testBam.bam",
                                   "results/addedTagToBam.bam");
-      
+#endif
+
         testValidateSortedRead();
-      
       
         testWrite();
 
@@ -57,8 +61,10 @@ int main(int argc, char ** argv)
         testBamRID();
         testEmptyQual();
       
-
+// Can't read bams without zlib
+#ifdef __ZLIB_AVAILABLE__
         testBamIndex();
+#endif
 
         testModifyVar();
         testModify();

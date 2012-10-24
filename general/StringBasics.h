@@ -244,15 +244,11 @@ public:
     void     WriteLine(FILE * f);
     void     Write(FILE * f);
 
-#ifdef __ZLIB_AVAILABLE__
     String & Read(IFILE & f);
 
     // Read a line using getc
     // Return the status.  A negative number indicates an error/EOF.
     int ReadLine(IFILE & f);
-
-#endif
-
 
     String Left(int count) const;
     String Right(int count) const;

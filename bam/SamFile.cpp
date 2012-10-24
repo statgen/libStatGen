@@ -132,8 +132,9 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             filename = "-";
 
             // Uncompressed, so do not require the eof block.
+#ifdef __ZLIB_AVAILABLE__
             BgzfFileType::setRequireEofBlock(false);
-
+#endif
             myFilePtr = ifopen(filename, "rb", InputFile::BGZF);
         
             myInterfacePtr = new BamInterface;

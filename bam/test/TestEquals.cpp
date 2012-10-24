@@ -26,7 +26,9 @@ void testSeqEquals()
     // Call generic test which since the sam and bam are identical, should
     // contain the same results.
     EqualsTest::testEq(EqualsTest::SAM);
+#ifdef __ZLIB_AVAILABLE__
     EqualsTest::testEq(EqualsTest::BAM);
+#endif
 }
 
 

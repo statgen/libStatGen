@@ -18,12 +18,6 @@
 #ifndef __INPUTFILE_H__
 #define __INPUTFILE_H__
 
-#ifdef  __gnu_linux__
-#ifndef __ZLIB_AVAILABLE__
-#define __ZLIB_AVAILABLE__
-#endif
-#endif
-
 #include <stdio.h>
 #include <iostream>
 #include <cstring>

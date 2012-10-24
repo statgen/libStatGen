@@ -18,6 +18,8 @@
 #ifndef __BGZFFILETYPERECOVERY_H__
 #define __BGZFFILETYPERECOVERY_H__
 
+#ifdef __ZLIB_AVAILABLE__
+
 #include "FileType.h"
 #include <stdio.h>  // for NULL
 
@@ -93,4 +95,5 @@ protected:
 
 };
 
+#endif
 #endif

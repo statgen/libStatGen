@@ -23,7 +23,9 @@ void testModify()
 {
     modify modTest;
     modTest.testModify("testFiles/testSam.sam");
+#ifdef __ZLIB_AVAILABLE__
     modTest.testModify("testFiles/testBam.bam");
+#endif
 }
 
 

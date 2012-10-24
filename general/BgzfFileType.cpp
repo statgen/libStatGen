@@ -15,6 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef __ZLIB_AVAILABLE__
+
 #include <iostream>
 #include <string.h>
 
@@ -74,3 +76,4 @@ void BgzfFileType::setRequireEofBlock(bool requireEofBlock)
     ourRequireEofBlock = requireEofBlock;
 }
 
+#endif

@@ -17,4 +17,4 @@
 
 void testWrite();
 void testHeaderWrite();
-void testWriteCopiedHeader();
+void testWriteCopiedHeader(const char* fileName);

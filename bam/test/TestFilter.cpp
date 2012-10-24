@@ -25,7 +25,9 @@ void testFilter()
     // Call generic test which since the sam and bam are identical, should
     // contain the same results.
     FilterTest::testFilter(FilterTest::SAM);
+#ifdef __ZLIB_AVAILABLE__
     FilterTest::testFilter(FilterTest::BAM);
+#endif
 }
 
 

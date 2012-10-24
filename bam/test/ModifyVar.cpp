@@ -109,12 +109,16 @@ void modifyFirstBaseLong()
 
 void testModifyVar()
 {
+#ifdef __ZLIB_AVAILABLE__
     modifyFirstBase();
+#endif
     modifyVar modTest;
     modTest.testModifyVar("testFiles/testSam.sam", true);
-    modTest.testModifyVar("testFiles/testBam.bam", true);
     modTest.testModifyVar("testFiles/testSam.sam", false);
+#ifdef __ZLIB_AVAILABLE__
+    modTest.testModifyVar("testFiles/testBam.bam", true);
     modTest.testModifyVar("testFiles/testBam.bam", false);
+#endif
 }
 
 
