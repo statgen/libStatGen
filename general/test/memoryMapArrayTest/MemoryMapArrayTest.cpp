@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -46,10 +46,13 @@ public:
 void MemoryMapArrayTest::testBool(void)
 {
     mmapArrayBool_t   testVector;
-    int rc;
 
-    // ignore rc here
-    rc = unlink(TEST_FILE_NAME);
+    // ignore return code here
+    if(unlink(TEST_FILE_NAME) == 0)
+    {
+        // Nothing to do, just deleting previous test file
+    }
+    
 
     check(m_failures, ++m_testNum, "Create 1 bit vector file", 0,
             testVector.create(TEST_FILE_NAME, 11));
@@ -98,10 +101,12 @@ void MemoryMapArrayTest::testBool(void)
 void MemoryMapArrayTest::test2Bit(void)
 {
     mmapArray2Bit_t   testVector;
-    int rc;
 
-    // ignore rc here
-    rc = unlink(TEST_FILE_NAME);
+    // ignore return code here
+    if(unlink(TEST_FILE_NAME) == 0)
+    {
+        // Nothing to do, just deleting previous test file
+    }
 
     check(m_failures, ++m_testNum, "Create 2 bit vector file", 0,
             testVector.create(TEST_FILE_NAME, 11));
@@ -150,10 +155,12 @@ void MemoryMapArrayTest::test2Bit(void)
 void MemoryMapArrayTest::test4Bit(void)
 {
     mmapArray4Bit_t   testVector;
-    int rc;
 
-    // ignore rc here
-    rc = unlink(TEST_FILE_NAME);
+    // ignore return code here
+    if(unlink(TEST_FILE_NAME) == 0)
+    {
+        // Nothing to do, just deleting previous test file
+    }
 
     check(m_failures, ++m_testNum, "Create 4 bit vector file", 0,
             testVector.create(TEST_FILE_NAME, 11));
@@ -204,10 +211,12 @@ void MemoryMapArrayTest::test32Bit(void)
 {
 
     mmapArrayUint32_t   testVector;
-    int rc;
 
-    // ignore rc here
-    rc = unlink(TEST_FILE_NAME);
+    // ignore return code here
+    if(unlink(TEST_FILE_NAME) == 0)
+    {
+        // Nothing to do, just deleting previous test file
+    }
 
     check(m_failures, ++m_testNum, "Create 32 bit vector file", 0,
             testVector.create(TEST_FILE_NAME, 11));
