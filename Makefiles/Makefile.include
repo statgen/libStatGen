@@ -44,8 +44,10 @@ CURRENT_DIR_INCLUDE?=-I.
 ZLIB_AVAIL ?= 1
 
 USE_ZLIB = -D__ZLIB_AVAILABLE__
+ZLIB_LIB = -lz
 ifeq ($(ZLIB_AVAIL), 0)
   USE_ZLIB = 
+  ZLIB_LIB = 
 endif
 
 
