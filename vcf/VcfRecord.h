@@ -80,6 +80,14 @@ public:
     ///  2 for second, etc)
     /// \return string of the alleles at the specified index 
     const char* getAlleles(unsigned int index);
+    /// Return the int value of the first allele in the string at the 
+    /// specified index with index 0 being the reference string for
+    /// this position and index 1 starting the alternate alleles, 
+    /// throwing an exception if the index is out of range.
+    /// \param index allele index (0 for reference, 1 for first alt, 
+    ///  2 for second, etc)
+    /// \return int allele at the specified index, 1=A, 2=C, 3=G, 4=T 
+    int getIntAllele(unsigned int index);
     /// Return the number of alternates listed in the Alts string.
     unsigned int getNumAlts();
 

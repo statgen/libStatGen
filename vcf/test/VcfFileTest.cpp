@@ -151,7 +151,18 @@ void testVcfReadFile()
     assert(record.getGT(2,0) == VcfGenotypeSample::INVALID_GT);
     assert(strcmp(record.getAlleles(0), "G") == 0);
     assert(strcmp(record.getAlleles(1), "A") == 0);
+    assert(record.getIntAllele(0) == 3);
+    assert(record.getIntAllele(1) == 1);
     assert(record.getNumAlts() == 1);
+    try
+    {
+        caughtException = false;
+        assert(record.getIntAllele(2) == 0);
+    }
+    catch (std::exception& e)
+    {
+        caughtException = true;
+    }
     try
     {
         caughtException = false;
@@ -226,6 +237,7 @@ void testVcfReadFile()
     assert(strcmp(record.getAlleles(0), "A") == 0);
     assert(strcmp(record.getAlleles(1), "G") == 0);
     assert(strcmp(record.getAlleles(2), "T") == 0);
+    assert(record.getIntAllele(2) == 4);
     assert(record.getNumAlts() == 2);
     try
     {
@@ -286,9 +298,12 @@ void testVcfReadFile()
 
     assert(reader.readRecord(record));
     assert(strcmp(record.getAlleles(0), "GTC") == 0);
+    assert(record.getIntAllele(0) == 3);
     assert(strcmp(record.getAlleles(1), "G") == 0);
+    assert(record.getIntAllele(1) == 3);
     assert(record.getNumAlts() == 2);
     assert(strcmp(record.getAlleles(2), "GTCT") == 0);
+    assert(record.getIntAllele(2) == 3);
     try
     {
         caughtException = false;

@@ -302,6 +302,31 @@ const char* VcfRecord::getAlleles(unsigned int index)
 }
 
 
+int VcfRecord::getIntAllele(unsigned int index)
+{
+    const char* alleles = getAlleles(index);
+    switch(alleles[0])
+    {
+        case 'A':
+            return(1);
+            break;
+        case 'C':
+            return(2);
+            break;
+        case 'G':
+            return(3);
+            break;
+        case 'T':
+            return(4);
+            break;
+        default:
+            std::cerr << "VcfRecord::getIntAllele, unknown allele, " 
+                      << alleles[0] << std::endl;
+    }
+    return(0);
+}
+
+
 unsigned int VcfRecord::getNumAlts()
 {
     int numAlts = myAltArray.size();
