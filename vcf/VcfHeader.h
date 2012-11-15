@@ -95,6 +95,9 @@ public:
 protected: 
 
 private:
+    VcfHeader(const VcfHeader& vcfHeader);
+    VcfHeader& operator=(const VcfHeader& vcfHeader);
+
     // Make sure the last header line is synced with the parsed header line.
     // This is used when samples are removed.
     void syncHeaderLine();

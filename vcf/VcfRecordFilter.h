@@ -68,6 +68,9 @@ public:
 protected: 
 
 private:
+    VcfRecordFilter(const VcfRecordFilter& vcfRecordFilter);
+    VcfRecordFilter& operator=(const VcfRecordFilter& vcfRecordFilter);
+
     static bool ourParseFilter;
     static const char FILTER_DELIM = ';';
 

@@ -77,6 +77,7 @@ public:
 
 private:
     VcfSubsetSamples(const VcfSubsetSamples& vcfSubsetSamples);
+    VcfSubsetSamples& operator=(const VcfSubsetSamples& vcfSubsetSamples);
 
     // Read a list of samples from the specified file delimited by any of the
     // characters in delims or '\n' and store them in the specified container.

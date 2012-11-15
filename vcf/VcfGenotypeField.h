@@ -62,6 +62,8 @@ protected:
 
     ReusableVector<std::string> myGenotypeSubFields;
 private:
+    VcfGenotypeField(const VcfGenotypeField& vcfGenotypeField);
+    VcfGenotypeField& operator=(const VcfGenotypeField& vcfGenotypeField);
 };
 
 #endif
