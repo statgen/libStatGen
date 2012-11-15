@@ -139,7 +139,7 @@ const StatGenStatus& VcfHeader::getStatus()
 int VcfHeader::getNumMetaLines()
 {
     int numHeaderLines = myHeaderLines.size();
-    if((numHeaderLines > 1) && (myHasHeaderLine))
+    if((numHeaderLines >= 1) && (myHasHeaderLine))
     {
         // Remove the header line from the count.
         return(numHeaderLines-1);
@@ -251,6 +251,57 @@ void VcfHeader::removeSample(unsigned int index)
     // accessed it will be reset based on the existing samples.
     String& hdrLine = myHeaderLines.back();
     hdrLine.Clear();
+}
+
+
+bool VcfHeader::appendMetaLine(const char* metaLine)
+{
+    // Check that the line starts with "##".
+    if(strncmp(metaLine, "##", 2) != 0)
+    {
+        // Does not start with "##"
+        return(false);
+    }
+    if(!myHasHeaderLine)
+    {
+        // No header line, so just add to the end of the vector.
+        myHeaderLines.push_back(metaLine);
+        return(true);
+    }
+    // There is a header line, so insert this just before that line.
+    // The headerLine is one position before "end".
+    std::vector<String>::iterator headerLine = myHeaderLines.end();
+    --headerLine;
+    // Insert just before the header line.
+    myHeaderLines.insert(headerLine, metaLine);
+    return(true);
+}
+
+
+bool VcfHeader::addHeaderLine(const char* headerLine)
+{
+    // Check that the line starts with "#".
+    if(strncmp(headerLine, "#", 1) != 0)
+    {
+        // Does not start with "#"
+        return(false);
+    }
+
+    if(myHasHeaderLine)
+    {
+        // There is a header line, so replace the current line.
+        myHeaderLines.back() = headerLine;
+    }
+    else
+    {
+        // There is not a header line, so add it 
+        myHeaderLines.push_back(headerLine);
+    }
+
+    myHasHeaderLine = true;
+    // Parse the header line to get the sample information.
+    myParsedHeaderLine.ReplaceColumns(headerLine, '\t');
+    return(true);
 }
 
 

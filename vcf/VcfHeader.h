@@ -46,10 +46,6 @@ public:
     /// the specified filePtr, false if not.
     bool write(IFILE filePtr);
 
-    // Add Meta Line.
-
-    //    void setFormat(const char* format);
-
     /// Reset this header, preparing for a new one.
     void reset();
 
@@ -62,6 +58,7 @@ public:
 
     /// Return the specified meta-line (index starting at 0)
     /// or NULL if out of range.
+    /// Will return the headerline if the header line's index is specified.
     const char* getMetaLine(unsigned int index);
 
     /// Return the header line, the line containing #chrom...
@@ -82,10 +79,24 @@ public:
     /// Remove the sample at the specified index.
     void removeSample(unsigned int index);
 
+    /////////////////
+    /// Add Lines
+    
+    /// Add a Meta Line to the end of the currently specified meta lines.
+    /// Return false if the meta line is invalid (does not start with ##)
+    /// A return of false means the line was not added.
+    bool appendMetaLine(const char* metaLine);
+
+    /// Replace the header line if one exists or add it if one does not.
+    /// Return false if the header line is invalid (does not start with #).
+    /// A return of false means the line was not added.
+    bool addHeaderLine(const char* headerLine);
+
 protected: 
 
 private:
     // Make sure the last header line is synced with the parsed header line.
+    // This is used when samples are removed.
     void syncHeaderLine();
     
     static const int NUM_NON_SAMPLE_HEADER_COLS = 9;
