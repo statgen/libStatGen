@@ -65,6 +65,7 @@ bool SamFileHeader::copy(const SamFileHeader& header)
     }
 
     resetHeader();
+
     // Copy Reference contigs, hash, lengths.
     myReferenceInfo = header.myReferenceInfo;
 
@@ -99,8 +100,11 @@ void SamFileHeader::resetHeader()
     for(unsigned int headerIndex = 0; headerIndex < myHeaderRecords.size(); 
         headerIndex++)
     {
-        delete myHeaderRecords[headerIndex];
-        myHeaderRecords[headerIndex] = NULL;
+        if(myHeaderRecords[headerIndex] != NULL)
+        {
+            delete myHeaderRecords[headerIndex];
+            myHeaderRecords[headerIndex] = NULL;
+        }
     }
     myHeaderRecords.clear();
 
@@ -162,34 +166,11 @@ const SamReferenceInfo* SamFileHeader::getReferenceInfo() const
 }
 
 
-// Add reference sequence name and reference sequence length to the header.
-void SamFileHeader::addReferenceInfo(const char* referenceSequenceName, 
-                                     int32_t referenceSequenceLength)
+// Get the Reference Information for updating separately when reading
+// BAMs...should only be called by BamInterface.
+SamReferenceInfo& SamFileHeader::getReferenceInfoForBamInterface()
 {
-    myReferenceInfo.add(referenceSequenceName, referenceSequenceLength);
-}
-
-
-// Populate the reference info from the SQ fields.
-void SamFileHeader::generateReferenceInfo()
-{
-    // Loop through the SQ fields.
-    uint32_t sqIndex = 0;
-    SamHeaderRecord* hdrRec = getNextHeaderRecord(sqIndex, SamHeaderRecord::SQ);
-    while(hdrRec != NULL)
-    {
-        // Set the reference info based on this SQ record.
-        String refName = hdrRec->getTagValue("SN");
-        String refLen = hdrRec->getTagValue("LN");
-        long refLenInt = 0;
-        if(refLen.AsInteger(refLenInt))
-        {
-            // Successfully converted the reference to an integer
-            // so add the reference information.
-            myReferenceInfo.add(refName, refLen);
-        }
-        hdrRec = getNextHeaderRecord(sqIndex, SamHeaderRecord::SQ);
-    }
+    return(myReferenceInfo);
 }
 
 
@@ -274,6 +255,15 @@ bool SamFileHeader::setSQTag(const char* tag, const char* value,
     if(sq == NULL)
     {
         // The SQ does not yet exist.
+        // Make sure the tag is LN.
+        if(strcmp(tag, "LN") != 0)
+        {
+            // LN is required so must be the first tag added
+            myErrorMessage = 
+                "SamFileHeader:Failed to add the specified SQ key, LN not specified.";
+            return(false);
+        }
+
         // Add it.
         sq = new SamHeaderSQ();
 
@@ -287,6 +277,8 @@ bool SamFileHeader::setSQTag(const char* tag, const char* value,
         // Created the header record, so add it to the list of SQ lines.
         mySQs.Add(name, sq);
         myHeaderRecords.push_back(sq);
+        // value is the length, so update the reference info.
+        myReferenceInfo.add(name, atoi(value));
 
         // Add the key tag 
         if(!sq->addKey(name))
@@ -295,6 +287,12 @@ bool SamFileHeader::setSQTag(const char* tag, const char* value,
             myErrorMessage = "SamFileHeader:Failed to add the specified SQ key";
             return(false);
         }
+    }
+    else if(strcmp(tag, "LN") == 0)
+    {
+        // Cannot modify/remove the LN tag.
+        myErrorMessage = "SamFileHeader:Cannot modify/remove the SQ's LN tag";
+        return(false);
     }
 
     if(!sq->setTag(tag, value))
@@ -421,10 +419,19 @@ bool SamFileHeader::addSQ(SamHeaderSQ* sq)
         return(false);
     }
     const char* name = sq->getTagValue("SN");
+    const char* length = sq->getTagValue("LN");
     if(strcmp(name, EMPTY_RETURN.c_str()) == 0)
     {
         // SN is not set, so can't add it.
-        myErrorMessage = "SAM/BAM Header line failure: Skipping SQ line that is missing the SN field.";
+        myErrorMessage = 
+            "SAM/BAM Header line failure: Skipping SQ line that is missing the SN field.";
+        return(false);
+    }
+    if(strcmp(length, EMPTY_RETURN.c_str()) == 0)
+    {
+        // LN is not set, so can't add it.
+        myErrorMessage = 
+            "SAM/BAM Header line failure: Skipping SQ line that is missing the LN field.";
         return(false);
     }
 
@@ -432,10 +439,10 @@ bool SamFileHeader::addSQ(SamHeaderSQ* sq)
     // key is already in the hash.
     if(mySQs.Find(name) < 0)
     {
-        // It is not already in the hash so
-        // add it.
+        // It is not already in the hash so add it.
         mySQs.Add(name, sq);
         myHeaderRecords.push_back(sq);
+        myReferenceInfo.add(name, atoi(length));
         return(true);
     }
 
@@ -510,6 +517,34 @@ bool SamFileHeader::addPG(SamHeaderPG* pg)
     // It is already in the hash, so cannot be added.
     myErrorMessage = "SAM/BAM Header line failure: Skipping PG line that has a repeated ID field.";
     return(false);
+}
+
+
+// Add the RG record to the header.
+bool SamFileHeader::addRecordCopy(const SamHeaderRecord& hdrRec)
+{
+    SamHeaderRecord* newRec = hdrRec.createCopy();
+    bool returnVal = true;
+    switch(newRec->getType())
+    {
+        case SamHeaderRecord::HD:
+            returnVal = addHD((SamHeaderHD*)newRec);
+            break;
+        case SamHeaderRecord::PG:
+            returnVal = addPG((SamHeaderPG*)newRec);
+            break;
+        case SamHeaderRecord::RG:
+            returnVal = addRG((SamHeaderRG*)newRec);
+            break;
+        case SamHeaderRecord::SQ:
+            returnVal = addSQ((SamHeaderSQ*)newRec);
+            break;
+        default:
+            myErrorMessage = "Failed to copy a header record, unknown type.";
+            returnVal = false;
+            break;
+    }
+    return(returnVal);
 }
 
 
@@ -929,6 +964,17 @@ bool SamFileHeader::getNextHeaderLine(std::string &headerLine)
 void SamFileHeader::resetHeaderRecordIter()
 {
     myCurrentHeaderIndex = 0;
+}
+
+
+void SamFileHeader::appendCommentLines(std::string &commentLines)
+{
+    for(unsigned int i = 0; i < myComments.size(); i++)
+    {
+        commentLines += "@CO\t";;
+        commentLines += myComments[i];
+        commentLines += "\n";
+    }
 }
 
 

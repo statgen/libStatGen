@@ -41,6 +41,13 @@ public:
     /// Destructor
     ~SamHeaderRecord();
 
+    /// Return a pointer to a newly created header record of the appropriate type
+    /// that is a copy of this record. The newly created record will not be
+    /// deleted by this class and it is the responsibility of the calling method
+    /// to handle the deletion.
+    /// Returns NULL on failure to copy.
+    virtual SamHeaderRecord* createCopy() const = 0;
+    
     /// Set the fields from the passed in line.
     /// Return true if successfully set.
     bool setFields(const StringArray& tokens);
@@ -79,6 +86,9 @@ public:
 protected:
     void addRequiredTag(const char* requiredTag);
 
+    // Copy this record into the specified new one.
+    virtual void internalCopy(SamHeaderRecord& newRec) const;
+
     // The type for this header record.
     std::string myTypeString;
 
@@ -91,6 +101,9 @@ protected:
     std::string myKeyTag;
 
 private:
+    SamHeaderRecord(const SamHeaderRecord& samHeaderRecord);
+    SamHeaderRecord& operator=(const SamHeaderRecord& samHeaderRecord);
+
     // hash from tag name to index into the tag values vector.
     StringIntHash myTagHash;
     std::vector<SamHeaderTag*> myTags;

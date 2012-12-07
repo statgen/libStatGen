@@ -86,8 +86,12 @@ bool BamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
     // Read the number of references sequences.
     ifread(filePtr, &referenceCount, sizeof(int));
 
-//     header.referenceContigs.Dimension(referenceCount);
-//     header.referenceLengths.Dimension(referenceCount);
+    // Get and clear the reference info so it can be set
+    // from the bam reference table.
+    SamReferenceInfo& refInfo = 
+        header.getReferenceInfoForBamInterface();
+    refInfo.clear();
+
     CharBuffer refName;
     
     // Read each reference sequence
@@ -117,7 +121,7 @@ bool BamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
             return(false);
         }
 
-        header.addReferenceInfo(refName.c_str(), refLen);
+        refInfo.add(refName.c_str(), refLen);
     }
 
     // Successfully read the file.
@@ -186,14 +190,6 @@ bool BamInterface::writeHeader(IFILE filePtr, SamFileHeader& header,
 
     // Get the number of sequences.    
     int32_t numSeq = refInfo->getNumEntries();
-
-    // Check to see if the reference info has not yet been set.
-    // If not, check for the SQ header.
-    if(numSeq == 0)
-    {
-        header.generateReferenceInfo();
-        numSeq = refInfo->getNumEntries();
-    }
     ifwrite(filePtr, &numSeq, sizeof(int32_t));
 
     // Write each reference sequence

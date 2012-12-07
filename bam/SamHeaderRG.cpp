@@ -35,3 +35,15 @@ SamHeaderRG::~SamHeaderRG()
 }
 
 
+SamHeaderRecord* SamHeaderRG::createCopy() const
+{
+    SamHeaderRG* newRG = new SamHeaderRG();
+    if(newRG == NULL)
+    {
+        std::cerr << "Failed to create a copy of an RG Header Record\n" ;
+        return(NULL);
+    }
+    internalCopy(*newRG);
+
+    return(newRG);
+}

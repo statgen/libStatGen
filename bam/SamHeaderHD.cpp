@@ -38,3 +38,17 @@ const char* SamHeaderHD::getSortOrder()
 {
     return(getTagValue("SO"));
 }
+
+
+SamHeaderRecord* SamHeaderHD ::createCopy() const
+{
+    SamHeaderHD* newHD = new SamHeaderHD();
+    if(newHD == NULL)
+    {
+        std::cerr << "Failed to create a copy of an HD Header Record\n" ;
+        return(NULL);
+    }
+    internalCopy(*newHD);
+
+    return(newHD);
+}

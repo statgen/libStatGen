@@ -35,3 +35,15 @@ SamHeaderSQ::~SamHeaderSQ()
 }
 
 
+SamHeaderRecord* SamHeaderSQ::createCopy() const
+{
+    SamHeaderSQ* newSQ = new SamHeaderSQ();
+    if(newSQ == NULL)
+    {
+        std::cerr << "Failed to create a copy of an SQ Header Record\n" ;
+        return(NULL);
+    }
+    internalCopy(*newSQ);
+
+    return(newSQ);
+}

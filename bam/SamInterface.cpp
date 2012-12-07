@@ -79,22 +79,6 @@ bool SamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
             // Skip further processing on this line since it was an error.
             continue;
         }
-
-        // Continue to the next line if this line is less than 3 characters
-        // or is not an SQ line.
-        if ((buffer.Length() < 3) || (buffer[1] != 'S') || (buffer[2] != 'Q'))
-            continue;
-      
-        ParseHeaderLine(tags, values);
-      
-        int name = tags.Integer("SN");
-        int length = tags.Integer("LN");
-      
-        if (name < 0 || length < 0) continue;
-
-        header.addReferenceInfo(values[name], 
-                                values[length].AsInteger());
-      
     } while (1);
    
     // Store the first record since it was read.

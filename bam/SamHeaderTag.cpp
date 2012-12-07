@@ -24,6 +24,12 @@ SamHeaderTag::SamHeaderTag(const char* tag, const char* value)
 }
 
 
+SamHeaderTag::SamHeaderTag(const SamHeaderTag& oldTag)
+{
+    setTag(oldTag.myTag.c_str(), oldTag.myValue.c_str());
+}
+
+
 SamHeaderTag::~SamHeaderTag()
 {
 }

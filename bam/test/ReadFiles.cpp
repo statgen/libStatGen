@@ -55,6 +55,9 @@ void testRead(SamFile &inSam)
     assert(inSam.ReadHeader(samHeader));
 
     validateHeader(samHeader);
+
+    testCopyHeader(samHeader);    
+
     testModHeader(samHeader);
 
     SamRecord samRecord;
@@ -796,6 +799,27 @@ void testFlagRead(const char* fileName)
     assert(inSam.ReadRecord(samHeader, samRecord) == false);
 
     inSam.Close();
+}
 
 
+void testCopyHeader(SamFileHeader& samHeader)
+{
+    // Copy the header.
+    SamFileHeader samHeader2;
+    
+    SamHeaderRecord* recPtr = samHeader.getNextHeaderRecord();
+    while(recPtr != NULL)
+    {
+        samHeader2.addRecordCopy(*recPtr);
+        recPtr = samHeader.getNextHeaderRecord();
+    }
+    // Add the comments.
+    std::string nextComment = samHeader.getNextComment();
+    while(nextComment != SamFileHeader::EMPTY_RETURN)
+    {
+        samHeader2.addComment(nextComment.c_str());
+        nextComment = samHeader.getNextComment();
+    }
+    // Validate the header.
+    validateHeader(samHeader2);
 }

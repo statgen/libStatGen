@@ -73,13 +73,13 @@ public:
     /// If addID is set to true, a reference id will be created for the
     /// referenceName if one does not already exist.  If addID is set to
     /// false (default), it will return SamReferenceInfo::NO_REF_ID.
-    int   getReferenceID(const String & referenceName, bool addID = false);
+    int getReferenceID(const String & referenceName, bool addID = false);
 
     /// Get the reference ID for the specified reference name (chromosome).
     /// If addID is set to true, a reference id will be created for the
     /// referenceName if one does not already exist.  If addID is set to
     /// false (default), it will return SamReferenceInfo::NO_REF_ID.
-    int   getReferenceID(const char* referenceName, bool addID = false);
+    int getReferenceID(const char* referenceName, bool addID = false);
 
     /// Return the reference name (chromosome) for the specified reference id.
     const String & getReferenceLabel(int id) const;
@@ -87,12 +87,9 @@ public:
     /// Get the Reference Information
     const SamReferenceInfo* getReferenceInfo() const;
 
-    /// Add reference sequence name and reference sequence length to the header.
-    void addReferenceInfo(const char* referenceSequenceName, 
-                          int32_t referenceSequenceLength);
-
-    /// Populate the reference info from the SQ fields.
-    void generateReferenceInfo();
+    // Get the Reference Information for updating separately when reading
+    // BAMs...should only be called by BamInterface.
+    SamReferenceInfo& getReferenceInfoForBamInterface();
 
     ////////////////////////////////////////////////////////////////////////
     // Set Values in the header
@@ -147,9 +144,10 @@ public:
 
     /// Set the specified tag to the specified value in the SQ header with
     /// the specified name, remove the tag by specifying value="".  If the
-    /// header does not yet exist, the header is added and so is the SN tag
-    /// with the value set to the passed in name.  The SN tag may not be 
-    /// modified or removed after it is set unless the entire record is deleted.
+    /// header does not yet exist, the tag must be "LN" and the header is added
+    /// with the specified LN value and the SN value passed in name.  
+    /// The SN & LN tags may not be modified or removed after they are
+    /// set unless the entire record is deleted.
     /// \return true if the tag was successfully set, false if not.
     bool setSQTag(const char* tag, const char* value, const char* name);
 
@@ -203,6 +201,13 @@ public:
     /// \return true if the record was successfully added, false otherwise.
     bool addPG(SamHeaderPG* pg);
 
+    /// Add a copy of the specified header record to the header.
+    /// Note: it creates a new header record that is identical to the specified
+    /// one and adds it to the header.  The passed in pointer will not be
+    /// deleted due to this.
+    /// \return true if the record was successfully added, false otherwise.
+    bool addRecordCopy(const SamHeaderRecord& hdrRec);
+
     //@}
 
     ////////////////////////////////////////////////////////////////////////
@@ -215,6 +220,7 @@ public:
     bool removeHD();
 
     /// Remove SQ record with the specified key.
+    /// NOTE: Does not remove it from the BAM index.
     /// \return true if successfully removed or did not exist, false if
     /// the record still exists.
     bool removeSQ(const char* name);
@@ -387,7 +393,7 @@ public:
     /// same iterator.
     SamHeaderRecord* getNextHeaderRecord();
 
-    /// Set the passed in string to the next header/comment line, overwritting
+    /// Set the passed in string to the next header line, overwritting
     /// the passed in string.  If there are no more header lines or there
     /// is an error, false is returned and the passed in string is set to ""
     /// until a rest is called.
@@ -399,6 +405,9 @@ public:
     /// to getNextHeaderRecord returns the first header line.
     void resetHeaderRecordIter();
    
+    /// Append all of the comment lines to the specified string.
+    void appendCommentLines(std::string &commentLines);
+
     /// Returns the comment on the next comment line.  Returns "" if all comment
     /// lines have been returned, until resetCommentIter is called.
     const char* getNextComment();
@@ -412,6 +421,8 @@ public:
 
     /// Get the failure message if a method returned failure.
     const char* getErrorMessage()  { return(myErrorMessage.c_str()); }
+
+    static const std::string EMPTY_RETURN;
 
 private:
     // Parse the header string. 
@@ -460,8 +471,6 @@ private:
     uint32_t myCurrentHeaderIndex;
 
     uint32_t myCurrentCommentIndex;
-
-    static const std::string EMPTY_RETURN;
 };
 
 #endif

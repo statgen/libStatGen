@@ -305,3 +305,24 @@ void SamHeaderRecord::addRequiredTag(const char* requiredTag)
 {
     myRequiredTags.push_back(requiredTag);
 }
+
+
+void SamHeaderRecord::internalCopy(SamHeaderRecord& newRec) const
+{
+    newRec.myTagHash = myTagHash;
+
+    newRec.myTags.clear();
+
+    // Loop through copying the tags.
+    for(unsigned int vectorIndex = 0; 
+        vectorIndex < myTags.size();
+        vectorIndex++)
+    {
+        if(myTags[vectorIndex] != NULL)
+        {
+            newRec.myTags.push_back(new SamHeaderTag(*(myTags[vectorIndex])));
+        }
+    }
+    newRec.myRequiredTags = myRequiredTags;
+    newRec.myNumActiveTags = myNumActiveTags;
+}

@@ -31,8 +31,16 @@ public:
 
     const char* getSortOrder();
 
-private:
+    /// Return a pointer to a newly created header record of the appropriate type
+    /// that is a copy of this record. The newly created record will not be
+    /// deleted by this class and it is the responsibility of the calling method
+    /// to handle the deletion.
+    /// Returns NULL on failure to copy.
+    virtual SamHeaderRecord* createCopy() const;
 
+private:
+    SamHeaderHD(const SamHeaderHD& samHeaderHD);
+    SamHeaderHD& operator=(const SamHeaderHD& samHeaderHD);
 };
 
 #endif

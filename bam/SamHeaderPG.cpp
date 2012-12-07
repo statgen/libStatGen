@@ -33,3 +33,16 @@ SamHeaderPG::~SamHeaderPG()
 {
 }
 
+
+SamHeaderRecord* SamHeaderPG::createCopy() const
+{
+    SamHeaderPG* newPG = new SamHeaderPG();
+    if(newPG == NULL)
+    {
+        std::cerr << "Failed to create a copy of an PG Header Record\n" ;
+        return(NULL);
+    }
+    internalCopy(*newPG);
+
+    return(newPG);
+}

@@ -24,6 +24,7 @@ class SamHeaderTag
 {
 public:
     SamHeaderTag(const char* tag, const char* value);
+    SamHeaderTag(const SamHeaderTag&);
 
     ~SamHeaderTag();
 
@@ -50,7 +51,7 @@ public:
 
 private:
     SamHeaderTag();
-    SamHeaderTag(const SamHeaderTag&);
+    SamHeaderTag& operator=(const SamHeaderTag&);
 
     std::string myTag;
     std::string myValue;
