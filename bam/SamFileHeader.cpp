@@ -66,9 +66,6 @@ bool SamFileHeader::copy(const SamFileHeader& header)
 
     resetHeader();
 
-    // Copy Reference contigs, hash, lengths.
-    myReferenceInfo = header.myReferenceInfo;
-
     // Copy the records by getting the other header's header string
     // and parsing it.
     std::string newString;
@@ -79,6 +76,11 @@ bool SamFileHeader::copy(const SamFileHeader& header)
 
     myCurrentHeaderIndex = header.myCurrentHeaderIndex;
     myCurrentCommentIndex = header.myCurrentCommentIndex;
+
+    // Clear the reference info and copy it to ensure it is the same.
+    myReferenceInfo.clear();
+    // Copy Reference contigs, hash, lengths.
+    myReferenceInfo = header.myReferenceInfo;
 
     return(status);
 }
