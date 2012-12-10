@@ -17,8 +17,6 @@
 
 #include "TrimSequence.h"
 
-#if defined(TEST)
-
 #include <assert.h>
 #include <iostream>
 #include <stdlib.h>
@@ -113,5 +111,3 @@ int main(int argc, const char **argv)
 
     exit(0);
 }
-
-#endif
