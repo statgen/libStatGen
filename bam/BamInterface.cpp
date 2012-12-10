@@ -179,23 +179,16 @@ bool BamInterface::writeHeader(IFILE filePtr, SamFileHeader& header,
     
     ////////////////////////////////////////////////////////
     // Write the Reference Information.
-    const SamReferenceInfo* refInfo = header.getReferenceInfo();
-    if(refInfo == NULL)
-    {
-        // Failed to get the reference info.
-        status.setStatus(SamStatus::INVALID, 
-                         "Failed to read the BAM reference dictionary.");
-        return(false);
-    }
+    const SamReferenceInfo& refInfo = header.getReferenceInfo();
 
     // Get the number of sequences.    
-    int32_t numSeq = refInfo->getNumEntries();
+    int32_t numSeq = refInfo.getNumEntries();
     ifwrite(filePtr, &numSeq, sizeof(int32_t));
 
     // Write each reference sequence
     for (int i = 0; i < numSeq; i++)
     {
-        const char* refName = refInfo->getReferenceName(i);
+        const char* refName = refInfo.getReferenceName(i);
         // Add one for the null value.
         int32_t nameLength = strlen(refName) + 1;
         // Write the length of the reference name.
@@ -204,7 +197,7 @@ bool BamInterface::writeHeader(IFILE filePtr, SamFileHeader& header,
         // Write the name.
         ifwrite(filePtr, refName, nameLength);
         // Write the length of the reference sequence.
-        int32_t refLen = refInfo->getReferenceLength(i);
+        int32_t refLen = refInfo.getReferenceLength(i);
         ifwrite(filePtr, &refLen, sizeof(int32_t));
     }
 

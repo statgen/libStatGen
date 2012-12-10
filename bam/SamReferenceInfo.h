@@ -66,6 +66,12 @@ public:
     /// Copy the reference information.
     SamReferenceInfo & operator = (const SamReferenceInfo & rhs);
 
+    bool operator== (const SamReferenceInfo& rhs) const;
+    bool operator!= (const SamReferenceInfo& rhs) const
+    {
+        return(!operator==(rhs));
+    }
+
     /// Constant for the value returned if a reference id does not exist
     /// for a queried reference name.
     static const int NO_REF_ID = -3;

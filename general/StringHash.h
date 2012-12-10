@@ -259,6 +259,7 @@ public:
     int Find(const String & s) const;
 
     StringIntHash & operator = (const StringIntHash & rhs);
+    bool operator == (const StringIntHash & rhs) const;
 
     const String & operator [](int i) const
     {

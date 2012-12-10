@@ -378,7 +378,7 @@ StringArray & StringArray::operator = (const StringArray & rhs)
     return *this;
 }
 
-bool StringArray::operator == (const StringArray & rhs)
+bool StringArray::operator == (const StringArray & rhs) const
 {
     if (count != rhs.count) return false;
     for (int i = 0; i < rhs.count; i++)

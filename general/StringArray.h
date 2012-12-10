@@ -127,8 +127,8 @@ public:
 
     StringArray & operator = (const StringArray & rhs);
 
-    bool operator == (const StringArray & rhs);
-    bool operator != (const StringArray & rhs)
+    bool operator == (const StringArray & rhs) const;
+    bool operator != (const StringArray & rhs) const
     {
         return !(*this == rhs);
     }

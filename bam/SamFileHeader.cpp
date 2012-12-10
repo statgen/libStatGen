@@ -162,9 +162,9 @@ const String & SamFileHeader::getReferenceLabel(int id) const
 
 
 // Get the Reference Information
-const SamReferenceInfo* SamFileHeader::getReferenceInfo() const
+const SamReferenceInfo& SamFileHeader::getReferenceInfo() const
 {
-    return(&myReferenceInfo);
+    return(myReferenceInfo);
 }
 
 

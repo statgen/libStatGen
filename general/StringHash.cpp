@@ -670,6 +670,31 @@ StringIntHash & StringIntHash::operator = (const StringIntHash & rhs)
     return *this;
 }
 
+bool StringIntHash::operator == (const StringIntHash & rhs) const
+{
+    if (Capacity() != rhs.Capacity()) return false;
+    if (Entries() != rhs.Entries()) return false;
+    for (int i = 0; i < rhs.Capacity(); i++)
+    {
+        if(rhs.SlotInUse(i) != SlotInUse(i))
+        {
+            return(false);
+        }
+        if (rhs.SlotInUse(i))
+        {
+            if(*(strings[i]) != *(rhs.strings[i]))
+            {
+                return(false);
+            }
+            if(rhs.integers[i] != integers[i])
+            {
+                return(false);
+            }
+        }
+    }
+    return(true);
+}
+
 StringDoubleHash & StringDoubleHash::operator = (const StringDoubleHash & rhs)
 {
     Clear();

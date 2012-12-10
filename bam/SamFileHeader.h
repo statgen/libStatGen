@@ -85,7 +85,7 @@ public:
     const String & getReferenceLabel(int id) const;
 
     /// Get the Reference Information
-    const SamReferenceInfo* getReferenceInfo() const;
+    const SamReferenceInfo& getReferenceInfo() const;
 
     // Get the Reference Information for updating separately when reading
     // BAMs...should only be called by BamInterface.

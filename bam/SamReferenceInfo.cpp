@@ -137,3 +137,11 @@ SamReferenceInfo& SamReferenceInfo::operator = (const SamReferenceInfo &newInfo)
     myReferenceLengths = newInfo.myReferenceLengths;
     return(*this);
 }
+
+
+bool SamReferenceInfo::operator== (const SamReferenceInfo& rhs) const
+{
+    return((myReferenceContigs == rhs.myReferenceContigs) &&
+           (myReferenceHash == rhs.myReferenceHash) &&
+           (myReferenceLengths == rhs.myReferenceLengths));
+}

@@ -209,7 +209,7 @@ bool SamValidator::isValid(SamFileHeader& samHeader, SamRecord& samRecord,
                            validationErrors);
 
     status &= isValidRefID(samRecord.getReferenceID(), 
-                           *samHeader.getReferenceInfo(), 
+                           samHeader.getReferenceInfo(), 
                            validationErrors);
 
     status &= isValid1BasedPos(samRecord.get1BasedPosition(),
