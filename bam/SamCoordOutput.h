@@ -46,6 +46,11 @@ public:
     /// Add the specified record to this read buffer.
     bool add(SamRecord* record);
 
+    /// Flush the entire buffer, writing all records.
+    /// If no output buffer is set, the files cannot be written, but the
+    /// flushed records are removed/freed.
+    bool flushAll();
+
     /// Flush the buffer based on the specified chromosome id/position, writing
     /// any records that start at/before the specified chromosome id/position.
     /// If no output buffer is set, the files cannot be written, but the

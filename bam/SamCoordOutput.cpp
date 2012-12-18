@@ -56,6 +56,11 @@ bool SamCoordOutput::add(SamRecord* record)
 }
 
 
+bool SamCoordOutput::flushAll()
+{
+    return(flush(-1,-1));
+}
+
 bool SamCoordOutput::flush(int32_t chromID, int32_t pos0Based)
 {
     static std::multimap<uint64_t, SamRecord*>::iterator iter;
