@@ -56,7 +56,8 @@ void WildCardArguments(int & argc, char ** & argv)
     argc = new_argc;
     argv = new_argv;
 }
-
 #endif
+#else
+void WildCardArguments(int argc, char ** argv) { }
 #endif
 

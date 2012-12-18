@@ -3,7 +3,7 @@ include ../../Makefiles/Makefile.include
 
 .DEFAULT_GOAL := all
 
-SUBDIRS=inputFileTest cigar string memoryMapArrayTest packedVectorTest referenceSequenceTest nonOverlapRegions baseUtilitiesTest
+SUBDIRS=inputFileTest cigar string memoryMapArrayTest packedVectorTest referenceSequenceTest nonOverlapRegions baseUtilitiesTest trimSequence
 
 OPTFLAG?=-O0
 
@@ -57,7 +57,7 @@ GenomeSequence_test.o: GenomeSequence_test.cpp ../GenomeSequence.h ../GenomeSequ
 STLUtilities_test.o: STLUtilities_test.cpp ../STLUtilities.h ../STLUtilities.cpp
 	$(CXX) $(CFLAGS) $(GTEST_COMPILE_FLAG) -std=c++0x -o $@ -c $< -DVERSION="\"$(VERSION)\"" -DDATE="\"${DATE}\"" -DNODE="\"${NODE}\"" -DUSER="\"${USER}\"" -I$(GTEST_INC)
 
-TrimSequence_test.o: TrimSequence_test.cpp ../TrimSequence.h ../TrimSequence.cpp
+TrimSequence_test.o: TrimSequence_test.cpp ../TrimSequence.h
 	$(CXX) $(CFLAGS) $(GTEST_COMPILE_FLAG) -o $@ -c $< -DVERSION="\"$(VERSION)\"" -DDATE="\"${DATE}\"" -DNODE="\"${NODE}\"" -DUSER="\"${USER}\"" -I$(GTEST_INC)
 
 GreedyTupleAligner_test.o: GreedyTupleAligner_test.cpp ../GreedyTupleAligner.h

@@ -40,7 +40,6 @@ TOOLBASE=\
 	InputFile \
 	IntArray \
 	IntHash \
-	LongHash \
 	LongLongCounter \
 	MapFunction \
 	MathMatrix \
@@ -69,7 +68,6 @@ TOOLBASE=\
 	StringBasics \
 	StringHash \
 	StringMap \
-	TrimSequence \
 	UncompressedFileType \
 	WindowsHelper
 
@@ -85,12 +83,14 @@ HDRONLY= \
 	GenomeSequenceHelpers.h \
 	GreedyTupleAligner.h \
 	InplaceMerge.h \
+	LongHash.h \
 	LongInt.h \
 	MathConstant.h \
 	PackedVector.h \
 	PedigreeAlleles.h \
 	Performance.h \
 	SimpleStats.h \
+	TrimSequence.h \
 	UnitTest.h
 
 include ../Makefiles/Makefile.lib
