@@ -560,7 +560,7 @@ public:
     /// Get the string value for the specified tag.
     /// \param tag tag to retrieve
     /// \param pointer to the tag's string value if found, NULL if not found.
-    String* getStringTag(const char * tag);
+    const String* getStringTag(const char * tag);
 
     /// Get the integer value for the specified tag.
     /// \param tag tag to retrieve

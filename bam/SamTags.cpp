@@ -132,7 +132,7 @@ bool SamTags::isMDTagCorrect(SamRecord& inputRec, GenomeSequence& genome)
         return(false);
     }
     
-    String* origMDtag = inputRec.getStringTag(MD_TAG);
+    const String* origMDtag = inputRec.getStringTag(MD_TAG);
     
     if(origMDtag == NULL)
     {

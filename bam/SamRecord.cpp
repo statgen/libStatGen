@@ -2127,7 +2127,7 @@ bool SamRecord::getTagsString(const char* tags, String& returnString, char delim
 }
 
 
-String* SamRecord::getStringTag(const char * tag)
+const String* SamRecord::getStringTag(const char * tag)
 {
     // Parse the buffer if necessary.
     if(myNeedToSetTagsFromBuffer)

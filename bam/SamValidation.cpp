@@ -675,7 +675,7 @@ bool SamValidator::isValidTags(SamRecord& samRecord,
     // If the reference is not null, check the MD tag.
     if(reference != NULL)
     {
-        String* recordMD = samRecord.getStringTag(SamTags::MD_TAG);
+        const String* recordMD = samRecord.getStringTag(SamTags::MD_TAG);
         if(recordMD != NULL)
         {
             // The record has an MD tag so check to see if it is correct.
