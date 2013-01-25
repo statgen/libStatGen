@@ -169,6 +169,39 @@ void getMismatchString(sequenceType &sequence, sequenceIndexType location, std::
     }
 }
 
+/// Return the mismatch count, disregarding CIGAR strings
+///
+/// \param read is the sequence we're counting mismatches in
+/// \param location is where in the genmoe we start comparing
+/// \param exclude is a wildcard character (e.g. '.' or 'N')
+///
+/// \return number of bases that don't match the reference, except those that match exclude
+
+template<typename sequenceType, typename sequenceIndexType, typename readType>
+int getMismatchCount(sequenceType &sequence, sequenceIndexType location, readType &read, char exclude='\0')
+{
+    int mismatchCount = 0;
+    for (uint32_t i=0; i<read.size(); i++)
+        if (read[i]!=exclude) mismatchCount += read[i]!=sequence[location + i];
+    return mismatchCount;
+}
+
+/// brute force sumQ - no sanity checking
+///
+/// \param read shotgun sequencer read string
+/// \param qualities phred quality string of same length
+/// \param location the alignment location to check sumQ
+template<typename sequenceType, typename sequenceIndexType, typename readType, typename qualityType>
+int getSumQ(sequenceType &sequence, sequenceIndexType location, readType &read, qualityType &qualities)
+{
+    int sumQ = 0;
+    for (uint32_t i=0; i<read.size(); i++)
+        sumQ += (read[i]!=sequence[location + i] ? (qualities[i]-33) : 0);
+    return sumQ;
+};
+
+
+
 template<typename sequenceType, typename sequenceIndexType, typename readType, typename qualityType>
 sequenceIndexType simpleLocalAligner(
         sequenceType &sequence,
@@ -202,39 +235,6 @@ sequenceIndexType simpleLocalAligner(
     }
     return bestMatchLocation;
 }
-
-
-/// Return the mismatch count, disregarding CIGAR strings
-///
-/// \param read is the sequence we're counting mismatches in
-/// \param location is where in the genmoe we start comparing
-/// \param exclude is a wildcard character (e.g. '.' or 'N')
-///
-/// \return number of bases that don't match the reference, except those that match exclude
-
-template<typename sequenceType, typename sequenceIndexType, typename readType>
-int getMismatchCount(sequenceType &sequence, sequenceIndexType location, readType &read, char exclude='\0')
-{
-    int mismatchCount = 0;
-    for (uint32_t i=0; i<read.size(); i++)
-        if (read[i]!=exclude) mismatchCount += read[i]!=sequence[location + i];
-    return mismatchCount;
-}
-
-/// brute force sumQ - no sanity checking
-///
-/// \param read shotgun sequencer read string
-/// \param qualities phred quality string of same length
-/// \param location the alignment location to check sumQ
-template<typename sequenceType, typename sequenceIndexType, typename readType, typename qualityType>
-int getSumQ(sequenceType &sequence, sequenceIndexType location, readType &read, qualityType &qualities)
-{
-    int sumQ = 0;
-    for (uint32_t i=0; i<read.size(); i++)
-        sumQ += (read[i]!=sequence[location + i] ? (qualities[i]-33) : 0);
-    return sumQ;
-};
-
 
 
 }
