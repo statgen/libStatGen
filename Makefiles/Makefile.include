@@ -9,7 +9,7 @@ BASE_LIB_PATH := $(dir $(MAKEFILES_PATH_TMP))
 # Path names that may be needed.
 DIR_PARTS := $(subst /, , $(CURDIR))
 DIR_NAME := $(word $(words $(DIR_PARTS)), $(DIR_PARTS))
-VERSION ?= 1.0.6
+VERSION ?= 1.0.0
 
 # Define the paths/names of the Stagen Libraries
 STAT_GEN_LIB = $(STAT_GEN_LIB_OPT)
