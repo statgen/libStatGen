@@ -17,53 +17,18 @@ BINDIR ?= ../bin
 TESTDIR ?= ../test
 
 MAKEFILES_PATH := $(dir $(lastword $(MAKEFILE_LIST)))
-include $(MAKEFILES_PATH)Makefile.common
+include $(MAKEFILES_PATH)Makefile.ext
 
-RELEASE_FILE?=$(DIR_NAME).$(VERSION).tgz
-
-# Set the bins for each build type
-BINDIR_OPT ?= $(BINDIR)$(SUBDIR_OPT)
-BINDIR_DEBUG ?= $(BINDIR)$(SUBDIR_DEBUG)
-BINDIR_PROFILE ?= $(BINDIR)$(SUBDIR_PROFILE)
-
-PROG_OPT = $(BINDIR_OPT)/$(EXE)
-PROG_DEBUG = $(BINDIR_DEBUG)/$(EXE)
-PROG_PROFILE = $(BINDIR_PROFILE)/$(EXE)
+# Set the build commands for executable
+OPT_BUILD =     $(CXX) $(CFLAGS) $(USER_LINK_OPTIONS) -o $(PROG_OPT)     $(OBJECTS_OPT)     $(USER_LIBS) $(REQ_LIBS_OPT)     -lm $(ZLIB_LIB)
+DEBUG_BUILD =   $(CXX) $(CFLAGS) $(USER_LINK_OPTIONS) -o $(PROG_DEBUG)   $(OBJECTS_DEBUG)   $(USER_LIBS) $(REQ_LIBS_DEBUG)   -lm $(ZLIB_LIB)
+PROFILE_BUILD = $(CXX) $(CFLAGS) $(USER_LINK_OPTIONS) -o $(PROG_PROFILE) $(OBJECTS_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) -lm $(ZLIB_LIB)
 
 ADDITIONAL_HELP= @echo "make install      Install binaries in $(INSTALLDIR)";\
 	echo "make install INSTALLDIR=directory_for_binaries";\
 	echo "                  Install binaries in directory_for_binaries"
 
-.PHONY: install $(STAT_GEN_LIB_OPT) $(STAT_GEN_LIB_DEBUG) $(STAT_GEN_LIB_PROFILE)
-
-# Build the appropriate program
-opt: $(PROG_OPT)
-debug: $(PROG_DEBUG)
-profile: $(PROG_PROFILE)
-
-# Build with the appropriate dependencies
-$(PROG_OPT): $(BINDIR_OPT) $(USER_LIBS) $(REQ_LIBS_OPT) $(OBJECTS_OPT)
-	$(CXX) $(CFLAGS) $(USER_LINK_OPTIONS) -o $@  $(OBJECTS_OPT) $(USER_LIBS) $(REQ_LIBS_OPT) -lm $(ZLIB_LIB)
-$(PROG_DEBUG): $(BINDIR_DEBUG) $(USER_LIBS) $(REQ_LIBS_DEBUG) $(OBJECTS_DEBUG)
-	$(CXX) $(CFLAGS) $(USER_LINK_OPTIONS) -o $@  $(OBJECTS_DEBUG) $(USER_LIBS) $(REQ_LIBS_DEBUG) -lm $(ZLIB_LIB)
-$(PROG_PROFILE): $(BINDIR_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) $(OBJECTS_PROFILE)
-	$(CXX) $(CFLAGS) $(USER_LINK_OPTIONS) -o $@  $(OBJECTS_PROFILE) $(USER_LIBS) $(REQ_LIBS_PROFILE) -lm $(ZLIB_LIB)
-
-# Build the statgen lib if necessary
-$(STAT_GEN_LIB_OPT):
-	$(MAKE) -C $(@D) --no-print-directory opt
-$(STAT_GEN_LIB_DEBUG): 
-	$(MAKE) -C $(@D) --no-print-directory debug
-$(STAT_GEN_LIB_PROFILE): 
-	$(MAKE) -C $(@D) --no-print-directory profile
-
-$(BINDIR_OPT) $(BINDIR_DEBUG) $(BINDIR_PROFILE):
-	mkdir -p $@
-
-specific_clean :
-	-rm -f $(BINDIR_OPT)/$(EXE)
-	-rm -rf $(BINDIR_DEBUG)
-	-rm -rf $(BINDIR_PROFILE)
+.PHONY: install
 
 install : all $(INSTALLDIR)
 	@echo " "
