@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,50 +23,20 @@
 #include <map>
 #include <stdlib.h>
 
+#include "IndexBase.h"
+
 #include "InputFile.h"
 #include "SamStatus.h"
 
-class Chunk
-{
-public:
-    uint64_t chunk_beg; // offset of the start of the chunk
-    uint64_t chunk_end; // offset of the end of the chunk
-    
-    static const uint64_t MAX_CHUNK_VALUE = 0xFFFFFFFFFFFFFFFFULL;
-
-    bool operator< (const Chunk& otherChunk) const
-    {
-        return(this->chunk_beg < otherChunk.chunk_beg);
-    }
-};
-
-
-// This class contains chunks that are sorted by the beginning position.
-// This class hides how the chunks are actually stored (map, list ,etc),
-// so they can be interchanged.
-class SortedChunkList
-{
-public:
-    // Returns the first chunk in the list and  removes it.
-    Chunk pop();
-    bool insert(const Chunk& chunkToInsert);
-    void clear();
-    bool empty();
-    bool mergeOverlapping();
-
-private:
-    std::map<uint64_t, Chunk> chunkList;
-};
-
-class BamIndex
+class BamIndex : public IndexBase
 {
 public:
 
     BamIndex();
-    ~BamIndex();
+    virtual ~BamIndex();
 
     /// Reset the member data for a new index file.
-    void resetIndex();
+    virtual void resetIndex();
 
     // Read & parse the specified index file.
     /// \param filename the bam index file to be read.
@@ -90,10 +60,6 @@ public:
     bool getReferenceMinMax(int32_t refID, 
                             uint64_t& minOffset, 
                             uint64_t& maxOffset) const;
-    
-    /// Get the number of references in this index.
-    /// \return number of references
-    int32_t getNumRefs() const;
 
     /// Get the number of mapped reads for this reference id.  Returns -1 for
     /// out of range refIDs.
@@ -112,10 +78,6 @@ public:
     /// \param summary whether or not to just print a summary (defaults to false).  The summary just contains summary info for each reference and not every bin/chunk.
     void printIndex(int32_t refID, bool summary = false);
 
-    // Returns the minimum offset of records that cross the 16K block that
-    // contains the specified position for the given reference id.
-    uint64_t getMinOffsetFromLinearIndex(int32_t refID, uint32_t position) const;
-
     // Number of reference sequences.
     /// The number used for an unknown number of reads.
     static const int32_t UNKNOWN_NUM_READS = -1;
@@ -127,84 +89,9 @@ public:
     static const int32_t REF_ID_ALL = -2;
 
 private:
-
-    const static uint32_t MAX_NUM_BINS = 37450; // per specs, at most 37450 bins.
-    // Maximum allowed position (inclusive 512MB - 1)
-    const static uint32_t MAX_POSITION = 536870911;
-
-    // Number of bits in 1 linear index - how much to shift a position by
-    // to determine which offset into the linear index to look for it.
-    const static uint32_t LINEAR_INDEX_SHIFT = 14;
-
-    class Bin
-    {
-    public:
-        Bin(){chunks = NULL; reset();}
-        ~Bin() {reset();}
-        void reset()
-        {
-            if(chunks != NULL)
-            {
-                free(chunks);
-                chunks = NULL;
-            }
-            n_chunk = 0; 
-            bin = NOT_USED_BIN;
-        }
-        uint32_t bin; // The bin id.
-        int32_t n_chunk; // The number of chunks.
-        Chunk* chunks; // The chunks for this bin.
-        static const uint32_t NOT_USED_BIN = 0xFFFFFFFF;
-    };
-
-    class Reference
-    {
-        // Add one to the max since there may now be an extra bin containing
-        // the mapped/unmapped counts.
-    public:
-        static const int32_t UNKNOWN_MAP_INFO = -1;
-        Reference(){ioffsets = NULL; reset();}
-        ~Reference(){reset();}
-        void reset()
-        { 
-            bins.clear(); 
-            if(ioffsets != NULL)
-            {
-                free(ioffsets);
-                ioffsets = NULL;
-            }
-            n_bin = 0; 
-            n_intv = 0;
-            minChunkOffset = UNSET_MIN_CHUNK_OFFSET;
-            maxChunkOffset = 0;
-            n_mapped = UNKNOWN_MAP_INFO;
-            n_unmapped = UNKNOWN_MAP_INFO;
-        }
-        int32_t n_bin; // The number of bins.
-        int32_t n_intv; // Number of intervals.
-        std::vector<Bin> bins;  // The bins for this reference.
-        uint64_t* ioffsets; // Offsets of intervals first alignments
-        uint64_t minChunkOffset;
-        uint64_t maxChunkOffset;
-        int32_t n_mapped; // Number of mapped reads.
-        int32_t n_unmapped; // Number of unmapped reads.
-
-        static const uint64_t UNSET_MIN_CHUNK_OFFSET = 0xFFFFFFFFFFFFFFFFULL;
-    };
-
-    // Add the bins associated with the specified region to the passed in list.
-    // start is incluive, end is exclusive.
-    static int getBinsForRegion(uint32_t start, uint32_t end, uint16_t binList[MAX_NUM_BINS]);
-
-    // Number of reference sequences.
-    int32_t n_ref;
-
     uint64_t maxOverallOffset;
 
     int32_t myUnMappedNumReads;
-
-    // The references.
-    std::vector<Reference> myRefs;
 };
 
 

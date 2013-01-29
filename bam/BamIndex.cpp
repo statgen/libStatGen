@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2012  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,107 +18,12 @@
 #include "BamIndex.h"
 #include <iomanip>
 
-Chunk SortedChunkList::pop()
-{
-    Chunk newChunk = chunkList.begin()->second;
-    chunkList.erase(chunkList.begin());
-    return(newChunk);
-}
-
-
-bool SortedChunkList::insert(const Chunk& chunkToInsert)
-{
-    std::pair<std::map<uint64_t, Chunk>::iterator, bool> insertRes;
-    // Insert the passed in chunk.
-    insertRes = 
-        chunkList.insert(std::pair<uint64_t, Chunk>(chunkToInsert.chunk_beg,
-                                                    chunkToInsert));
-
-    if(!insertRes.second)
-    {
-        // Failed to insert the chunk.
-        std::cerr << "Failed to insert into the SortedChunkList.\n";
-        std::cerr << "\tpreviously found chunk:\tbeg = " << std::hex
-                  << insertRes.first->second.chunk_beg 
-                  << "\tend = "
-                  << insertRes.first->second.chunk_end
-                  << "\nnew chunk:\tbeg = " << std::hex
-                  << chunkToInsert.chunk_beg 
-                  << "\tend = "
-                  << chunkToInsert.chunk_end
-                  << std::endl;
-    }
-    // return the result that comes from insertRes.
-    return(insertRes.second);
-}
-
-void SortedChunkList::clear()
-{
-    chunkList.clear();
-}
-
-bool SortedChunkList::empty()
-{
-    return(chunkList.empty());
-}
-
-
-// Merge overlapping chunks found in this list.
-bool SortedChunkList::mergeOverlapping()
-{
-    // Start at the beginning of the list and iterate through.
-    std::map<uint64_t, Chunk>::iterator currentPos = chunkList.begin();
-    std::map<uint64_t, Chunk>::iterator nextPos = chunkList.begin();
-    if(nextPos != chunkList.end())
-    {
-        ++nextPos;
-    }
-    
-    // Loop until the end is reached.
-    while(nextPos != chunkList.end())
-    {
-        // If the next chunk is completely contained within the current 
-        // chunk (its end is less than the current chunk's end), 
-        // delete it since its position is already covered.
-        if(nextPos->second.chunk_end < currentPos->second.chunk_end)
-        {
-            chunkList.erase(nextPos);
-            nextPos = currentPos;
-            ++nextPos;
-            continue;
-        }
-        
-        // If the next chunk's start position's BGZF block is less than or
-        // equal to the BGZF block of the current chunk's end position,
-        // combine the two chunks into the current chunk.
-        if((nextPos->second.chunk_beg >> 16) <= 
-           (currentPos->second.chunk_end >> 16))
-        {
-            currentPos->second.chunk_end = nextPos->second.chunk_end;
-            // nextPos has now been included in the current pos, so
-            // remove it.
-            chunkList.erase(nextPos);
-            nextPos = currentPos;
-            ++nextPos;
-            continue;
-        }
-        else
-        {
-            // Nothing to combine.  So try combining at the next 
-            currentPos = nextPos;
-            ++nextPos;
-        }
-    }
-
-    return(true);
-}
-
-
 BamIndex::BamIndex()
+    : IndexBase(),
+      maxOverallOffset(0),
+      myUnMappedNumReads(-1)
 {
-    resetIndex();
 }
-
 
 
 BamIndex::~BamIndex()
@@ -129,13 +34,10 @@ BamIndex::~BamIndex()
 // Reset the member data for a new index file.
 void BamIndex::resetIndex()
 {
-    n_ref = 0;
-    maxOverallOffset = 0;
-    
-    myUnMappedNumReads = -1;
+    IndexBase::resetIndex();
 
-    // Clear the references.
-    myRefs.clear();
+    maxOverallOffset = 0;    
+    myUnMappedNumReads = -1;
 }
 
 
@@ -380,7 +282,8 @@ bool BamIndex::getChunksForRegion(int32_t refID, int32_t start, int32_t end,
 
     // Determine the minimum offset for the given start position.  This
     // is done by using the linear index for the specified start position.
-    uint64_t minOffset = getMinOffsetFromLinearIndex(refID, start);
+    uint64_t minOffset = 0;
+    getMinOffsetFromLinearIndex(refID, start, minOffset);
 
     uint16_t binInRangeList[MAX_NUM_BINS + 1];
     
@@ -441,14 +344,6 @@ bool BamIndex::getReferenceMinMax(int32_t refID,
     minOffset = myRefs[refID].minChunkOffset;
     maxOffset = myRefs[refID].maxChunkOffset;
     return(true);
-}
-
-    
-// Get the number of references in this index.
-int32_t BamIndex::getNumRefs() const
-{
-    // Return the number of references.
-    return(myRefs.size());
 }
 
 
@@ -589,79 +484,3 @@ void BamIndex::printIndex(int32_t refID, bool summary)
         }
     }
 }
-
-
-// Returns the minimum offset of records that cross the 16K block that
-// contains the specified position for the given reference id.
-uint64_t BamIndex::getMinOffsetFromLinearIndex(int32_t refID, uint32_t position) const
-{
-    int32_t linearIndex = position >> LINEAR_INDEX_SHIFT;
-    uint64_t minOffset = 0;
-    // Check to see if the position is out of range of the linear index.
-    int32_t linearOffsetSize = myRefs[refID].n_intv;
-
-    // If there are no entries in the linear index, return 0.
-    // Or if the linear index is not large enough to include
-    // the start block, then there can be no records that cross
-    // our region, so return 0.
-    if((linearOffsetSize == 0) || (linearIndex >= linearOffsetSize))
-
-    {
-        return(0);
-    }
-    else
-    {
-        // The linear index is specified for this block, so return that
-        // value.
-        minOffset = myRefs[refID].ioffsets[linearIndex];
-
-        // If the offset is 0, go to the previous block that has an offset.
-        // This is due to a couple of bugs in older sam tools indexes.
-        // 1) they add one to the index location (so when reading those, you
-        // may be starting earlier than necessary)
-        // 2) (the bigger issue) They did not include bins 4681-37449 in
-        // the linear index.
-        while((minOffset == 0) && (--linearIndex >= 0))
-        {
-            minOffset = myRefs[refID].ioffsets[linearIndex];            
-        }
-    }
-    return(minOffset);
-}
-
-
-// Returns the minimum offset of records that cross the 16K block that
-// contains the specified position for the given reference id.
-// The basic logic is from samtools reg2bins and the samtools format specification pdf.
-int BamIndex::getBinsForRegion(uint32_t start, uint32_t end, uint16_t binList[MAX_NUM_BINS])
-{
-	uint32_t binListIndex = 0, binNum;
-	--end;
-
-        // Check if beg/end go too high, set to max position.
-        if(start > MAX_POSITION)
-        {
-            start = MAX_POSITION;
-        }
-        if(end > MAX_POSITION)
-        {
-            end = MAX_POSITION;
-        }
-
-	binList[binListIndex++] = 0;
-	for (binNum =    1 + (start>>26); binNum <=    1 + (end>>26); ++binNum) 
-            binList[binListIndex++] = binNum;
-	for (binNum =    9 + (start>>23); binNum <=    9 + (end>>23); ++binNum) 
-            binList[binListIndex++] = binNum;
-	for (binNum =   73 + (start>>20); binNum <=   73 + (end>>20); ++binNum)
-            binList[binListIndex++] = binNum;
-	for (binNum =  585 + (start>>17); binNum <=  585 + (end>>17); ++binNum)
-            binList[binListIndex++] = binNum;
-	for (binNum = 4681 + (start>>14); binNum <= 4681 + (end>>14); ++binNum)
-            binList[binListIndex++] = binNum;
-
-        // binListIndex contains the number of items added to the list.
-	return binListIndex;
-}
-
-

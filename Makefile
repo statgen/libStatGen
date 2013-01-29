@@ -1,8 +1,8 @@
-VERSION ?= 1.0.7
+VERSION ?= 1.0.8
 
 .PHONY: package
 
-SUBDIRS=general bam fastq glf samtools
+SUBDIRS=general bam fastq glf samtools vcf
 
 include Makefiles/Makefile.base
 

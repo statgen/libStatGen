@@ -28,7 +28,9 @@ public:
     static const std::string TEST_FILE_CONTENTS;
 
 private:
+    void testAll(const char* extension);
     void test_readFromFile(const char* extension);
+    void test_readTilChar(const char* extension);
 
     // Tested together because they are used to test each other.
     void test_ifeof_ifrewind(const char* extension);

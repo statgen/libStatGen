@@ -18,6 +18,7 @@ $(OBJDIR_OPT)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_OPT)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
 $(OBJDIR_OPT)/CigarRoller.o: InputFile.h FileType.h
 $(OBJDIR_OPT)/Error.o: Error.h
+$(OBJDIR_OPT)/ErrorHandler.o: ErrorHandler.h
 $(OBJDIR_OPT)/FileType.o: FileType.h
 $(OBJDIR_OPT)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/FortranFormat.o: FileType.h IntArray.h Error.h
@@ -37,6 +38,8 @@ $(OBJDIR_OPT)/glfHandler.o: StringBasics.h BaseQualityHelper.h
 $(OBJDIR_OPT)/GzipFileType.o: GzipFileType.h FileType.h
 $(OBJDIR_OPT)/GzipHeader.o: GzipHeader.h
 $(OBJDIR_OPT)/Hash.o: Hash.h
+$(OBJDIR_OPT)/IndexBase.o: IndexBase.h InputFile.h FileType.h StatGenStatus.h
+$(OBJDIR_OPT)/IndexBase.o: ErrorHandler.h
 $(OBJDIR_OPT)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_OPT)/InputFile.o: InputFile.h FileType.h StringBasics.h GzipHeader.h
 $(OBJDIR_OPT)/InputFile.o: BgzfFileType.h ../include/bgzf.h
@@ -111,6 +114,7 @@ $(OBJDIR_OPT)/SmithWaterman.o: Generic.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/SmithWaterman.o: FileType.h
 $(OBJDIR_OPT)/Sort.o: Sort.h Constant.h Error.h
 $(OBJDIR_OPT)/STLUtilities.o: STLUtilities.h
+$(OBJDIR_OPT)/StatGenStatus.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_OPT)/StringAlias.o: StringAlias.h StringArray.h StringBasics.h
 $(OBJDIR_OPT)/StringAlias.o: InputFile.h FileType.h StringHash.h Constant.h
 $(OBJDIR_OPT)/StringAlias.o: Hash.h
@@ -121,6 +125,8 @@ $(OBJDIR_OPT)/StringBasics.o: Constant.h MathConstant.h
 $(OBJDIR_OPT)/StringHash.o: StringHash.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_OPT)/StringMap.o: StringMap.h StringBasics.h InputFile.h FileType.h
+$(OBJDIR_OPT)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
+$(OBJDIR_OPT)/Tabix.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_OPT)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_OPT)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_OPT)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
@@ -162,6 +168,7 @@ $(OBJDIR_DEBUG)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_DEBUG)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
 $(OBJDIR_DEBUG)/CigarRoller.o: InputFile.h FileType.h
 $(OBJDIR_DEBUG)/Error.o: Error.h
+$(OBJDIR_DEBUG)/ErrorHandler.o: ErrorHandler.h
 $(OBJDIR_DEBUG)/FileType.o: FileType.h
 $(OBJDIR_DEBUG)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/FortranFormat.o: FileType.h IntArray.h Error.h
@@ -182,6 +189,8 @@ $(OBJDIR_DEBUG)/glfHandler.o: StringBasics.h BaseQualityHelper.h
 $(OBJDIR_DEBUG)/GzipFileType.o: GzipFileType.h FileType.h
 $(OBJDIR_DEBUG)/GzipHeader.o: GzipHeader.h
 $(OBJDIR_DEBUG)/Hash.o: Hash.h
+$(OBJDIR_DEBUG)/IndexBase.o: IndexBase.h InputFile.h FileType.h
+$(OBJDIR_DEBUG)/IndexBase.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_DEBUG)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_DEBUG)/InputFile.o: InputFile.h FileType.h StringBasics.h
 $(OBJDIR_DEBUG)/InputFile.o: GzipHeader.h BgzfFileType.h ../include/bgzf.h
@@ -260,6 +269,7 @@ $(OBJDIR_DEBUG)/SmithWaterman.o: Generic.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/SmithWaterman.o: FileType.h
 $(OBJDIR_DEBUG)/Sort.o: Sort.h Constant.h Error.h
 $(OBJDIR_DEBUG)/STLUtilities.o: STLUtilities.h
+$(OBJDIR_DEBUG)/StatGenStatus.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_DEBUG)/StringAlias.o: StringAlias.h StringArray.h StringBasics.h
 $(OBJDIR_DEBUG)/StringAlias.o: InputFile.h FileType.h StringHash.h Constant.h
 $(OBJDIR_DEBUG)/StringAlias.o: Hash.h
@@ -271,6 +281,8 @@ $(OBJDIR_DEBUG)/StringHash.o: StringHash.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_DEBUG)/StringMap.o: StringMap.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/StringMap.o: FileType.h
+$(OBJDIR_DEBUG)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
+$(OBJDIR_DEBUG)/Tabix.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_DEBUG)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_DEBUG)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_DEBUG)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
@@ -314,6 +326,7 @@ $(OBJDIR_PROFILE)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_PROFILE)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h
 $(OBJDIR_PROFILE)/CigarRoller.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/Error.o: Error.h
+$(OBJDIR_PROFILE)/ErrorHandler.o: ErrorHandler.h
 $(OBJDIR_PROFILE)/FileType.o: FileType.h
 $(OBJDIR_PROFILE)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/FortranFormat.o: FileType.h IntArray.h Error.h
@@ -334,6 +347,8 @@ $(OBJDIR_PROFILE)/glfHandler.o: StringBasics.h BaseQualityHelper.h
 $(OBJDIR_PROFILE)/GzipFileType.o: GzipFileType.h FileType.h
 $(OBJDIR_PROFILE)/GzipHeader.o: GzipHeader.h
 $(OBJDIR_PROFILE)/Hash.o: Hash.h
+$(OBJDIR_PROFILE)/IndexBase.o: IndexBase.h InputFile.h FileType.h
+$(OBJDIR_PROFILE)/IndexBase.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_PROFILE)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_PROFILE)/InputFile.o: InputFile.h FileType.h StringBasics.h
 $(OBJDIR_PROFILE)/InputFile.o: GzipHeader.h BgzfFileType.h ../include/bgzf.h
@@ -415,6 +430,7 @@ $(OBJDIR_PROFILE)/SmithWaterman.o: Generic.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/SmithWaterman.o: FileType.h
 $(OBJDIR_PROFILE)/Sort.o: Sort.h Constant.h Error.h
 $(OBJDIR_PROFILE)/STLUtilities.o: STLUtilities.h
+$(OBJDIR_PROFILE)/StatGenStatus.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_PROFILE)/StringAlias.o: StringAlias.h StringArray.h StringBasics.h
 $(OBJDIR_PROFILE)/StringAlias.o: InputFile.h FileType.h StringHash.h
 $(OBJDIR_PROFILE)/StringAlias.o: Constant.h Hash.h
@@ -426,6 +442,8 @@ $(OBJDIR_PROFILE)/StringHash.o: StringHash.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_PROFILE)/StringMap.o: StringMap.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/StringMap.o: FileType.h
+$(OBJDIR_PROFILE)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
+$(OBJDIR_PROFILE)/Tabix.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_PROFILE)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_PROFILE)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_PROFILE)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h

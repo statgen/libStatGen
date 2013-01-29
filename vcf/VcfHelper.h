@@ -1,5 +1,7 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2011  Regents of the University of Michigan,
+ *                      Hyun Min Kang, Matthew Flickenger, Matthew Snyder,
+ *                      and Goncalo Abecasis
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,11 +17,21 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SAM_STATUS_H__
-#define __SAM_STATUS_H__
 
-#include "StatGenStatus.h"
+#ifndef __VCF_HELPER_H__
+#define __VCF_HELPER_H__
 
-typedef StatGenStatus SamStatus;
+#include "ReusableVector.h"
+
+/// This header file provides helper methods for dealing with VCF Files.
+class  VcfHelper
+{
+public:
+    /// Parse the string at the specified delimiters into
+    /// the specified reusable vector.
+    static void parseString(const std::string& inputString, 
+                            char delim,
+                            ReusableVector<std::string>& outputVector);
+};
 
 #endif

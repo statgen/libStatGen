@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,11 +15,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SAM_STATUS_H__
-#define __SAM_STATUS_H__
+#include "VcfFileTest.h"
+#include "VcfHeaderTest.h"
 
-#include "StatGenStatus.h"
 
-typedef StatGenStatus SamStatus;
-
-#endif
+int main(int argc, char ** argv)
+{
+    testVcfHeader();
+    testVcfFile();
+}

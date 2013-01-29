@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2011  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,9 +15,9 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SamStatus.h"
+#include "StatGenStatus.h"
 
-const char* SamStatus::enumStatusString[] = {
+const char* StatGenStatus::enumStatusString[] = {
     "SUCCESS",
     "UNKNOWN",
     "NO_MORE_RECS",
@@ -30,7 +30,7 @@ const char* SamStatus::enumStatusString[] = {
 };
 
 
-const char* SamStatus::getStatusString(SamStatus::Status statusEnum)
+const char* StatGenStatus::getStatusString(StatGenStatus::Status statusEnum)
 {
     return(enumStatusString[statusEnum]);
 }
@@ -38,10 +38,10 @@ const char* SamStatus::getStatusString(SamStatus::Status statusEnum)
 
 // Returns whether or not it is "safe" to keep processing the file
 // after the specified status return.
-bool SamStatus::isContinuableStatus(SamStatus::Status status)
+bool StatGenStatus::isContinuableStatus(StatGenStatus::Status status)
 {
-    if(status == SamStatus::SUCCESS || status == SamStatus::FAIL_PARSE || 
-       status == SamStatus::INVALID_SORT || status == SamStatus::INVALID)
+    if(status == StatGenStatus::SUCCESS || status == StatGenStatus::FAIL_PARSE || 
+       status == StatGenStatus::INVALID_SORT || status == StatGenStatus::INVALID)
     {
         // The status is such that file processing can continue.
         return(true);
@@ -52,7 +52,7 @@ bool SamStatus::isContinuableStatus(SamStatus::Status status)
 
 
 // Constructor
-SamStatus::SamStatus(ErrorHandler::HandlingType handleType)
+StatGenStatus::StatGenStatus(ErrorHandler::HandlingType handleType)
     : myHandlingType(handleType)
 {
     reset();
@@ -60,27 +60,27 @@ SamStatus::SamStatus(ErrorHandler::HandlingType handleType)
 
    
 // Destructor
-SamStatus::~SamStatus()
+StatGenStatus::~StatGenStatus()
 {
 }
 
 
 // Resets this status.
-void SamStatus::reset()
+void StatGenStatus::reset()
 {
     myType = UNKNOWN;
     myMessage.clear();
 }
 
 
-void SamStatus::setHandlingType(ErrorHandler::HandlingType handleType)
+void StatGenStatus::setHandlingType(ErrorHandler::HandlingType handleType)
 {
     myHandlingType = handleType;
 }
 
 
 // Set the status with the specified values.
-void SamStatus::setStatus(Status newStatus, const char* newMessage)
+void StatGenStatus::setStatus(Status newStatus, const char* newMessage)
 {
     myType = newStatus;
     myMessage = getStatusString(newStatus);
@@ -96,9 +96,9 @@ void SamStatus::setStatus(Status newStatus, const char* newMessage)
 
 // Adds the specified error message to the status message.
 // Sets the status to newStatus if the current status is SUCCESS.
-void SamStatus::addError(Status newStatus, const char* newMessage)
+void StatGenStatus::addError(Status newStatus, const char* newMessage)
 {
-    if(myType == SamStatus::SUCCESS)
+    if(myType == StatGenStatus::SUCCESS)
     {
         myType = newStatus;
     }
@@ -119,9 +119,9 @@ void SamStatus::addError(Status newStatus, const char* newMessage)
 
 // Adds the specified status to the status message.
 // Sets the status to newStatus if the current status is SUCCESS.
-void SamStatus::addError(SamStatus newStatus)
+void StatGenStatus::addError(StatGenStatus newStatus)
 {
-    if(myType == SamStatus::SUCCESS)
+    if(myType == StatGenStatus::SUCCESS)
     {
         myType = newStatus.myType;
     }
@@ -139,14 +139,14 @@ void SamStatus::addError(SamStatus newStatus)
 
 
 // Return the enum for this status.
-SamStatus::Status SamStatus::getStatus() const
+StatGenStatus::Status StatGenStatus::getStatus() const
 {
     return(myType);
 }
 
 
 // Return the status message.
-const char* SamStatus::getStatusMessage() const
+const char* StatGenStatus::getStatusMessage() const
 {
     return(myMessage.c_str());
 }
@@ -154,7 +154,7 @@ const char* SamStatus::getStatusMessage() const
 
 // Overload operator = to set the sam status type to the
 // passed in status and to clear the message string.
-SamStatus & SamStatus::operator = (SamStatus::Status newStatus)
+StatGenStatus & StatGenStatus::operator = (StatGenStatus::Status newStatus)
 {
     myType = newStatus;
     myMessage.clear();
@@ -167,9 +167,19 @@ SamStatus & SamStatus::operator = (SamStatus::Status newStatus)
 }
 
 
+// Overload operator = to copy the specified status object to this one.
+StatGenStatus & StatGenStatus::operator = (StatGenStatus newStatus)
+{
+    myType = newStatus.myType;
+    myMessage = newStatus.myMessage;
+    myHandlingType = newStatus.myHandlingType;
+    return(*this);
+}
+
+
 // Overload operator != to determine if the passed in type is not equal
 // to this status's type.
-bool SamStatus::operator != (const SamStatus::Status& compStatus) const
+bool StatGenStatus::operator != (const StatGenStatus::Status& compStatus) const
 {
     return(compStatus != myType);
 }
@@ -177,13 +187,13 @@ bool SamStatus::operator != (const SamStatus::Status& compStatus) const
 
 // Overload operator != to determine if the passed in type is equal
 // to this status's type.
-bool SamStatus::operator == (const SamStatus::Status& compStatus) const
+bool StatGenStatus::operator == (const StatGenStatus::Status& compStatus) const
 {
     return(compStatus == myType);
 }
 
 
-void SamStatus::handleError(Status newStatus, const char* newMessage)
+void StatGenStatus::handleError(Status newStatus, const char* newMessage)
 {
     // If the status is not success and not NO_MORE_RECS, handle
     // the error  (SUCCESS & NO_MORE_RECS are not real errors.)

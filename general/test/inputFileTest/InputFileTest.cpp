@@ -47,38 +47,30 @@ const std::string IFILE_Test::TEST_FILE_CONTENTS = "ABCDabcd1234\nEFGefg567\nhij
 void IFILE_Test::test()
 {
    std::cout << "\nUncompressedFileType Tests:" << std::endl;
-   test_readFromFile("txt");
-   test_ifeof_ifrewind("txt");
-   test_ifread_ifgetc("txt");
-   test_ifclose("txt");
-   test_ifseek("txt");
-   test_noExistRead("txt");
+   testAll("txt");
 
 #ifdef __ZLIB_AVAILABLE__
    std::cout << "\nGzipFileType Tests:" << std::endl;
-   test_readFromFile("gz");
-   test_ifeof_ifrewind("gz");
-   test_ifread_ifgetc("gz");
-   test_ifclose("gz");
-   test_ifseek("gz");
-   test_noExistRead("gz");
+   testAll("gz");
 
    std::cout << "\nBgzfFileType Tests:" << std::endl;
-   test_readFromFile("bam");
-   test_ifeof_ifrewind("bam");
-   test_ifread_ifgetc("bam");
-   test_ifclose("bam");
-   test_ifseek("bam");
-   test_noExistRead("bam");
+   testAll("bam");
 
    std::cout << "\n.glf file Tests:" << std::endl;
-   test_readFromFile("glf");
-   test_ifeof_ifrewind("glf");
-   test_ifread_ifgetc("glf");
-   test_ifclose("glf");
-   test_ifseek("glf");
-   test_noExistRead("glf");
+   testAll("glf");
 #endif
+}
+
+
+void IFILE_Test::testAll(const char* extension)
+{
+    test_readFromFile(extension);
+    test_readTilChar(extension);
+    test_ifeof_ifrewind(extension);
+    test_ifread_ifgetc(extension);
+    test_ifclose(extension);
+    test_ifseek(extension);
+    test_noExistRead(extension);
 }
 
 
@@ -157,6 +149,56 @@ void IFILE_Test::test_readFromFile(const char* extension)
    ifclose();
 
    std::cout << "  Passed test_readFromFile" << std::endl;
+}
+
+
+
+
+void IFILE_Test::test_readTilChar(const char* extension)
+{
+   // First open the test file.
+   openFile(extension);
+
+   // Verify the file successfully opened.
+   assert(myFileTypePtr != NULL);
+   assert(isOpen());
+   assert(myFileTypePtr->isOpen());
+
+   // Track position of ending char found.
+   int pos = 0;
+
+   // Test readTilChar.
+   std::string output = "";
+   std::string endChars = "a5d";
+   pos = readTilChar(endChars, output);
+   assert(pos == 0);  // read til a
+   assert(output == "ABCD");
+   output.clear();
+   pos = readTilChar(endChars, output);
+   assert(pos == 2);  // read til d
+   assert(output == "bc");
+   pos = readTilChar(endChars, output);
+   assert(pos == 1);  // read til 5
+   assert(output == "bc1234\nEFGefg");
+   output.clear();
+   pos = readTilChar(endChars, output);
+   assert(pos == -1);  // read til 5
+   assert(output == "67\nhijklHIJKL8910");
+
+   ifrewind();
+   // Test readTilChar.
+   pos = readTilChar(endChars);
+   assert(pos == 0);  // read til a
+   pos = readTilChar(endChars);
+   assert(pos == 2);  // read til d
+   pos = readTilChar(endChars);
+   assert(pos == 1);  // read til 5
+   pos = readTilChar(endChars);
+   assert(pos == -1);  // read til 5
+
+   ifclose();
+
+   std::cout << "  Passed test_readTilChar" << std::endl;
 }
 
 
@@ -297,7 +339,6 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
 
    // Read past eof.
    numBytesRead = ifread(myTestBuffer, MAX_TEST_BUFFER_SIZE);
-   //   std::cerr << numBytesRead << std::endl;
    assert(numBytesRead == 0);
    // Eof.
    assert(ifeof() != 0);
