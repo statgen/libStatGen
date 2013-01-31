@@ -27,7 +27,7 @@ public:
     SamHeaderSQ();
    
     // Destructor
-    ~SamHeaderSQ();
+    virtual ~SamHeaderSQ();
 
     /// Return a pointer to a newly created header record of the appropriate type
     /// that is a copy of this record. The newly created record will not be

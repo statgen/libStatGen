@@ -27,7 +27,7 @@ public:
     SamHeaderHD();
    
     // Destructor
-    ~SamHeaderHD();
+    virtual ~SamHeaderHD();
 
     const char* getSortOrder();
 

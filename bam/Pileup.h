@@ -76,7 +76,7 @@ public:
            const FUNC_CLASS& fp = FUNC_CLASS());
 
     /// Destructor
-    ~Pileup();
+    virtual ~Pileup();
 
     /// Performs a pileup on the specified file.
     /// \param excludeFlag if specified, if any bit set in the exclude flag
