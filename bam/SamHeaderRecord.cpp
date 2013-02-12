@@ -280,6 +280,23 @@ bool SamHeaderRecord::addKey(const char* value)
 }
 
 
+// Return the value associated with the specified tag.
+const char* SamHeaderRecord::getKeyValue() const
+{
+    // Look up the tag in myTags.
+    int index = myTagHash.Integer(myKeyTag.c_str());
+    if(index < 0)
+    {
+        // The tag was not found in the hash, so return "".
+        return("");
+    }
+
+    // The tag was found in the hash, so return the tag value found at the 
+    // index associated with the tag.
+    return(myTags[index]->getValue());
+}
+
+
 // This header is active if there is at least one tag set.
 bool SamHeaderRecord::isActiveHeaderRecord()
 {
