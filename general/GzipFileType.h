@@ -20,7 +20,7 @@
 
 #ifdef  __ZLIB_AVAILABLE__
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <stdio.h>  // for NULL!
 #endif
 

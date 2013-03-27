@@ -226,7 +226,7 @@ public:
         env = getenv("USER");
         if (env) header->setCreationUser(env);
         header->creationDate = time(NULL);
-#if defined(WIN32)
+#if defined(_WIN32)
         hostname[0] = '\0';
 #else
         gethostname(hostname, sizeof(hostname));

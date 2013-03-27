@@ -29,7 +29,7 @@
 
 #include "MemoryMap.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 
 SYSTEM_INFO MemoryMap::system_info;
 static bool need_system_info = true;
@@ -53,7 +53,7 @@ typedef char *  caddr_t;
 MemoryMap::MemoryMap()
 {
     constructor_clear();
-#if defined(WIN32)
+#if defined(_WIN32)
     if (need_system_info)
     {
         GetSystemInfo(&system_info);
@@ -72,7 +72,7 @@ MemoryMap::~MemoryMap()
 
 void MemoryMap::debug_print()
 {
-#if defined(WIN32)
+#if defined(_WIN32)
     std::cout << "fd = " << file_handle << std::endl;
 #else
     std::cout << "fd = " << fd << std::endl;
@@ -86,7 +86,7 @@ void MemoryMap::debug_print()
 
 void MemoryMap::constructor_clear()
 {
-#if defined(WIN32)
+#if defined(_WIN32)
     file_handle = 0;
     map_handle = 0;
 #else
@@ -103,7 +103,7 @@ void MemoryMap::destructor_clear()
 {
     if (data!=NULL)
     {
-#if defined(WIN32)
+#if defined(_WIN32)
         // free windows mapped object
         UnmapViewOfFile((LPVOID) data);
 #else
@@ -112,7 +112,7 @@ void MemoryMap::destructor_clear()
 #endif
     }
 
-#if !defined(WIN32)
+#if !defined(_WIN32)
     // free unix resources
     if (fd!=-1)
     {
@@ -123,7 +123,7 @@ void MemoryMap::destructor_clear()
     constructor_clear();
 };
 
-#if defined(WIN32)
+#if defined(_WIN32)
 bool MemoryMap::open(const char * file, int flags)
 {
     const off_t offset = 0;     // in old code, this was an argument to ::open

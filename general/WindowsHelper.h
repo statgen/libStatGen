@@ -18,7 +18,7 @@
 #ifndef __WINDOWSHELPER_H__
 #define __WINDOWSHELPER_H__
 
-#ifndef __WIN32__
+#ifndef _WIN32
 void WildCardArguments(int argc, char ** argv);
 #else
 void WildCardArguments(int & argc, char ** & argv);
