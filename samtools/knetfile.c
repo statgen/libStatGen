@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <sys/types.h>
 
 #ifndef _WIN32
@@ -191,7 +191,7 @@ static off_t my_netread(int fd, void *buf, off_t len)
 	 * one call. They have to be called repeatedly. */
 	while (rest) {
 		if (socket_wait(fd, 1) <= 0) break; // socket is not ready for reading
-		curr = netread(fd, buf + l, rest);
+		curr = netread(fd, (char *)buf + l, rest);
 		/* According to the glibc manual, section 13.2, a zero returned
 		 * value indicates end-of-file (EOF), which should mean that
 		 * read() will not return zero if EOF has not been met but data
@@ -332,19 +332,19 @@ int kftp_connect_file(knetFile *fp)
 		if (fp->no_reconnect) kftp_get_response(fp);
 	}
 	kftp_pasv_prep(fp);
-    kftp_send_cmd(fp, fp->size_cmd, 1);
-#ifndef _WIN32
-    if ( sscanf(fp->response,"%*d %lld", &file_size) != 1 )
-    {
-        fprintf(stderr,"[kftp_connect_file] %s\n", fp->response);
-        return -1;
-    }
-#else
-	const char *p = fp->response;
-	while (*p != ' ') ++p;
-	while (*p < '0' || *p > '9') ++p;
-	file_size = strtoint64(p);
-#endif
+	kftp_send_cmd(fp, fp->size_cmd, 1);
+//#ifndef _WIN32
+	if ( sscanf(fp->response,"%*d %lld", &file_size) != 1 )
+	{
+		fprintf(stderr,"[kftp_connect_file] %s\n", fp->response);
+		return -1;
+	}
+//#else
+//	const char *p = fp->response;
+//	while (*p != ' ') ++p;
+//	while (*p < '0' || *p > '9') ++p;
+//	file_size = strtoint64(p);
+//#endif
 	fp->file_size = file_size;
 	if (fp->offset>=0) {
 		char tmp[32];
@@ -528,7 +528,7 @@ off_t knet_read(knetFile *fp, void *buf, off_t len)
 		off_t rest = len, curr;
 		while (rest) {
 			do {
-				curr = read(fp->fd, buf + l, rest);
+				curr = read(fp->fd, (char *)buf + l, rest);
 			} while (curr < 0 && EINTR == errno);
 			if (curr < 0) return -1;
 			if (curr == 0) break;

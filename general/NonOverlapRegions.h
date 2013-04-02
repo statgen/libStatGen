@@ -25,7 +25,56 @@
 #include <list>
 #include <stdint.h>
 
-class NonOverlapRegionPos;
+/// This class contains a list of non-overlapping regions, just positions, not
+/// including chromosomes (see NonOverlapRegions for chromosomes and positions).
+///  When regions are added that overlap, it merges them.  After adding regions,
+/// you can check to see if a position is found in one of the regions.  It is
+/// designed to work fastest if you make calls in sequential order.
+class NonOverlapRegionPos
+{
+public:
+    friend class NonOverlapRegionsTest;
+    NonOverlapRegionPos();
+    /// Copy constructor, does not copy, but initializes with an empty
+    /// region list.
+    NonOverlapRegionPos(const NonOverlapRegionPos& reg);
+
+    ~NonOverlapRegionPos();
+
+    /// End position is not included in the region.
+    /// If this region overlaps another region(s), they will be merged into
+    /// one region.
+    void add(int32_t start, int32_t end);
+
+    /// Return whether or not the position was found within a region.
+    /// If it is found within the region, myRegionIter will point to the region
+    /// otherwise myRegionIter will point to the region after the position
+    /// or to the end if the position is after the last region.
+    bool inRegion(int32_t pos);
+
+private:
+    // True if pos found in the region pointed to by myRegionIter or to
+    // the right of myRegionIter.  If the position is found in a region,
+    // myRegionIter will point to the region containing the position.
+    // If the position is not found in a region, myRegionIter will point
+    // to the region after the position, or to the end if the position is
+    // after the last region.
+    bool findRight(int32_t pos);
+
+    // True if pos found in the region pointed to by myRegionIter or to
+    // the left of myRegionIter.  If the position is found in a region,
+    // myRegionIter will point to the region containing the position.
+    // If the position is not found in a region, myRegionIter will point
+    // to the region after the position, or to the end if the position is
+    // after the last region.
+    bool findLeft(int32_t pos);
+
+
+    std::list< std::pair<int32_t, int32_t> > myRegions;
+    std::list< std::pair<int32_t, int32_t> >::iterator myRegionIter;
+    std::list< std::pair<int32_t, int32_t> >::iterator myTmpIter;
+};
+
 
 /// This class contains a list of non-overlapping regions.  When regions are
 /// added that overlap, it merges them.  After adding regions, you can check
@@ -56,57 +105,5 @@ private:
 
     std::map<std::string, NonOverlapRegionPos> myRegions;
 };
-
-
-/// This class contains a list of non-overlapping regions, just positions, not
-/// including chromosomes (see NonOverlapRegions for chromosomes and positions).
-///  When regions are added that overlap, it merges them.  After adding regions,
-/// you can check to see if a position is found in one of the regions.  It is
-/// designed to work fastest if you make calls in sequential order.
-class NonOverlapRegionPos
-{
-public:
-    friend class NonOverlapRegionsTest;
-    NonOverlapRegionPos();
-    /// Copy constructor, does not copy, but initializes with an empty 
-    /// region list.
-    NonOverlapRegionPos(const NonOverlapRegionPos& reg);
-
-    ~NonOverlapRegionPos();
-
-    /// End position is not included in the region.
-    /// If this region overlaps another region(s), they will be merged into 
-    /// one region.
-    void add(int32_t start, int32_t end);
- 
-    /// Return whether or not the position was found within a region.
-    /// If it is found within the region, myRegionIter will point to the region
-    /// otherwise myRegionIter will point to the region after the position 
-    /// or to the end if the position is after the last region.
-    bool inRegion(int32_t pos);
-
-private:
-    // True if pos found in the region pointed to by myRegionIter or to
-    // the right of myRegionIter.  If the position is found in a region,
-    // myRegionIter will point to the region containing the position.
-    // If the position is not found in a region, myRegionIter will point 
-    // to the region after the position, or to the end if the position is
-    // after the last region.
-    bool findRight(int32_t pos);
-
-    // True if pos found in the region pointed to by myRegionIter or to
-    // the left of myRegionIter.  If the position is found in a region,
-    // myRegionIter will point to the region containing the position.
-    // If the position is not found in a region, myRegionIter will point 
-    // to the region after the position, or to the end if the position is
-    // after the last region.
-    bool findLeft(int32_t pos);
-
-
-    std::list< std::pair<int32_t, int32_t> > myRegions;
-    std::list< std::pair<int32_t, int32_t> >::iterator myRegionIter;
-    std::list< std::pair<int32_t, int32_t> >::iterator myTmpIter;
-};
-
 
 #endif

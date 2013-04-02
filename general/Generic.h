@@ -25,6 +25,7 @@
 #include <ostream>
 #include <utility>
 #include <vector>
+#include <string>
 
 template <typename T>
 inline T abs(T x)

@@ -21,7 +21,7 @@
 #include "StringBasics.h"
 
 const std::string GlfHeader::GLF_MAGIC = "GLF\3";
-const int GlfHeader::GLF_MAGIC_LEN = 4;
+//const int GlfHeader::GLF_MAGIC_LEN = 4;
 
 GlfHeader::GlfHeader()
     : myText()

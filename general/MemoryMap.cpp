@@ -25,7 +25,8 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
-#include <unistd.h>
+//#include <unistd.h>
+#include <io.h>
 
 #include "MemoryMap.h"
 

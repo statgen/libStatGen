@@ -30,6 +30,14 @@
 #include <sstream>
 #include <stdexcept>
 
+#include <io.h>
+
+#if defined(_WIN32)
+#ifndef R_OK
+#define R_OK 4
+#endif
+#endif
+
 // not general use:
 #include "CSG_MD5.h"
 

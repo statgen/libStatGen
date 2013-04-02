@@ -18,6 +18,7 @@
  */
 #include "VcfRecordInfo.h"
 
+#include <string>
 
 VcfRecordInfo::VcfRecordInfo()
 {
