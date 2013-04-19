@@ -16,7 +16,7 @@
  */
 
 #include "WindowsHelper.h"
-#ifdef    __WIN32__
+#ifdef    _WIN32
 #ifndef   __GNUC__
 #include <dir.h>
 

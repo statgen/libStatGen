@@ -38,7 +38,7 @@
 #define  QTDTRAW     "regress.tbl"
 #define  GENIHDATAIN "genih.dat"
 
-#ifndef  __WIN32__
+#ifndef  _WIN32
 #define  stricmp     strcasecmp
 #endif
 

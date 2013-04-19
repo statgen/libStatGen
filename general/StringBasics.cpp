@@ -666,7 +666,7 @@ int String::ReadLine()
 
 // Read line using getc.
 
-#if defined(WIN32)
+#if defined(_WIN32)
 int String::ReadLine(IFILE & f)
 {
     static int last = 0;

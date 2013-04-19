@@ -20,7 +20,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -154,7 +154,7 @@
 ///
 class MemoryMap
 {
-#if defined(WIN32)
+#if defined(_WIN32)
     static  SYSTEM_INFO system_info;    // for page size information
     HANDLE  file_handle;
     HANDLE  map_handle;
