@@ -126,7 +126,7 @@ $(OBJDIR_OPT)/StringHash.o: StringHash.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_OPT)/StringMap.o: StringMap.h StringBasics.h InputFile.h FileType.h
 $(OBJDIR_OPT)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
-$(OBJDIR_OPT)/Tabix.o: StatGenStatus.h ErrorHandler.h
+$(OBJDIR_OPT)/Tabix.o: StatGenStatus.h ErrorHandler.h StringBasics.h
 $(OBJDIR_OPT)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_OPT)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_OPT)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
@@ -282,7 +282,7 @@ $(OBJDIR_DEBUG)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_DEBUG)/StringMap.o: StringMap.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/StringMap.o: FileType.h
 $(OBJDIR_DEBUG)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
-$(OBJDIR_DEBUG)/Tabix.o: StatGenStatus.h ErrorHandler.h
+$(OBJDIR_DEBUG)/Tabix.o: StatGenStatus.h ErrorHandler.h StringBasics.h
 $(OBJDIR_DEBUG)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_DEBUG)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_DEBUG)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
@@ -443,7 +443,7 @@ $(OBJDIR_PROFILE)/StringHash.o: FileType.h Constant.h Hash.h Error.h
 $(OBJDIR_PROFILE)/StringMap.o: StringMap.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/StringMap.o: FileType.h
 $(OBJDIR_PROFILE)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
-$(OBJDIR_PROFILE)/Tabix.o: StatGenStatus.h ErrorHandler.h
+$(OBJDIR_PROFILE)/Tabix.o: StatGenStatus.h ErrorHandler.h StringBasics.h
 $(OBJDIR_PROFILE)/UncompressedFileType.o: UncompressedFileType.h FileType.h
 $(OBJDIR_PROFILE)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_PROFILE)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h

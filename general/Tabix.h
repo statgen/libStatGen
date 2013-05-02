@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012  Regents of the University of Michigan
+ *  Copyright (C) 2012-2013  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,6 +32,13 @@ class Tabix : public IndexBase
 {
 public:
 
+    enum Format
+        { 
+            FORMAT_GENERIC = 0,
+            FORMAT_SAM = 1,
+            FORMAT_VCF = 2
+        };
+
     Tabix();
     virtual ~Tabix();
 
@@ -47,7 +54,15 @@ public:
     /// For an entire reference ID, set start to -1.
     /// To start at the beginning of the region, set start to 0/-1.
     bool getStartPos(const char* refName, int32_t start,
-                     uint64_t& fileStartPos);
+                     uint64_t& fileStartPos) const;
+
+    /// Return the reference name at the specified index or
+    /// throws an exception if out of range.
+    const char* getRefName(unsigned int indexNum) const;
+
+    // Get the format of this tabix file.
+    inline int32_t getFormat() const { return myFormat.format; }
+
 private:
     struct TabixFormat
     {
