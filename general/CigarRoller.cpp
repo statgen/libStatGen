@@ -112,6 +112,14 @@ void CigarRoller::Add(char operation, int count)
         case 'P':
             Add(pad, count);
             break;
+        case 7:
+        case '=':
+            Add(match, count);
+            break;
+        case 8:
+        case 'X':
+            Add(match, count);
+            break;
         default:
             // Hmmm... what to do?
             std::cerr << "ERROR "
