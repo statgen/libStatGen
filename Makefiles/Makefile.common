@@ -96,7 +96,7 @@ endif
 #########
 # Test
 test: all
-	@if test -d $(TESTDIR); \
+	@if test -f $(TESTDIR)/Makefile; \
         then \
 	$(MAKE) -C $(TESTDIR) --no-print-directory $@; \
         fi
@@ -106,7 +106,7 @@ test: all
 clean : specific_clean
 	$(USER_REMOVES)
 	-rm -f $(OBJDIR_OPT)/*.o $(OBJDIR_DEBUG)/*.o $(OBJDIR_PROFILE)/*.o *~ 
-	@if test -d $(TESTDIR); \
+	@if test -f $(TESTDIR)/Makefile; \
         then \
 	$(MAKE) -C $(TESTDIR) --no-print-directory $@; \
         fi
