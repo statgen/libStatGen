@@ -124,6 +124,17 @@ bool VcfFileReader::readVcfIndex(const char* vcfIndexFilename)
         myVcfIndex = NULL;
         return(false);
     }
+
+    if(myVcfIndex->getFormat() != Tabix::FORMAT_VCF)
+    {
+        std::string errorMessage = "ERROR: Tabix file not in VCF format: ";
+        errorMessage += vcfIndexFilename;
+        myStatus.setStatus(StatGenStatus::FAIL_PARSE, errorMessage.c_str());
+        delete myVcfIndex;
+        myVcfIndex = NULL;
+        return(false);
+    }
+
     myStatus = StatGenStatus::SUCCESS;
     return(true);
 }
@@ -149,6 +160,7 @@ bool VcfFileReader::readVcfIndex()
     indexName += ".tbi";
 
     bool foundFile = true;
+    std::string failMessage = "";
     try
     {
         if(readVcfIndex(indexName.c_str()) == false)
@@ -159,6 +171,7 @@ bool VcfFileReader::readVcfIndex()
     catch (std::exception& e)
     {
         foundFile = false;
+        failMessage = e.what();
     }
 
     // Check to see if the index file was found.
@@ -175,9 +188,26 @@ bool VcfFileReader::readVcfIndex()
         }
         // Remove ".vcf" and try reading the index again.
         indexName.erase(startExt,  4);
-        return(readVcfIndex(indexName.c_str()));
+        try
+        {
+            return(readVcfIndex(indexName.c_str()));
+        }
+        catch (std::exception& e)
+        {
+            failMessage += "\n";
+            failMessage += e.what();
+            throw(std::runtime_error(failMessage));
+            return(false);
+        }
     }
     return(true);
+}
+
+
+// return a pointer to the VCF Index file.
+const Tabix* VcfFileReader::getVcfIndex()
+{
+    return(myVcfIndex);
 }
 
 

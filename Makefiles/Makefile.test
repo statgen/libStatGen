@@ -38,7 +38,7 @@ all debug: $(EXE)
 
 # dependencies for executables
 $(EXE) : $(LIBRARY) $(OBJECTS)
-	$(CXX) $(CFLAGS) -o  $@ $(OBJECTS) $(LIBRARY) -lm $(ZLIB_LIB)
+	$(CXX) $(COMPFLAGS) -o  $@ $(OBJECTS) $(LIBRARY) -lm $(ZLIB_LIB)
 
 $(OBJECTS): $(TOOLHDR) $(LIBHDR) | $(OBJDIR)
 
@@ -53,10 +53,10 @@ test : all
 	$(TEST_COMMAND)
 
 $(OBJDIR)/%.o: %.c
-	$(CXX) $(CFLAGS) -o $@ -c $*.c 
+	$(CXX) $(COMPFLAGS) -o $@ -c $*.c 
 
 $(OBJDIR)/%.o: %.cpp 
-	$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+	$(CXX) $(COMPFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
 
 .SUFFIXES : .cpp .c .o .X.o $(SUFFIXES)
 

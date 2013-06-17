@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2011  Regents of the University of Michigan
+ *  Copyright (C) 2011-2013  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ void testVcfFile()
 
     testVcfReadSection();
     testVcfReadSectionNoIndex();
+    testVcfReadSectionBadIndex();
 }
 
 
@@ -2270,11 +2271,48 @@ void testVcfReadSection()
     VcfHeader header;
     VcfRecord record;
     
+    const Tabix* tabixPtr = NULL;
+
+    tabixPtr = reader.getVcfIndex();
+    assert(tabixPtr == NULL);
+
     ////////////////////////////////
     // Test the read section logic.
     reader.open("testFiles/testTabix.vcf.bgzf", header);
+    tabixPtr = reader.getVcfIndex();
+    assert(tabixPtr == NULL);
     reader.readVcfIndex();
-    
+
+    //////////////////
+    // Test index accessors.
+    tabixPtr = reader.getVcfIndex();
+    assert(tabixPtr != NULL);
+    assert(tabixPtr->getFormat() == Tabix::FORMAT_VCF);
+    assert(tabixPtr->getNumRefs() == 2);
+    assert(strcmp(tabixPtr->getRefName(0), "1") == 0);
+    assert(strcmp(tabixPtr->getRefName(1), "3") == 0);
+    bool caughtException = false;
+    try
+    {
+        tabixPtr->getRefName(2);
+    }
+    catch(std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException);
+    caughtException = false;
+    try
+    {
+        tabixPtr->getRefName(-1);
+    }
+    catch(std::exception& e)
+    {
+        caughtException = true;
+    }
+    assert(caughtException == true);
+    caughtException = false;
+
     reader.set1BasedReadSection("10", 16384, 32767);
     assert(reader.readRecord(record) == false);
 
@@ -2719,4 +2757,30 @@ void testVcfReadSectionNoIndex()
     assert(reader.readRecord(record) == false);
 
    reader.close();
+}
+
+
+void testVcfReadSectionBadIndex()
+{
+    // Test open for read via the constructor with return.
+    VcfFileReader reader;
+    VcfFileWriter writer;
+    VcfHeader header;
+    VcfRecord record;
+    
+    ////////////////////////////////
+    // Test the read section logic.
+    reader.open("testFiles/testTabixBadIndex.vcf.bgzf", header);
+    bool hitError = false;
+    try
+    {
+        reader.readVcfIndex();
+    }
+    catch(std::exception& e)
+    {
+        hitError = true;
+        std::string expectedError = "FAIL_PARSE: ERROR: Tabix file not in VCF format: testFiles/testTabixBadIndex.vcf.bgzf.tbi\nFAIL_IO: Failed to read the vcf Index file: testFiles/testTabixBadIndex.bgzf.tbi";
+       assert(expectedError == e.what());
+    }
+    assert(hitError);
 }

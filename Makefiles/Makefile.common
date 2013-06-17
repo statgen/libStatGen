@@ -39,8 +39,8 @@ ALWAYS_COMP_OBJ_OPT = $(patsubst %,$(OBJDIR_OPT)/%,$(COMPILE_ANY_CHANGE:=.o))
 ALWAYS_COMP_OBJ_DEBUG = $(patsubst %,$(OBJDIR_DEBUG)/%,$(COMPILE_ANY_CHANGE:=.o))
 ALWAYS_COMP_OBJ_PROFILE = $(patsubst %,$(OBJDIR_PROFILE)/%,$(COMPILE_ANY_CHANGE:=.o))
 
-CCOMPILE=$(CC) $(CFLAGS) -o $@ -c $*.c 
-CXXCOMPILE=$(CXX) $(CFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
+CCOMPILE=$(CC) $(COMPFLAGS) -o $@ -c $*.c 
+CXXCOMPILE=$(CXX) $(COMPFLAGS) -o $@ -c $*.cpp -DVERSION="\"$(VERSION)\""
 
 .PHONY: all test clean opt debug profile specific_clean
 
@@ -86,11 +86,11 @@ $(OBJDIR_PROFILE)/%.o: %.cpp
 
 ifneq ($(COMPILE_ANY_CHANGE),)
 $(ALWAYS_COMP_OBJ_OPT):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ_OPT),$(OBJECTS_OPT))
-	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
+	$(CXX) $(COMPFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
 $(ALWAYS_COMP_OBJ_DEBUG):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ_DEBUG),$(OBJECTS_DEBUG))
-	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
+	$(CXX) $(COMPFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
 $(ALWAYS_COMP_OBJ_PROFILE):  $(COMPILE_ANY_CHANGE:=.cpp)  $(filter-out $(ALWAYS_COMP_OBJ_PROFILE),$(OBJECTS_PROFILE))
-	$(CXX) $(CFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
+	$(CXX) $(COMPFLAGS) -o $@ -c  $(*F).cpp -DVERSION="\"$(VERSION)\""
 endif
 
 #########
@@ -126,7 +126,7 @@ style:
 
 ###############
 # Dependencies
-DFLAGS=-Y $(CFLAGS)
+DFLAGS=-Y $(COMPFLAGS)
 
 cleandepend:
 	        makedepend -- $(DFLAGS) --
