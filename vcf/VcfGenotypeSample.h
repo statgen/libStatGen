@@ -27,6 +27,7 @@ class VcfGenotypeSample : public VcfGenotypeField
 public:
     static const int INVALID_GT;
     static const int MISSING_GT;
+    static const std::string MISSING_FIELD;
 
     /// Default Constructor, initializes the variables.
     VcfGenotypeSample();
