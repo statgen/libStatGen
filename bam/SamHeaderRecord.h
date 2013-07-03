@@ -55,7 +55,8 @@ public:
     /// Check to see if the record is valid.
     bool isValid();
 
-    /// Return the value associated with the specified tag.
+    /// Return the value associated with the specified tag.  Returns "" if it
+    /// is not set.
     const char* getTagValue(const char* tag) const;
 
     /// Set the value of the specified tag to the specified value, deletes
@@ -73,6 +74,9 @@ public:
 
     /// Add the key tag with the specified value (not for HD headers).
     bool addKey(const char* value);
+
+    /// Get the value associated with the key tag.  Returns "" if it is not set.
+    const char* getKeyValue() const;
 
     /// This record is active (true) if there is at least one tag set.
     bool isActiveHeaderRecord();

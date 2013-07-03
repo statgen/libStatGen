@@ -84,6 +84,11 @@ public:
     /// \return true = success; false = failure.
     bool readVcfIndex();
 
+    /// Get the VCF index (it must have already been read).
+    /// \return a const pointer to the tabix object, or NULL if the
+    /// index has not been read.
+    const Tabix* getVcfIndex();
+
     /// Read the next Vcf record from the file until a line passes all
     /// discard rules (if any) or until the end of the file is found..
     /// \param record record to populate with the next record.

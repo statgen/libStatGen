@@ -20,6 +20,7 @@
 
 const int VcfGenotypeSample::INVALID_GT = -1;
 const int VcfGenotypeSample::MISSING_GT = -2;
+const std::string VcfGenotypeSample::MISSING_FIELD = ".";
 
 VcfGenotypeSample::VcfGenotypeSample()
     : VcfGenotypeField(),
@@ -112,9 +113,17 @@ bool VcfGenotypeSample::read(IFILE filePtr, VcfGenotypeFormat& format)
     }
 
     // subFieldIndex contains the number of fields in this sample.
-    if(subFieldIndex != format.getOrigNumFields())
+    if(subFieldIndex > format.getOrigNumFields())
     {
         throw(std::runtime_error("VCF Number of Fields in a Sample does not match the Format."));
+    }
+    else if(subFieldIndex < format.getOrigNumFields())
+    {
+        // If there are no fields for this sample, enter the missing value.
+        if(myGenotypeSubFields.size() == 0)
+        {
+            myGenotypeSubFields.getNextEmpty() = MISSING_FIELD;
+        }
     }
 
     // Return true if there is a tab - it is just END_OF_FIELD.
@@ -132,6 +141,13 @@ const std::string* VcfGenotypeSample::getString(const std::string& key)
     int index = myFormatPtr->getIndex(key);
     if(index != VcfGenotypeFormat::GENOTYPE_INDEX_NA)
     {
+        // Check if it is out of range for this sample - means it 
+        // is missing for this sample.
+        if(index >= myGenotypeSubFields.size())
+        {
+            // missing for this sample.
+            return(&MISSING_FIELD);
+        }
         return(&(myGenotypeSubFields.get(index)));
     }
     // key was not found, so return NULL.

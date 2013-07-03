@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2011  Regents of the University of Michigan
+ *  Copyright (C) 2011-2013  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,3 +20,4 @@ void testVcfReadFile();
 void testVcfWriteFile();
 void testVcfReadSection();
 void testVcfReadSectionNoIndex();
+void testVcfReadSectionBadIndex();

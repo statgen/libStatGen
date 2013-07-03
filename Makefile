@@ -16,7 +16,7 @@ clean:$(SUBDIRS)
 general: samtools
 
 # other subdirectories depend on general
-bam fastq glf: general
+bam fastq glf vcf: general
 
 RELEASE_FILE?=libStatGen.$(VERSION).tgz
 

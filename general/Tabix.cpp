@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012  Regents of the University of Michigan
+ *  Copyright (C) 2012-2013  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Tabix.h"
+#include <stdexcept>
+#include "StringBasics.h"
 
 Tabix::Tabix()
     : IndexBase(),
@@ -214,7 +216,7 @@ StatGenStatus::Status Tabix::readIndex(const char* filename)
 
 
 bool Tabix::getStartPos(const char* refName, int32_t start,
-                        uint64_t& fileStartPos)
+                        uint64_t& fileStartPos) const
 {
     // Look for the reference name in the list.
     int refID = 0;
@@ -239,4 +241,18 @@ bool Tabix::getStartPos(const char* refName, int32_t start,
         start = 0;
     }
     return(getMinOffsetFromLinearIndex(refID, start, fileStartPos));
+}
+
+
+const char* Tabix::getRefName(unsigned int indexNum) const
+{
+    if(indexNum >= myChromNamesVector.size())
+    {
+        String message = "ERROR: Out of range on Tabix::getRefName(";
+        message += indexNum;
+        message += ")";
+        throw(std::runtime_error(message.c_str()));
+        return(NULL);
+    }
+    return(myChromNamesVector[indexNum]);
 }
