@@ -524,7 +524,7 @@ protected:
 #endif
 
     // The size of the buffer used by this class.
-    static const unsigned int DEFAULT_BUFFER_SIZE = 1048576;
+    static const unsigned int DEFAULT_BUFFER_SIZE = 65536;
 
     // Pointer to a class that interfaces with different file types.
     FileType* myFileTypePtr;
