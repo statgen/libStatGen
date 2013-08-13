@@ -395,6 +395,12 @@ bool GlfFile::getNextRecord(GlfRecord& record)
         return(false);
     }
 
+    // Check for end of file.  If end of file, return false.
+    if(isEOF())
+    {
+        return(false);
+    }
+
     // Read the record.
     if(record.read(myFilePtr))
     {
@@ -487,9 +493,10 @@ void GlfFile::resetFile()
     if (myFilePtr != NULL)
     {
         // If we already have an open file, close it.
-        // First check to see if an end record needs to be written, which
-        // is the case if the state is RECORD.
-        if(myNextSection == RECORD)
+
+        // First check if this is a write file and an end record needs to
+        // be written, which is the case if the state is RECORD.
+        if(myIsOpenForWrite && (myNextSection == RECORD))
         {
             if(!writeRecord(myEndMarker))
             {
