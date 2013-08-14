@@ -1247,11 +1247,13 @@ void testWrite()
     fileRef << "?" << "\n";
     fileRef << mytext;
     fileRef << 3.125 << mychar;
-    (*filePtr) << myuint;
-    (*filePtr) << mychar;
-    (*filePtr) << myint;
+    fileRef << myuint;
+    fileRef << mychar;
+    fileRef << myint;
     fileRef << myString;
-    assert(ifclose(&fileRef) == 0);
+    InputFile* fileRefPtr = &fileRef;
+    assert(ifclose(fileRefPtr) == 0);
+    assert(fileRefPtr == NULL);
 
     // TODO - automatically verify that the files were written in the
     // correct format - rather than hand checking.
