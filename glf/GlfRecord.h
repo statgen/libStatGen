@@ -142,24 +142,24 @@ public:
 
     /// Return the offset from the precedent record.
     /// \return offset from the precedent record.
-    uint32_t getOffset();
+    uint32_t getOffset() const;
 
     /// Return the minimum likelihood and read depth.  Formatted as:
     /// min_lk<<24|read_dpeth. (min_lk capped at 255)
     /// \return minimum likelihood and read depth
-    uint32_t getMinDepth();
+    uint32_t getMinDepth() const;
 
     /// Return the minimum likelihood
     /// \return minimum likelihood
-    uint8_t getMinLk();
+    uint8_t getMinLk() const;
 
     /// Return the read depth.
     /// \return read depth
-    uint32_t getReadDepth();
+    uint32_t getReadDepth() const;
 
     /// Return the RMS of mapping qualities of reads covering the site.
     /// \return RMS of maping qualities.
-    uint8_t getRmsMapQ();
+    uint8_t getRmsMapQ() const;
 
     //@}
     

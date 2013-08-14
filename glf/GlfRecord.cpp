@@ -260,7 +260,7 @@ char GlfRecord::getRefBaseChar() const
 }
 
 
-uint32_t GlfRecord::getOffset()
+uint32_t GlfRecord::getOffset() const
 {
     if(getRecordType() == 1)
     {
@@ -275,7 +275,7 @@ uint32_t GlfRecord::getOffset()
     return(0);
 }
 
-uint32_t GlfRecord::getMinDepth()
+uint32_t GlfRecord::getMinDepth() const
 {
     if(getRecordType() == 1)
     {
@@ -290,7 +290,7 @@ uint32_t GlfRecord::getMinDepth()
     return(0);
 }
 
-uint8_t GlfRecord::getMinLk()
+uint8_t GlfRecord::getMinLk() const
 {
     if(getRecordType() == 1)
     {
@@ -305,7 +305,7 @@ uint8_t GlfRecord::getMinLk()
     return(0);
 }
 
-uint32_t GlfRecord::getReadDepth()
+uint32_t GlfRecord::getReadDepth() const
 {
     if(getRecordType() == 1)
     {
@@ -320,7 +320,7 @@ uint32_t GlfRecord::getReadDepth()
     return(0);
 }
 
-uint8_t GlfRecord::getRmsMapQ()
+uint8_t GlfRecord::getRmsMapQ() const
 {
     if(getRecordType() == 1)
     {
