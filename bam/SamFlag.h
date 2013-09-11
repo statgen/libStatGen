@@ -63,6 +63,8 @@ public:
     static inline bool isDuplicate(uint16_t flag) {return(flag & DUPLICATE);}
     static inline bool isQCFailure(uint16_t flag) {return(flag & FAILED_QUALITY);}
 
+    static inline bool isSecondary(uint16_t flag) {return(flag & SECONDARY_ALIGNMENT);}
+
     /// Return if it is the first fragment or not
     /// (if FIRST_READ is set and SECOND_READ is not).
     static inline bool isFirstFragment(uint16_t flag) 

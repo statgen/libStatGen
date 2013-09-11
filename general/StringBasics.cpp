@@ -1021,6 +1021,12 @@ bool String::AsInteger(long& intValue) const
     int  sign = 1;
     bool isInt = true;
 
+    // If this is no value for this integer, return false.
+    if (pos == len)
+    {
+        return(false);
+    }
+
     if (buffer[pos] == '-')
     {
         sign = -1, pos++;
@@ -1072,6 +1078,12 @@ bool String::AsInteger(int& intValue) const
     int  pos = 0;
     int  sign = 1;
     bool isInt = true;
+
+    // If this is no value for this integer, return false.
+    if (pos == len)
+    {
+        return(false);
+    }
 
     if (buffer[pos] == '-')
     {
