@@ -25,13 +25,13 @@ GzipFileType::GzipFileType(const char * filename, const char * mode)
 {
     // If the file is for write and is '-', then write to stdout.
     if(((mode[0] == 'w') || (mode[0] == 'W')) && 
-       (strcmp(filename, "-") == 0))
+       ((strcmp(filename, "-") == 0) || (strcmp(filename, "-.gz") == 0)))
     {
         // Write to stdout.
         gzHandle = gzdopen(fileno(stdout), mode);
     }
     else if(((mode[0] == 'r') || (mode[0] == 'R')) && 
-       (strcmp(filename, "-") == 0))
+            ((strcmp(filename, "-") == 0) || (strcmp(filename, "-.gz") == 0)))
     {
         // read from stdin
         gzHandle = gzdopen(fileno(stdin), mode);
