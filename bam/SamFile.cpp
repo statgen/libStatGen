@@ -143,13 +143,23 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             char magic[4];
             ifread(myFilePtr, magic, 4);
         }
-        else
+        else if(strcmp(filename, "-") == 0)
         {
             // SAM File.
             // read sam from stdin
             filename = "-";
             myFilePtr = ifopen(filename, "rb", InputFile::UNCOMPRESSED);
             myInterfacePtr = new SamInterface;
+        }
+        else
+        {
+            std::string errorMessage = "Invalid SAM/BAM filename, ";
+            errorMessage += filename;
+            errorMessage += ".  From stdin, can only be '-', '-.bam', or '-.ubam'";
+            myStatus.setStatus(SamStatus::FAIL_IO, errorMessage.c_str());
+            delete myFilePtr;
+            myFilePtr = NULL;
+            return(false);          
         }
     }
     else
