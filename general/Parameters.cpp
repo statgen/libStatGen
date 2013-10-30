@@ -647,8 +647,6 @@ int ParameterList::ReadWithTrailer(int argc, char ** argv, int start)
 
 void ParameterList::Status()
 {
-    fprintf(stderr, "\nThe following parameters are available.  Ones with \"[]\" are in effect:\n");
-
     for (int i=0; i<count; i++)
         pl[i]->Status();
 
