@@ -28,6 +28,8 @@ class ParameterList;
 class Parameter
 {
 protected:
+
+    static const char PARAM_STR_SEP = ',';
     char ch;
     char * description;
     void * var;
@@ -54,6 +56,18 @@ public:
 
     virtual bool Read(int argc, char ** argv, int argn);
     virtual void Status() = 0;
+    virtual void addParamsToString(String& params)
+    {
+        if(var != NULL)
+        {
+            if(!params.IsEmpty())
+            {
+                params += PARAM_STR_SEP;
+            }
+            params += description;
+        }
+    }
+
 
     static void SetNameLen(int len)
     {
@@ -249,6 +263,7 @@ public:
     LongParameters(const char * desc, LongParameterList * list);
 
     virtual void Status();
+    virtual void addParamsToString(String& params);
 
     LongParameters * SetPrecision(int precision)
     {
@@ -281,6 +296,9 @@ protected:
     int size;
 
     void MakeString(int argc, char ** argv, int start = 1);
+    void AddParamsToPhoneHome(int argc, char ** argv, int start);
+
+    std::string myProgramName;
 
 public:
     char * string;
@@ -316,11 +334,16 @@ public:
     void Enforce(int & var, int value, const char * reason, ...);
     void Enforce(double & var, double value, const char * reason, ...);
     void Enforce(String & var, const char * value, const char * reason, ...);
+
+    // PhoneHome to check the specified version against the latest version.
+    // If version is older than the current version, false is returned,
+    // otherwise true is returned.
+    bool CheckVersion(const char* version);
 };
 
 
 // Container for holding the long parameter list.
-// Allows paramters to be added.
+// Allows parameters to be added.
 // Allows users to not have to use BEGIN_LONG_PARAMETERS or to understand
 // the details of a LongParameterList.
 class LongParamContainer
@@ -356,6 +379,9 @@ public:
 
     inline void addString(const char * label, void * stringptr)
     { add(label, stringptr, false, LP_STRING_PARAMETER, 0); }
+
+    inline void startLegacyParams()
+    { add("$$$", NULL, false, 99, 0); }
 
 private:
     // At most 100 parameters are allowed.

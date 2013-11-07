@@ -19,6 +19,7 @@
 #include "Constant.h"
 #include "MathConstant.h"
 #include "Error.h"
+#include "PhoneHome.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -374,6 +375,7 @@ void LongParameters::Translate(const char * cstr)
         ptr = (LongParameterList *) legacyIndex.Object(alternate);
         ptr->touched = true;
     }
+    ptr->touched = true;
 
     if (ptr->type == LP_BOOL_PARAMETER)
     {
@@ -440,16 +442,19 @@ bool LongParameters::TranslateExtras(const char * cstr, const char * extras)
     if (ptr->type == LP_INT_PARAMETER && CheckInteger(extras))
     {
         *(int *) ptr->value = atoi(extras);
+        ptr->touched = true;
         return true;
     }
     else if (ptr->type == LP_DOUBLE_PARAMETER && CheckDouble(extras))
     {
         *(double *) ptr->value = atof(extras);
+        ptr->touched = true;
         return true;
     }
     else if (ptr->type == LP_STRING_PARAMETER)
     {
         *(String *) ptr->value = extras;
+        ptr->touched = true;
         return true;
     }
 
@@ -543,6 +548,21 @@ void LongParameters::Status()
     fprintf(stderr, "\n");
 }
 
+void LongParameters::addParamsToString(String& params)
+{
+    for (LongParameterList * ptr = list + 1; ptr->description != NULL; ptr++)
+    {
+        if (ptr->touched)
+        {
+            if(!params.IsEmpty())
+            {
+                params += PARAM_STR_SEP;
+            }
+            params += ptr->description;
+        }
+    }
+}
+
 void ParameterList::Add(Parameter * p)
 {
     if (count + 1 >= size)
@@ -572,6 +592,7 @@ void ParameterList::Read(int argc, char ** argv, int start)
                         pl[j]->Translate(argv[++i]);
                     else
                         pl[j]->Translate(argv[i] + 2);
+
                     break;
                 }
             }
@@ -591,6 +612,8 @@ void ParameterList::Read(int argc, char ** argv, int start)
                   (const char *) warnings);
         warnings.Clear();
     }
+
+    AddParamsToPhoneHome(argc, argv, start);
 }
 
 int ParameterList::ReadWithTrailer(int argc, char ** argv, int start)
@@ -641,6 +664,8 @@ int ParameterList::ReadWithTrailer(int argc, char ** argv, int start)
         warnings.Clear();
     }
 
+    AddParamsToPhoneHome(argc, argv, start);
+
     return last_success;
 };
 
@@ -672,6 +697,32 @@ void ParameterList::MakeString(int argc, char ** argv, int start)
         strcat(string, " ");
     }
 }
+
+
+void ParameterList::AddParamsToPhoneHome(int argc, char ** argv, int start)
+{
+    // Loop through and get the params
+    String params = "";
+    for (int i=0; i<count; i++)
+        pl[i]->addParamsToString(params);
+
+    // Determine the tool name : args prior to start.
+    myProgramName.clear();
+    for(int i = 0; i < start; i++)
+    {
+        if(i == 0)
+        {
+            myProgramName = argv[i];
+         }
+        else
+        {
+            myProgramName += ":";
+            myProgramName += argv[i];
+        }
+    }
+    PhoneHome::addParams(params);
+}
+
 
 ParameterList::~ParameterList()
 {
@@ -793,6 +844,12 @@ void ParameterList::Enforce(String & var, const char * value, const char * forma
 }
 
 
+bool ParameterList::CheckVersion(const char* version)
+{
+    return(PhoneHome::checkVersion(myProgramName.c_str(), version));
+}
+
+
 LongParamContainer::LongParamContainer()
     : myEndIndex(0)
 {
@@ -831,5 +888,3 @@ void LongParamContainer::add(const char * label, void * val, bool excl,
         throw std::runtime_error("Tool Error: trying to add more parameters than allowed in LongParamContainer.\n");
     }
 }
-
-

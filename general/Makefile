@@ -59,6 +59,7 @@ TOOLBASE=\
 	PedigreeFamily \
 	PedigreeGlobals \
 	PedigreePerson \
+	PhoneHome \
 	QuickIndex \
 	Random \
 	ReferenceSequence \

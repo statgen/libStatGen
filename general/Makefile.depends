@@ -102,6 +102,7 @@ $(OBJDIR_OPT)/PedigreePerson.o: LongInt.h PedigreeGlobals.h StringArray.h
 $(OBJDIR_OPT)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_OPT)/PedigreePerson.o: StringHash.h Hash.h IntArray.h MathVector.h
 $(OBJDIR_OPT)/PedigreePerson.o: Error.h
+$(OBJDIR_OPT)/PhoneHome.o: PhoneHome.h ../include/knetfile.h
 $(OBJDIR_OPT)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_OPT)/QuickIndex.o: InputFile.h FileType.h StringArray.h StringHash.h
 $(OBJDIR_OPT)/QuickIndex.o: Constant.h Hash.h IntArray.h StringMap.h Error.h
@@ -256,6 +257,7 @@ $(OBJDIR_DEBUG)/PedigreePerson.o: PedigreeGlobals.h StringArray.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: StringHash.h Hash.h IntArray.h MathVector.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: Error.h
+$(OBJDIR_DEBUG)/PhoneHome.o: PhoneHome.h ../include/knetfile.h
 $(OBJDIR_DEBUG)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_DEBUG)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_DEBUG)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
@@ -417,6 +419,7 @@ $(OBJDIR_PROFILE)/PedigreePerson.o: PedigreeGlobals.h StringArray.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: StringHash.h Hash.h IntArray.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: MathVector.h Error.h
+$(OBJDIR_PROFILE)/PhoneHome.o: PhoneHome.h ../include/knetfile.h
 $(OBJDIR_PROFILE)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_PROFILE)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_PROFILE)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
