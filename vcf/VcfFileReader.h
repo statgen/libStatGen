@@ -22,8 +22,16 @@
 
 #include "VcfFile.h"
 #include "VcfRecord.h"
+#include "VcfRecordDiscardRules.h"
 #include "VcfSubsetSamples.h"
 #include "Tabix.h"
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <unordered_set>
+#else
+#include <set>
+#endif
+
 
 /// This header file provides interface to read/write VCF files.
 class VcfFileReader : public VcfFile
@@ -135,6 +143,16 @@ public:
     /// Methods for setting up the automatic discard rules when reading the file
     //@{
 
+    /// When reading records, skip all variants with the ids specified
+    /// in the passed in filename.
+    /// Returns false, if the file could not be read.
+    bool setExcludeIDs(const char* filename);
+
+    /// When reading records, keep only variants with the ids specified
+    /// in the passed in filename.
+    /// Returns false, if the file could not be read.
+    bool setIncludeIDs(const char* filename);
+
     /// Set which rules should be applied for discarding records.
     /// OR in all discard rules to be applied.
     /// For example:: reader.setDiscards(DISCARD_NON_PHASED | 
@@ -205,6 +223,8 @@ private:
     int32_t mySection1BasedStartPos;
     int32_t mySection1BasedEndPos;
     bool mySectionOverlap;
+
+    VcfRecordDiscardRules myRecordDiscardRules;
 
     VcfSubsetSamples mySampleSubset;
     bool myUseSubset;

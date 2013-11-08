@@ -19,7 +19,6 @@
 
 #include "VcfRecord.h"
 
-
 VcfRecord::VcfRecord()
 {
     reset();
@@ -31,7 +30,9 @@ VcfRecord::~VcfRecord()
 }
 
 
-bool VcfRecord::read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo)
+bool VcfRecord::read(IFILE filePtr, bool siteOnly,
+                     VcfRecordDiscardRules& discardRules,
+                     VcfSubsetSamples* sampleSubset)
 {
     // Clear out any previously set values.
     reset();
@@ -81,6 +82,15 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo)
                            "Error reading VCF Record ID.");
         return(false);
     }
+
+    if(discardRules.discardForID(myID))
+    {
+        // Do not keep this id, so consume the rest of the record and
+        // return the next record.
+        filePtr->discardLine();
+        return(read(filePtr, siteOnly, discardRules, sampleSubset));
+    }
+
     // Read the Ref.
     if(!readTilTab(filePtr, myRef))
     {
@@ -141,7 +151,7 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo)
         // (format & samples)
         try
         {
-            myGenotype.read(filePtr, subsetInfo);
+            myGenotype.read(filePtr, sampleSubset);
         }
         catch(std::exception& e)
         {
