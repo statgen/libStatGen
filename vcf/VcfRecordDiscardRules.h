@@ -64,32 +64,7 @@ public:
     //@{
     /// Return whether or not to discard the record based on the id.
     /// Returns true if it should be disarded, false if not.
-    inline bool discardForID(std::string myID)
-    {
-        if(!myExcludeIDs.empty())
-        {
-            if(myExcludeIDs.find(myID) != myExcludeIDs.end())
-            {
-                // The ID is in the exclude list,
-                // so return true, discard the record.
-                // increment the discard counter.
-                ++myNumDiscarded;
-                return(true);
-            }
-        }
-        else if(!myIncludeIDs.empty())
-        {
-            if(myIncludeIDs.find(myID) == myIncludeIDs.end())
-            {
-                // The ID is not in the include list,
-                // so return false, discard the record.
-                // increment the discard counter.
-                ++myNumDiscarded;
-                return(true);
-            }
-        }
-        return(false);
-    }
+    bool discardForID(std::string& myID);
     //@}
 
 private:
