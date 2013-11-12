@@ -16,6 +16,8 @@ ifeq ($(UNAME), Darwin)
   # -Wall contain -Wunused-variable and -Wunused-result from 'man gcc'
 endif
 
+#USER_COMPILE_VARS = -D_NO_PHONEHOME
+
 TOOLBASE=\
 	BaseAsciiMap \
 	BaseQualityHelper \
