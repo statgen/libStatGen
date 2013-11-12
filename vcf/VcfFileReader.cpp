@@ -27,6 +27,7 @@ VcfFileReader::VcfFileReader()
       mySection1BasedStartPos(-1),
       mySection1BasedEndPos(-1),
       mySectionOverlap(false),
+      myRecordDiscardRules(),
       mySampleSubset(),
       myUseSubset(false),
       myMinAltAlleleCount(UNSET_MIN_ALT_ALLELE_COUNT),
@@ -254,13 +255,17 @@ bool VcfFileReader::readRecord(VcfRecord& record)
     bool recordFound = false;
     while(!recordFound)
     {
-        if(!record.read(myFilePtr, mySiteOnly, subsetPtr))
+        if(!record.read(myFilePtr, mySiteOnly, myRecordDiscardRules, subsetPtr))
         {
             myStatus = record.getStatus();
+            myTotalRead += myRecordDiscardRules.getNumDiscarded();
+            myNumRecords += myRecordDiscardRules.getNumDiscarded();
+            myRecordDiscardRules.clearNumDiscarded();
             return(false);
         }
 
         ++myTotalRead;
+        myTotalRead += myRecordDiscardRules.getNumDiscarded();
 
         // Check to see if the record is in the section.
         // First check the chromosome.
@@ -308,6 +313,8 @@ bool VcfFileReader::readRecord(VcfRecord& record)
         }
 
         ++myNumRecords;
+        myNumRecords += myRecordDiscardRules.getNumDiscarded();
+        myRecordDiscardRules.clearNumDiscarded();
         
         // Record successfully read, so check to see if it is discarded.
         if((myDiscardRules & DISCARD_NON_PHASED) && !record.allPhased())
@@ -466,6 +473,18 @@ bool VcfFileReader::isEOF()
 }
 
 
+bool VcfFileReader::setExcludeIDs(const char* filename)
+{
+    return(myRecordDiscardRules.setExcludeIDs(filename));
+}
+
+
+bool VcfFileReader::setIncludeIDs(const char* filename)
+{
+    return(myRecordDiscardRules.setIncludeIDs(filename));
+}
+
+
 void VcfFileReader::addDiscardMinAltAlleleCount(int32_t minAltAlleleCount, 
                                                 VcfSubsetSamples* subset)
 {
@@ -498,6 +517,7 @@ void VcfFileReader::rmDiscardMinMinorAlleleCount()
 
 void VcfFileReader::resetFile()
 {
+    myRecordDiscardRules.reset(),
     mySampleSubset.reset();
     myUseSubset = false;
     myNumKeptRecords = 0;

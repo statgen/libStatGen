@@ -26,6 +26,7 @@
 #include "VcfRecordInfo.h"
 #include "VcfRecordGenotype.h"
 #include "StatGenStatus.h"
+#include "VcfRecordDiscardRules.h"
 
 /// This header file provides interface to read/write VCF files.
 class VcfRecord
@@ -40,11 +41,15 @@ public:
     /// Read the next Vcf data line from the file.
     /// \param filePtr IFILE to read from.
     /// \param siteOnly only store the first 8 columns
-    /// \param subsetInfo pointer to subset information, but NULL if subsetting
-    /// is not to be done.
+    /// \param sampleSubset pointer to sample subset information, 
+    ///        but NULL if sample subsetting is not to be done.
+    /// \param discardRules pointer to record discard information,
+    ///        but NULL if record discarding is not to be done.
     /// \return true if a line was successfully read from the specified filePtr,
     /// false if not.
-    bool read(IFILE filePtr, bool siteOnly, VcfSubsetSamples* subsetInfo = NULL);
+    bool read(IFILE filePtr, bool siteOnly,
+              VcfRecordDiscardRules& discardRules,
+              VcfSubsetSamples* sampleSubset = NULL);
 
     /// Write this data line to the file (including the newline).
     /// \param filePtr IFILE to write to.
@@ -172,7 +177,7 @@ private:
     std::string myChrom;
     int my1BasedPosNum;
     std::string my1BasedPos;
-    std::string myID;
+    vcfIDtype myID;
     std::string myRef;
     std::string myAlt;
     float myQualNum;
