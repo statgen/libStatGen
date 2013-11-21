@@ -21,7 +21,7 @@
 #include <iostream>
 #include <string.h>
 
-std::string PhoneHome::ourBaseURL = "http://csg.sph.umich.edu/ph/";
+std::string PhoneHome::ourBaseURL = "http://csgph.sph.umich.edu/ph/";
 std::string PhoneHome::ourURL = ourBaseURL;
 String PhoneHome::ourReturnString = "";
 char PhoneHome::ourPrefixChar = '?';
