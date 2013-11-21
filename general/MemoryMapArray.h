@@ -87,14 +87,17 @@ public:
     void setApplication(const char *s)
     {
         strncpy(application, s, sizeof(application)-1);
+        application[sizeof(application)-1] = '\0';
     }
     void setCreationUser(const char *s)
     {
         strncpy(creationUser, s, sizeof(creationUser)-1);
+        creationUser[sizeof(creationUser)-1] = '\0';
     }
     void setCreationHost(const char *s)
     {
         strncpy(creationHost, s, sizeof(creationHost)-1);
+        creationHost[sizeof(creationHost)-1] = '\0';
     }
 };
 

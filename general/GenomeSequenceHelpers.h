@@ -48,6 +48,7 @@ struct ChromosomeInfo
     void setChromosomeName(const char *n)
     {
         strncpy(name, n, sizeof(name)-1);
+        name[sizeof(name)-1] = '\0';
     }
     genomeIndex_t   start;                              // internal offset to combined genome vector
     genomeIndex_t   size;                               // SAM SQ:LN value
@@ -60,15 +61,18 @@ struct ChromosomeInfo
     // handy setting methods:
     void setAssemblyID(const char *newID)
     {
-        strncpy(assemblyID, newID, sizeof(assemblyID) - 1);
+        strncpy(assemblyID, newID, sizeof(assemblyID)-1);
+        name[sizeof(name)-1] = '\0';
     }
     void setSpecies(const char *newSpecies)
     {
-        strncpy(species, newSpecies, sizeof(newSpecies));
+        strncpy(species, newSpecies, sizeof(species)-1);
+        species[sizeof(species)-1] = '\0';
     }
     void setURI(const char *newURI)
     {
-        strncpy(uri, newURI, sizeof(uri));
+        strncpy(uri, newURI, sizeof(uri)-1);
+        uri[sizeof(uri)-1] = '\0';
     }
 };
 
