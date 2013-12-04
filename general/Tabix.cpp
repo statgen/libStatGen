@@ -29,7 +29,7 @@ Tabix::~Tabix()
 {
     if(myChromNamesBuffer != NULL)
     {
-        delete myChromNamesBuffer;
+        delete[] myChromNamesBuffer;
         myChromNamesBuffer = NULL;
     }
 }
@@ -41,7 +41,7 @@ void Tabix::resetIndex()
     IndexBase::resetIndex();
     if(myChromNamesBuffer != NULL)
     {
-        delete myChromNamesBuffer;
+        delete[] myChromNamesBuffer;
         myChromNamesBuffer = NULL;
     }
     myChromNamesVector.clear();
