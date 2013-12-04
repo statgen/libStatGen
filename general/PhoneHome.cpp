@@ -40,10 +40,10 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
 
     connect();
 
-    if(ourReturnString.SlowCompareToStem("true") != 0)
-    {
-        std::cerr << "A new version of " << programName << " is available\n";
-    }
+//     if(ourReturnString.SlowCompareToStem("true") != 0)
+//     {
+//         std::cerr << "A new version of " << programName << " is available\n";
+//     }
     
     return(true);
 }
