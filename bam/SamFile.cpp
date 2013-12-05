@@ -726,7 +726,7 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end,
     // Reset the sort order criteria since we moved around in the file.    
     myPrevCoord = -1;
     myPrevRefID = 0;
-    myPrevReadName.clear();
+    myPrevReadName.Clear();
 
     return(true);
 }
@@ -772,7 +772,7 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
     // Reset the sort order criteria since we moved around in the file.    
     myPrevCoord = -1;
     myPrevRefID = 0;
-    myPrevReadName.clear();
+    myPrevReadName.Clear();
 
     return(true);
 }
@@ -969,7 +969,7 @@ void SamFile::resetFile()
     myIsOpenForWrite = false;
     myHasHeader = false;
     mySortedType = UNSORTED;
-    myPrevReadName.clear();
+    myPrevReadName.Clear();
     myPrevCoord = -1;
     myPrevRefID = 0;
     myRecordCount = 0;
@@ -1031,12 +1031,16 @@ bool SamFile::validateSortOrder(SamRecord& record, SamFileHeader& header)
             // Validate that it is sorted by query name.
             // Get the query name from the record.
             const char* readName = record.getReadName();
-            if(myPrevReadName.compare(readName) > 0)
+            if(myPrevReadName.Compare(readName) > 0)
             {
                 // The previous name is greater than the new record's name, so
                 // return false.
-                String errorMessage = "ERROR: File is not sorted at record ";
+                String errorMessage = "ERROR: File is not sorted by read name at record ";
                 errorMessage += myRecordCount;
+                errorMessage += "\n\tPrevious record was ";
+                errorMessage += myPrevReadName;
+                errorMessage += ", but this record is ";
+                errorMessage += readName;
                 myStatus.setStatus(SamStatus::INVALID_SORT, 
                                    errorMessage.c_str());
                 status = false;
@@ -1066,8 +1070,10 @@ bool SamFile::validateSortOrder(SamRecord& record, SamFileHeader& header)
             {
                 // Previous reference ID was for unmapped reads, but the
                 // current one is not, so this is not sorted.
-                String errorMessage = "ERROR: File is not sorted at record ";
+                String errorMessage = "ERROR: File is not coordinate sorted at record ";
                 errorMessage += myRecordCount;
+                errorMessage += "\n\tPrevious record was unmapped, but this record is ";
+                errorMessage += header.getReferenceLabel(refID) + ":" + coord;
                 myStatus.setStatus(SamStatus::INVALID_SORT, 
                                    errorMessage.c_str());
                 status = false;
@@ -1076,8 +1082,12 @@ bool SamFile::validateSortOrder(SamRecord& record, SamFileHeader& header)
             {
                 // Current reference id is less than the previous one, 
                 //meaning that it is not sorted.
-                String errorMessage = "ERROR: File is not sorted at record ";
+                String errorMessage = "ERROR: File is not coordinate sorted at record ";
                 errorMessage += myRecordCount;
+                errorMessage += "\n\tPrevious record was ";
+                errorMessage += header.getReferenceLabel(myPrevRefID) + ":" + myPrevCoord;
+                errorMessage += ", but this record is ";
+                errorMessage += header.getReferenceLabel(refID) + ":" + coord;
                 myStatus.setStatus(SamStatus::INVALID_SORT, 
                                    errorMessage.c_str());
                 status = false;
@@ -1095,8 +1105,12 @@ bool SamFile::validateSortOrder(SamRecord& record, SamFileHeader& header)
                 if(coord < myPrevCoord)
                 {
                     // New Coord is less than the previous position.
-                    String errorMessage = "ERROR: File is not sorted at record ";
+                    String errorMessage = "ERROR: File is not coordinate sorted at record ";
                     errorMessage += myRecordCount;
+                    errorMessage += "\n\tPreviousRecord was ";
+                    errorMessage += header.getReferenceLabel(myPrevRefID) + ":" + myPrevCoord;
+                    errorMessage += ", but this record is ";
+                    errorMessage += header.getReferenceLabel(refID) + ":" + coord;
                     myStatus.setStatus(SamStatus::INVALID_SORT, 
                                        errorMessage.c_str());
                     status = false;

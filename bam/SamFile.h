@@ -403,7 +403,7 @@ protected:
     /// Previous values used for checking if the file is sorted.
     int32_t myPrevCoord;
     int32_t myPrevRefID;
-    std::string myPrevReadName;
+    String myPrevReadName;
 
     /// Keep a count of the number of records that have been read/written so far.
     uint32_t myRecordCount;
