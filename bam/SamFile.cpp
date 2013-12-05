@@ -1031,9 +1031,11 @@ bool SamFile::validateSortOrder(SamRecord& record, SamFileHeader& header)
             // Validate that it is sorted by query name.
             // Get the query name from the record.
             const char* readName = record.getReadName();
-            if(myPrevReadName.Compare(readName) > 0)
+
+            // Check if it is sorted either in samtools way or picard's way.
+            if((myPrevReadName.Compare(readName) > 0) &&
+               (strcmp(myPrevReadName.c_str(), readName) > 0))
             {
-                // The previous name is greater than the new record's name, so
                 // return false.
                 String errorMessage = "ERROR: File is not sorted by read name at record ";
                 errorMessage += myRecordCount;

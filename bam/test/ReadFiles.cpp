@@ -220,35 +220,35 @@ void testValidateSortedRead()
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead2(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead3(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead4(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead5(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead6(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead7(samRecord);
 
-    // Succeed
+    // Succeed - std sort
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead8(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeed - numeric sort (Y<18)
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead9(samRecord);
 
-    // Succeed
+    // Succeed - std sort
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead10(samRecord);
 
@@ -362,35 +362,35 @@ void testValidateSortedRead()
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead2(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead3(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead4(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead5(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead6(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeeds - numeric sort
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead7(samRecord);
 
-    // Succeed
+    // Succeed - std sort
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead8(samRecord);
 
-    // Failed sort order - due to alphabetical
-    assert(inSam.ReadRecord(samHeader, samRecord) == false);
+    // Succeed - numeric sort (Y<18)
+    assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead9(samRecord);
 
-    // Succeed
+    // Succeed - std sort
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead10(samRecord);
 
