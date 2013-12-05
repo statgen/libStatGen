@@ -2961,71 +2961,161 @@ bool SamRecord::setTagsFromBuffer()
         int tagBufferSize = 0;
 
         key = MAKEKEY(extraPtr[0], extraPtr[1], extraPtr[2]);
-      
+
+        // First check if the tag already exists.
+        unsigned int location = extras.Find(key);
+        String* duplicate = NULL;
+        String* origTag = NULL;
+        if(location != LH_NOTFOUND)
+        {
+            duplicate = new String;
+            origTag = new String;
+
+            *duplicate = (char)(extraPtr[0]);
+            *duplicate += (char)(extraPtr[1]);
+            *duplicate += ':';
+            *duplicate += (char)(extraPtr[2]);
+            *duplicate += ':';
+
+            *origTag = *duplicate;
+        }
+
         switch (extraPtr[2])
         {
             case 'A' :
-                value = integers.Length();
-                integers.Push(* (char *) content);
-                intType.push_back(extraPtr[2]);
+                if(duplicate != NULL)
+                {
+                    *duplicate += (* (char *) content);
+                    *origTag += (char)(integers[extras[location]]);
+                }
+                else
+                {
+                    value = integers.Length();
+                    integers.Push(* (char *) content);
+                    intType.push_back(extraPtr[2]);
+                    tagBufferSize += 4;
+                }
                 extraPtr += 4;
-                tagBufferSize += 4;
                 break;
             case 'c' :
-                value = integers.Length();
-                integers.Push(* (char *) content);
-                intType.push_back(extraPtr[2]);
+                if(duplicate != NULL)
+                {
+                    *duplicate += (* (char *) content);
+                    *origTag += (char)(integers[extras[location]]);
+                }
+                else
+                {
+                    value = integers.Length();
+                    integers.Push(* (char *) content);
+                    intType.push_back(extraPtr[2]);
+                    tagBufferSize += 4;
+                }
                 extraPtr += 4;
-                tagBufferSize += 4;
                 break;
             case 'C' :
-                value = integers.Length();
-                integers.Push(* (unsigned char *) content);
-                intType.push_back(extraPtr[2]);
+                if(duplicate != NULL)
+                {
+                    *duplicate += (* (unsigned char *) content);
+                    *origTag += (unsigned char)(integers[extras[location]]);
+                }
+                else
+                {
+                    value = integers.Length();
+                    integers.Push(* (unsigned char *) content);
+                    intType.push_back(extraPtr[2]);
+                    tagBufferSize += 4;
+                }
                 extraPtr += 4;
-                tagBufferSize += 4;
                 break;
             case 's' :
-                value = integers.Length();
-                integers.Push(* (short *) content);
-                intType.push_back(extraPtr[2]);
+               if(duplicate != NULL)
+                {
+                    *duplicate += (* (short *) content);
+                    *origTag += (short)(integers[extras[location]]);
+                }
+                else
+                {
+                    value = integers.Length();
+                    integers.Push(* (short *) content);
+                    intType.push_back(extraPtr[2]);
+                    tagBufferSize += 5;
+                }
                 extraPtr += 5;
-                tagBufferSize += 5;
                 break;
             case 'S' :
-                value = integers.Length();
-                integers.Push(* (unsigned short *) content);
-                intType.push_back(extraPtr[2]);
+                if(duplicate != NULL)
+                {
+                    *duplicate += (* (unsigned short *) content);
+                    *origTag += (unsigned short)(integers[extras[location]]);
+                }
+                else
+                {
+                    value = integers.Length();
+                    integers.Push(* (unsigned short *) content);
+                    intType.push_back(extraPtr[2]);
+                    tagBufferSize += 5;
+                }
                 extraPtr += 5;
-                tagBufferSize += 5;
                 break;
             case 'i' :
-                value = integers.Length();
-                integers.Push(* (int *) content);
-                intType.push_back(extraPtr[2]);
+                if(duplicate != NULL)
+                {
+                    *duplicate += (* (int *) content);
+                    *origTag += (int)(integers[extras[location]]);
+                }
+                else
+                {
+                    value = integers.Length();
+                    integers.Push(* (int *) content);
+                    intType.push_back(extraPtr[2]);
+                    tagBufferSize += 7;
+                }
                 extraPtr += 7;
-                tagBufferSize += 7;
                 break;
             case 'I' :
-                value = integers.Length();
-                integers.Push((int) * (unsigned int *) content);
-                intType.push_back(extraPtr[2]);
+               if(duplicate != NULL)
+                {
+                    *duplicate += (* (unsigned int *) content);
+                    *origTag += (unsigned int)(integers[extras[location]]);
+                }
+                else
+                {
+                    value = integers.Length();
+                    integers.Push((int) * (unsigned int *) content);
+                    intType.push_back(extraPtr[2]);
+                    tagBufferSize += 7;
+                }
                 extraPtr += 7;
-                tagBufferSize += 7;
                 break;
             case 'Z' :
             case 'B' :
-                value = strings.Length();
-                strings.Push((const char *) content);
+                if(duplicate != NULL)
+                {
+                    *duplicate += ((const char *) content);
+                    *origTag += (char*)(strings[extras[location]]);
+                }
+                else
+                {
+                    value = strings.Length();
+                    strings.Push((const char *) content);
+                    tagBufferSize += 4 + strings.Last().Length();
+                }
                 extraPtr += 4 + strings.Last().Length();
-                tagBufferSize += 4 + strings.Last().Length();
                 break;
             case 'f' :
-                value = doubles.Length();
-                doubles.Push(* (float *) content);
-                fprintf(stderr, "\n\nFLOAT!!!\n\n");
+                if(duplicate != NULL)
+                {
+                    *duplicate += (* (float *) content);
+                    *origTag += (float)(doubles[extras[location]]);
+                }
+                else
+                {
+                    value = doubles.Length();
+                    doubles.Push(* (float *) content);
+                    fprintf(stderr, "\n\nFLOAT!!!\n\n");
+                    tagBufferSize += 7;
+                }
                 extraPtr += 7;
-                tagBufferSize += 7;
                 break;
             default :
                 fprintf(stderr, 
@@ -3039,9 +3129,30 @@ bool SamRecord::setTagsFromBuffer()
                 status = false;
         }
 
+        if(duplicate != NULL)
+        {
+            // Duplicate tag in this record.
+            // Tag already existed, print message about overwriting.
+            // WARN about dropping duplicate tags.
+            static int numWarns = 0;
+            int maxWarns = 5;
+            if(numWarns++ < maxWarns)
+            {
+                fprintf(stderr, "WARNING: Duplicate Tags, overwritting %s with %s\n",
+                        origTag->c_str(), duplicate->c_str());
+                if(numWarns == maxWarns)
+                {
+                    fprintf(stderr, "Suppressing rest of Duplicate Tag warnings.\n");
+                }
+            }
+
+            continue;
+        }
+
         // Only add the tag if it has so far been successfully processed.
         if(status)
         {
+            // Add the tag.
             extras.Add(key, value);
             myTagBufferSize += tagBufferSize;
         }
@@ -3242,7 +3353,7 @@ int & SamRecord::getInteger(int offset)
     return integers[value];
 }
 
-char & SamRecord::getIntegerType(int offset)
+const char & SamRecord::getIntegerType(int offset) const
 {
     int value = extras[offset];
 

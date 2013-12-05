@@ -687,7 +687,7 @@ private:
 
     String & getString(int offset);
     int &    getInteger(int offset);
-    char &   getIntegerType(int offset);
+    const char &   getIntegerType(int offset) const;
     double & getDouble(int offset);
 
     static const int DEFAULT_BLOCK_SIZE = 40;
