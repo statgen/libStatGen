@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include "PhoneHome.h"
 
 // Declare a dummy class to ensure that compilers recognize this as C++ code
 class String;
@@ -36,6 +37,7 @@ void error(const char * msg, ...)
 
     va_end(ap);
 
+    PhoneHome::completionStatus("error: Exiting due to Fatal Error"); 
     exit(EXIT_FAILURE);
 }
 

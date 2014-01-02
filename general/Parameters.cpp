@@ -37,6 +37,9 @@ Parameter::Parameter(char c, const char * desc, void * v)
     strcpy(description, desc);
     var = v;
     warnings = NULL;
+
+    myNoPhoneHome = true;
+    myVersion.Clear();
 }
 
 bool Parameter::Read(int , char ** argv, int argn)
@@ -300,12 +303,24 @@ LongParameters::LongParameters(const char * desc, LongParameterList * lst)
     {
         if (ptr->type == LP_LEGACY_PARAMETERS)
             break;
-
-        if (ptr->value != NULL)
+        if(ptr->type == LP_PHONEHOME_VERSION)
+        {
+            // Phone home is turned on, so add
+            // the parameter for the user to turn it off.
+            myNoPhoneHome = false;
+            myVersion = ptr->description;
+            ptr->description = "noPhoneHome";
+            ptr->value = &myNoPhoneHome;
+            ptr->type = LP_BOOL_PARAMETER;
             index.Add(ptr->description, ptr);
+        }
         else
-            group_len = max(strlen(ptr->description), group_len);
-
+        {
+            if (ptr->value != NULL)
+                index.Add(ptr->description, ptr);
+            else 
+                group_len = max(strlen(ptr->description), group_len);
+        }
         ptr++;
     }
 
@@ -613,7 +628,7 @@ void ParameterList::Read(int argc, char ** argv, int start)
         warnings.Clear();
     }
 
-    AddParamsToPhoneHome(argc, argv, start);
+    HandlePhoneHome(argc, argv, start);
 }
 
 int ParameterList::ReadWithTrailer(int argc, char ** argv, int start)
@@ -664,7 +679,7 @@ int ParameterList::ReadWithTrailer(int argc, char ** argv, int start)
         warnings.Clear();
     }
 
-    AddParamsToPhoneHome(argc, argv, start);
+    HandlePhoneHome(argc, argv, start);
 
     return last_success;
 };
@@ -699,28 +714,45 @@ void ParameterList::MakeString(int argc, char ** argv, int start)
 }
 
 
-void ParameterList::AddParamsToPhoneHome(int argc, char ** argv, int start)
+void ParameterList::HandlePhoneHome(int argc, char ** argv, int start)
 {
-    // Loop through and get the params
-    String params = "";
-    for (int i=0; i<count; i++)
-        pl[i]->addParamsToString(params);
-
     // Determine the tool name : args prior to start.
-    myProgramName.clear();
+    String programName = "";
     for(int i = 0; i < start; i++)
     {
         if(i == 0)
         {
-            myProgramName = argv[i];
-         }
+            programName = argv[i];
+        }
         else
         {
-            myProgramName += ":";
-            myProgramName += argv[i];
+            programName += ":";
+            programName += argv[i];
         }
     }
-    PhoneHome::addParams(params);
+
+    // Loop through and get the params
+    String params = "";
+    String version = "";
+
+    for (int i=0; i<count; i++)
+    {
+        pl[i]->addParamsToString(params);
+        // Check if phonehome is enabled.
+        if(!pl[i]->myVersion.IsEmpty() && (!pl[i]->myNoPhoneHome))
+        {
+            // Version specified & phoneHome enabled, so
+            // phonehome.
+            version = pl[i]->myVersion;
+        }
+    }
+    
+    if(!version.IsEmpty())
+    {
+        PhoneHome::checkVersion(programName.c_str(), 
+                                version.c_str(),
+                                params.c_str());
+    }
 }
 
 
@@ -841,12 +873,6 @@ void ParameterList::Enforce(String & var, const char * value, const char * forma
     va_end(ap);
 
     messages += buffer;
-}
-
-
-bool ParameterList::CheckVersion(const char* version)
-{
-    return(PhoneHome::checkVersion(myProgramName.c_str(), version));
 }
 
 

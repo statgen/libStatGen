@@ -19,6 +19,7 @@
 #define __PARAMETERS_H__
 
 #include "StringMap.h"
+#include "PhoneHome.h"
 
 #include <ctype.h>
 #include <stddef.h>
@@ -44,6 +45,8 @@ protected:
     static bool CheckDouble(const char * value);
 
     String * warnings;
+    bool myNoPhoneHome;
+    String myVersion;
 
 public:
 
@@ -244,6 +247,7 @@ struct LongParameterList
 #define LP_DOUBLE_PARAMETER   3
 #define LP_STRING_PARAMETER   4
 #define LP_LEGACY_PARAMETERS  99
+#define LP_PHONEHOME_VERSION   98
 
 #define BEGIN_LONG_PARAMETERS(array)   LongParameterList array[] = {\
                                               { NULL,  NULL,      false,  0, 0},
@@ -254,6 +258,7 @@ struct LongParameterList
 #define LONG_SMARTINTPARAMETER(label,intptr)  { label, intptr,    true,   2, 0},
 #define LONG_DOUBLEPARAMETER(label,doubleptr) { label, doubleptr, false,  3, 0},
 #define LONG_STRINGPARAMETER(label,stringptr) { label, stringptr, false,  4, 0},
+#define LONG_PHONEHOME(version)               { "PhoneHome", NULL, false,  0, 0}, { version, NULL,    false,  LP_PHONEHOME_VERSION, 0}, {"phoneHomeThinning", &PhoneHome::allThinning, false, LP_INT_PARAMETER, 0},
 #define BEGIN_LEGACY_PARAMETERS()             { "$$$", NULL,      false, 99, 0},
 #define END_LONG_PARAMETERS()                 { NULL,  NULL,      false,  0, 0}};
 
@@ -296,9 +301,7 @@ protected:
     int size;
 
     void MakeString(int argc, char ** argv, int start = 1);
-    void AddParamsToPhoneHome(int argc, char ** argv, int start);
-
-    std::string myProgramName;
+    void HandlePhoneHome(int argc, char ** argv, int start);
 
 public:
     char * string;
@@ -334,11 +337,6 @@ public:
     void Enforce(int & var, int value, const char * reason, ...);
     void Enforce(double & var, double value, const char * reason, ...);
     void Enforce(String & var, const char * value, const char * reason, ...);
-
-    // PhoneHome to check the specified version against the latest version.
-    // If version is older than the current version, false is returned,
-    // otherwise true is returned.
-    bool CheckVersion(const char* version);
 };
 
 
@@ -379,6 +377,13 @@ public:
 
     inline void addString(const char * label, void * stringptr)
     { add(label, stringptr, false, LP_STRING_PARAMETER, 0); }
+
+    inline void addPhoneHome(const char* version)
+    { 
+        add("PhoneHome", NULL, false,  0, 0);
+        add(version, NULL,    false,  LP_PHONEHOME_VERSION, 0);
+        add("phoneHomeThinning", &PhoneHome::allThinning, false, LP_INT_PARAMETER, 0);
+    }
 
     inline void startLegacyParams()
     { add("$$$", NULL, false, 99, 0); }
