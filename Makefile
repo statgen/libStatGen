@@ -1,4 +1,4 @@
-VERSION ?= 1.0.9ph1
+VERSION ?= 1.0.10
 
 .PHONY: package
 
