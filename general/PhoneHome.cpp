@@ -53,6 +53,7 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
     enableCompletionStatus();
     add("pgm", programName);
     add("vsn", version);
+    add("args", params);
 
     connect();
 
