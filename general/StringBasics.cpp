@@ -45,7 +45,7 @@ bool String::caseSensitive = true;
 void String::NewString(int startsize)
 {
     len = 0;
-    size = (startsize + alloc) / alloc * alloc;
+    size = startsize / alloc * alloc + alloc;
     buffer = new char [size];
     buffer[0] = 0;
 }
@@ -72,7 +72,7 @@ String::String(char ch, int count)
 String::String(const String & s)
 {
     len = s.len;
-    size = (s.len + alloc) / alloc * alloc;;
+    size = s.len / alloc * alloc + alloc;
     buffer = new char [size];
     memcpy(buffer, s.buffer, len + 1);
 }
@@ -82,7 +82,7 @@ void String::Grow(int newSize)
     if (newSize >= size)
     {
         if ((newSize >> 1) >= size)
-            size = (newSize + alloc) / alloc * alloc;
+            size = newSize / alloc * alloc + alloc;
         else
         {
             size = alloc;
