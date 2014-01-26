@@ -201,6 +201,15 @@ public:
     /// Remove the discard rule for minimum alternate allele count.
     void rmDiscardMinMinorAlleleCount();
 
+	///////////////////////////////////////////////////////////////////
+	void addDiscardRangeMinorAlleleCount(int32_t minMinorAlleleCount, 
+										 int32_t maxMinorAlleleCount,
+										 VcfSubsetSamples* subset);
+
+	void rmDiscardRangeMinorAlleleCount();
+	///////////////////////////////////////////////////////////////////
+
+
     //@}
 
 protected: 
@@ -210,7 +219,9 @@ private:
     VcfFileReader(const VcfFileReader& vcfFileReader);
     VcfFileReader& operator=(const VcfFileReader& vcfFileReader);
 
+	///////////////////////////////////////////////////
     static const int32_t UNSET_MIN_MINOR_ALLELE_COUNT = -1;
+	static const int32_t UNSET_MAX_MINOR_ALLELE_COUNT = -1;
     static const int32_t UNSET_MIN_ALT_ALLELE_COUNT = -1;
 
     // Set1BasedReadSection was called so process the section prior to reading.
@@ -233,6 +244,9 @@ private:
     VcfSubsetSamples* myAltAlleleCountSubset;
 
     int32_t myMinMinorAlleleCount;
+	int32_t myMaxMinorAlleleCount;
+
+
     VcfSubsetSamples* myMinorAlleleCountSubset;
     // Number of times each alternate is found in a record 
     std::vector<int> myMinorAlleleCount;

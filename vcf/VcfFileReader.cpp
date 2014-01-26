@@ -33,6 +33,7 @@ VcfFileReader::VcfFileReader()
       myMinAltAlleleCount(UNSET_MIN_ALT_ALLELE_COUNT),
       myAltAlleleCountSubset(NULL),
       myMinMinorAlleleCount(UNSET_MIN_MINOR_ALLELE_COUNT),
+	  myMaxMinorAlleleCount(UNSET_MAX_MINOR_ALLELE_COUNT),
       myMinorAlleleCountSubset(NULL),
       myMinorAlleleCount(),
       myDiscardRules(0),
@@ -412,11 +413,34 @@ bool VcfFileReader::readRecord(VcfRecord& record)
                     ++myMinorAlleleCount[gt];
                 }
             }
+
+	    //      for(unsigned int i=0; i < myMinorAlleleCount.size();i++)
+	    //      {
+	    //              std::cout << myMinorAlleleCount[i] << std::endl;
+	    //      }
+
+	    //              std::cout << "endRecord" << std::endl;
+
             // Verify that each allele has the min count.
             bool failMinorAlleleCount = false;
             for(unsigned int i = 0; i <= numAlts; i++)
             {
-                if(myMinorAlleleCount[i] < myMinMinorAlleleCount)
+
+	      // Are we checking a range? or just a lower bound?
+	      if(myMaxMinorAlleleCount != UNSET_MAX_MINOR_ALLELE_COUNT)
+		{
+
+		  //              std::cout << myMinorAlleleCount[i] << std::endl;
+		  if(myMinorAlleleCount[i] < myMinMinorAlleleCount ||
+                                                myMinorAlleleCount[i] > myMaxMinorAlleleCount ||
+		     myMinorAlleleCount[i] < 0)
+		    {
+		      // Not enough of or too much of one gt, so not ok.
+		      failMinorAlleleCount = true;
+		      break;
+		    }
+		}
+	      else if(myMinorAlleleCount[i] < myMinMinorAlleleCount)
                 {
                     // Not enough of one gt, so not ok.
                     failMinorAlleleCount = true;
@@ -510,10 +534,28 @@ void VcfFileReader::addDiscardMinMinorAlleleCount(int32_t minMinorAlleleCount,
 
 void VcfFileReader::rmDiscardMinMinorAlleleCount()
 {
-    myMinMinorAlleleCount = UNSET_MIN_ALT_ALLELE_COUNT;
+    myMinMinorAlleleCount = UNSET_MIN_MINOR_ALLELE_COUNT;
     myMinorAlleleCountSubset = NULL;
 }
 
+///////////////////////////////////////////////////////////////////
+void VcfFileReader::addDiscardRangeMinorAlleleCount(int32_t minMinorAlleleCount, 
+									 				int32_t maxMinorAlleleCount,
+									 				VcfSubsetSamples* subset)
+{
+    myMinMinorAlleleCount = minMinorAlleleCount;
+	myMaxMinorAlleleCount = maxMinorAlleleCount;
+    myMinorAlleleCountSubset = subset;
+}
+
+
+void VcfFileReader::rmDiscardRangeMinorAlleleCount()
+{
+    myMinMinorAlleleCount = UNSET_MIN_MINOR_ALLELE_COUNT;
+	myMaxMinorAlleleCount = UNSET_MAX_MINOR_ALLELE_COUNT;
+    myMinorAlleleCountSubset = NULL;
+}
+///////////////////////////////////////////////////////////////////
 
 void VcfFileReader::resetFile()
 {
