@@ -221,7 +221,7 @@ private:
 
 	///////////////////////////////////////////////////
     static const int32_t UNSET_MIN_MINOR_ALLELE_COUNT = -1;
-	static const int32_t UNSET_MAX_MINOR_ALLELE_COUNT = -1;
+    static const int32_t UNSET_MAX_MINOR_ALLELE_COUNT = -1;
     static const int32_t UNSET_MIN_ALT_ALLELE_COUNT = -1;
 
     // Set1BasedReadSection was called so process the section prior to reading.

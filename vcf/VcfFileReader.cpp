@@ -33,7 +33,7 @@ VcfFileReader::VcfFileReader()
       myMinAltAlleleCount(UNSET_MIN_ALT_ALLELE_COUNT),
       myAltAlleleCountSubset(NULL),
       myMinMinorAlleleCount(UNSET_MIN_MINOR_ALLELE_COUNT),
-	  myMaxMinorAlleleCount(UNSET_MAX_MINOR_ALLELE_COUNT),
+      myMaxMinorAlleleCount(UNSET_MAX_MINOR_ALLELE_COUNT),
       myMinorAlleleCountSubset(NULL),
       myMinorAlleleCount(),
       myDiscardRules(0),
