@@ -94,9 +94,9 @@ bool SamRecordHelper::genSamTagString(const char* tag, char vtype,
     {
         returnString += (int)*(int*)value;
     }
-    else if(SamRecord::isDoubleType(vtype))
+    else if(SamRecord::isFloatType(vtype))
     {
-        returnString += (double)*(double*)value;
+        returnString.appendFullFloat(*(float*)value);
     }
     else if(SamRecord::isCharType(vtype))
     {

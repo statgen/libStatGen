@@ -105,6 +105,8 @@ public:
     String   operator + (double rhs) const;
     String & operator += (double rhs);
 
+    void appendFullFloat(float rhs);
+
     String & operator = (unsigned int rhs);
     String   operator + (unsigned int rhs) const;
     String & operator += (unsigned int rhs);

@@ -513,7 +513,7 @@ public:
     /// \param tag set to the tag when a tag is read.
     /// \param vtype set to the vtype when a tag is read.
     /// \param value pointer to the value of the tag (will need to cast
-    /// to int, double, char, or string based on vtype).
+    /// to int, float, char, or string based on vtype).
     /// \return true if a tag was read, false if there are no more tags.
     bool getNextSamTag(char* tag, char& vtype, void** value);
 
@@ -527,11 +527,11 @@ public:
     /// 'S', 'i', 'I'), false otherwise.
     static bool isIntegerType(char vtype);
 
-    /// Returns whether or not the specified vtype is a double type.
+    /// Returns whether or not the specified vtype is a float type.
     /// Does not set SamStatus.
     /// \param vtype value type to check.
-    /// \return true if the passed in vtype is a double ('f'), false otherwise.
-    static bool isDoubleType(char vtype);
+    /// \return true if the passed in vtype is a float ('f'), false otherwise.
+    static bool isFloatType(char vtype);
 
     /// Returns whether or not the specified vtype is a char type.
     /// Does not set SamStatus.
@@ -562,24 +562,30 @@ public:
     /// \param pointer to the tag's string value if found, NULL if not found.
     const String* getStringTag(const char * tag);
 
-    /// Get the integer value for the specified tag.
+    /// Get the integer value for the specified tag, DEPRECATED, use one that returns a bool (success/failure).
     /// \param tag tag to retrieve
     /// \retun pointer to the tag's integer value if found, NULL if not found.
     int* getIntegerTag(const char * tag);
 
-    /// Get the double value for the specified tag.
+    /// Get the integer value for the specified tag.
     /// \param tag tag to retrieve
-    /// \return pointer to the tag's double value if found, NULL if not found.
-    double* getDoubleTag(const char * tag);
+    /// \param tagVal return parameter with integer value for the tag
+    /// \retun bool true if Integer tag was found and tagVal was set, 
+    ///             false if not.
+    bool getIntegerTag(const char * tag, int& tagVal);
+
+    /// Get the float value for the specified tag.
+    /// \param tag tag to retrieve
+    /// \param tagVal return parameter with integer value for the tag
+    /// \return bool true if Float tag was found and tagVal was set,
+    ///         false if not.
+    bool getFloatTag(const char * tag, float& tagVal);
 
     /// Get the string value for the specified tag.
-    String & getString(const char * tag);
+    const String & getString(const char * tag);
 
-    /// Get the integer value for the specified tag.
+    /// Get the integer value for the specified tag, DEPRECATED, use getIntegerTag that returns a bool.
     int &    getInteger(const char * tag);
-
-    /// Get the double value for the specified tag.
-    double & getDouble(const char * tag);
 
     /// Check if the specified tag contains a string.
     /// Does not set SamStatus.
@@ -588,7 +594,7 @@ public:
     bool checkString(const char * tag)
     { return(checkTag(tag, 'Z') || checkTag(tag, 'B')); }
     
-    /// Check if the specified tag contains a string.
+    /// Check if the specified tag contains an integer.
     /// Does not set SamStatus.
     /// \param tag SAM tag to check contents of.
     /// \return true if the value associated with the tag is a string.
@@ -598,7 +604,7 @@ public:
     /// Does not set SamStatus.
     /// \param tag SAM tag to check contents of.
     /// \return true if the value associated with the tag is a string.
-    bool checkDouble(const char * tag)    { return checkTag(tag, 'f'); }
+    bool checkFloat(const char * tag)    { return checkTag(tag, 'f'); }
      
     /// Check if the specified tag contains a value of the specified vtype.
     /// Does not set SamStatus.
@@ -611,9 +617,7 @@ public:
     /// Returns the status associated with the last method that sets the status.
     /// \return SamStatus of the last command that sets status.
     const SamStatus& getStatus();
-    
 
-    
 
 private:
     static int MAKEKEY(char ch1, char ch2, char type)
@@ -639,6 +643,29 @@ private:
         };
     }
 
+    static inline int getNumericTagTypeSize(char type)
+    {
+        switch(type)
+        {
+            case 'A':
+            case 'c':
+            case 'C':
+                return(1);
+                break;
+            case 's':
+            case 'S':
+                return(2);
+                break;
+            case 'i':
+            case 'I':
+            case 'f':
+                return(4);
+            default:
+                // Not a numeric type.
+                return(0);
+        }
+    }
+
     // Allocate space for the record - does a realloc.  
     // The passed in size is the size of the entire record including the
     // block size field.
@@ -647,7 +674,7 @@ private:
 
     void* getStringPtr(int offset);
     void* getIntegerPtr(int offset, char& vtype);
-    void* getDoublePtr(int offset);
+    void* getFloatPtr(int offset);
 
     // Fixes the buffer to match the variable length fields.
     // Adds any errors to myStatus.
@@ -688,7 +715,11 @@ private:
     String & getString(int offset);
     int &    getInteger(int offset);
     const char &   getIntegerType(int offset) const;
-    double & getDouble(int offset);
+    float & getFloat(int offset);
+
+    int getBtagBufferSize(String& tagStr);
+    int setBtagBuffer(String& tagStr, char* extraPtr);
+    int getStringFromBtagBuffer(unsigned char* buffer, String& tagStr);
 
     static const int DEFAULT_BLOCK_SIZE = 40;
     static const int DEFAULT_BIN = 4680;
@@ -745,15 +776,15 @@ private:
     CigarRoller myCigarRoller;
 
     LongHash<int>  extras;
-    // Note: not all values in strings, integers, and doubles are always
+    // Note: not all values in strings, integers, and floats are always
     // in extras.  They will not be if the tags were removed.  Removed
-    // tags are removed from extras, but not from strings, integers, or doubles
+    // tags are removed from extras, but not from strings, integers, or floats
     // since if one was removed from these arrays, all other entries would
     // need their indices updated in extras.
     StringArray    strings;
     IntArray       integers;
     std::vector<char> intType; // contains the type of int at same position in integers.
-    Vector         doubles;
+    std::vector<float> floats;
 
 
     // Track whether or not the buffer values are correct for
@@ -784,7 +815,6 @@ private:
 
     String NOT_FOUND_TAG_STRING;
     int NOT_FOUND_TAG_INT;
-    double NOT_FOUND_TAG_DOUBLE;
 };
 
 #endif

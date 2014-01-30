@@ -23,6 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <sstream>
 
 #define SWP(A,B) {int tmp=a; a=b; b=tmp;}
 
@@ -376,6 +377,14 @@ String & String::operator += (double rhs)
     String temp;
     temp = rhs;
     return *this += temp;
+}
+
+
+void String::appendFullFloat(float rhs)
+{
+    std::ostringstream os;
+    os << rhs;
+    *this += os.str().c_str();
 }
 
 char * String::LockBuffer(int min)

@@ -65,7 +65,8 @@ void validateRead1(SamRecord& samRecord)
     assert(samRecord.getString("MD") == "37");
     assert(samRecord.getString("YZ") == "");
     assert(samRecord.getInteger("YZ") == -1);
-    assert(samRecord.getDouble("YZ") == -1);
+    float tmpFloat = -1;
+    assert(samRecord.getFloatTag("YZ", tmpFloat) == false);
     // Check the alignment end
     assert(samRecord.get0BasedAlignmentEnd() == TestValidate::READ1_ALIGN_END);
     assert(samRecord.get1BasedAlignmentEnd() == (TestValidate::READ1_ALIGN_END + 1));
