@@ -750,7 +750,7 @@ int String::ReadLine(IFILE & f)
 
     while ( ((ch = f->ifgetc()) != EOF) && (ch != '\n'))
     {
-      if (ptr == endBuffer)
+      if (ptr >= endBuffer - 1)
         {
             // resize: 1 byte for the next character, 1 byte
             //  for the NUL at the end.
@@ -762,18 +762,8 @@ int String::ReadLine(IFILE & f)
         *ptr++ = ch;
         len++;
     }
-    // (zhanxw): ptr == endBuffer may happen,
-    // so need to check again.
-    if (ptr == endBuffer)
-    {
-      // resize: 1 byte for the next character, 1 byte
-      //  for the NUL at the end.
-      Grow(len + 2);
-      endBuffer = buffer + size;
-      ptr = buffer + len;
-    }
+
     // NB: assumes that buffer is always allocated.
-    // (zhanxw) I think assumption may not hold, so add above codes
     buffer[len] = 0;
 
     if ((ch == EOF) && (len == 0))
