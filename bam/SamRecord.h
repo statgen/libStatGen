@@ -717,6 +717,15 @@ private:
     const char &   getIntegerType(int offset) const;
     float & getFloat(int offset);
 
+    // Append the string representation of the value at the specified index
+    // of the int array.
+    inline void appendIntArrayValue(int index, String& strVal) const
+    {
+        appendIntArrayValue(intType[index], integers[index], strVal);
+    }
+
+    void appendIntArrayValue(char type, int value, String& strVal) const;
+
     int getBtagBufferSize(String& tagStr);
     int setBtagBuffer(String& tagStr, char* extraPtr);
     int getStringFromBtagBuffer(unsigned char* buffer, String& tagStr);
@@ -815,6 +824,9 @@ private:
 
     String NOT_FOUND_TAG_STRING;
     int NOT_FOUND_TAG_INT;
+
+    static const int myMaxWarns = 5;
+    static int myNumWarns;
 };
 
 #endif

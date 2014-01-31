@@ -1,9 +1,15 @@
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.
 
+WARNING: Duplicate Tags, overwritting XA:C:123 with XA:S:456
+WARNING: Duplicate Tags, overwritting RR:Z:myID1 with RR:Z:myID2
+WARNING: Duplicate Tags, overwritting MD:Z:30A0C5 with MD:Z:2T1N0
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.
 
+WARNING: Duplicate Tags, overwritting XA:C:123 with XA:S:456
+WARNING: Duplicate Tags, overwritting RR:Z:myID1 with RR:Z:myID2
+Suppressing rest of Duplicate Tag warnings.
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.
 
