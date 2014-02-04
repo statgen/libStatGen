@@ -129,6 +129,21 @@ public:
     /// specified, false if not or if any GT field is missing.
     bool hasAllGenotypeAlleles() { return(myGenotype.hasAllGenotypeAlleles()); }
 
+    /// Return the number of occurances of the specified allele index in the
+    /// genotypes for this record.  Index 0 for the reference.  The alternate
+    /// alleles start with index 1.  An exception is thrown if the index is
+    /// out of range.  Optionally, the specified subset of samples can be
+    /// skipped when determining allele counts.  (If the record is read with
+    /// just a subset of samples, those are automatically excluded here
+    /// regardless of the passed in sampleSubset.
+    /// \param index allele index (0 for reference, 1 for first alt, 
+    ///  2 for second, etc)
+    /// \param sampleSubset pointer to sample subset information, 
+    ///        but NULL if additional sample subsetting is not to be done.
+    /// \return int allele count for the specified ref/alt.
+    int getAlleleCount(unsigned int index,
+                       VcfSubsetSamples* sampleSubset = NULL);
+
     //@}
 
 
@@ -186,6 +201,7 @@ private:
     VcfRecordInfo myInfo;
     VcfRecordGenotype myGenotype;
     ReusableVector<std::string> myAltArray;
+    std::vector<int> myAlleleCount;
 
 
     // The status of the last failed command.

@@ -283,6 +283,7 @@ void VcfRecord::reset()
     myFilter.clear();
     myInfo.clear();
     myGenotype.clear();
+    myAlleleCount.clear();
     myStatus = StatGenStatus::SUCCESS;
 }
 
@@ -366,6 +367,52 @@ unsigned int VcfRecord::getNumAlts()
         }
     }
     return(myAltArray.size());
+}
+
+
+int VcfRecord::getAlleleCount(unsigned int index,
+                              VcfSubsetSamples* sampleSubset)
+{
+    unsigned int numAlts = getNumAlts();
+    if(index > numAlts)
+    {
+        // Index out of range.
+        // Throw an exception.
+        throw(std::runtime_error("VcfRecord::getAlleles called with an index that is greater than the number of alternates."));
+        return(-1);
+    }
+
+    if(myAlleleCount.size() == 0)
+    {
+        unsigned int gt = 0;
+        myAlleleCount.resize(numAlts+1, 0);
+
+        // Loop through the samples, counting the number of each allele.
+        for(int sampleNum = 0; sampleNum < getNumSamples(); 
+            sampleNum++)
+        {
+            if((sampleSubset != NULL) &&
+               !(sampleSubset->keep(sampleNum)))
+            {
+                // Skip this sample.
+                continue;
+            }
+            for(int gtNum = 0; gtNum < getNumGTs(sampleNum); gtNum++)
+            {
+                gt = getGT(sampleNum, gtNum);
+                if((gt < 0) || (gt > numAlts))
+                {
+                    // Out of range GT, so continue to the next gt
+                    continue;
+                }
+                // Increment the minor allele count
+                ++myAlleleCount[gt];
+            }
+        }
+    }
+
+    // Alternate allele, so return the alternate.
+    return(myAlleleCount[index]);
 }
 
 

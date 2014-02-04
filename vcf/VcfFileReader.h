@@ -234,8 +234,6 @@ private:
 
     int32_t myMinMinorAlleleCount;
     VcfSubsetSamples* myMinorAlleleCountSubset;
-    // Number of times each alternate is found in a record 
-    std::vector<int> myMinorAlleleCount;
 
     uint64_t myDiscardRules;
 
