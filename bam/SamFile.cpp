@@ -351,7 +351,7 @@ bool SamFile::ReadBamIndex()
             foundFile = false;
         }
     }
-    catch (std::exception& e)
+    catch (std::exception&)
     {
         foundFile = false;
     }

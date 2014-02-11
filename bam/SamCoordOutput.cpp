@@ -46,7 +46,7 @@ bool SamCoordOutput::add(SamRecord* record)
 {
     if(record != NULL)
     {
-        uint64_t chrom = record->getReferenceID();
+        int32_t chrom = record->getReferenceID();
         uint64_t chromPos = 
             SamHelper::combineChromPos(chrom, record->get0BasedPosition());
         myReadBuffer.insert(std::pair<uint64_t, SamRecord*>(chromPos, record));

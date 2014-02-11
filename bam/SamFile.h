@@ -333,7 +333,7 @@ public:
 
     /// Get the current file position.
     /// \return current position in the file.
-    inline long int GetCurrentPosition()
+    inline int64_t GetCurrentPosition()
     {
         return(iftell(myFilePtr));
     }

@@ -398,7 +398,7 @@ bool GlfRecord::setInsertionIndel1(const std::string& indelSeq)
 
 bool GlfRecord::setDeletionIndel1(const std::string& indelSeq)
 {
-    myRec2Base.indelLen1 = -(indelSeq.length());
+    myRec2Base.indelLen1 = 0 - (indelSeq.length());
     myIndelSeq1 = indelSeq;
     return(true);
 }
@@ -412,7 +412,7 @@ bool GlfRecord::setInsertionIndel2(const std::string& indelSeq)
 
 bool GlfRecord::setDeletionIndel2(const std::string& indelSeq)
 {
-    myRec2Base.indelLen2 = -(indelSeq.length());
+    myRec2Base.indelLen2 = 0 - (indelSeq.length());
     myIndelSeq2 = indelSeq;
     return(true);
 }
