@@ -159,15 +159,7 @@ public:
     bool open(const char *filename, int flags = O_RDONLY)
     {
         _umfaFilename = filename;
-#if 0
-        if(genomeSequenceArray::open(filename, flags)) {
-            //
-            // if load of the umfa (binary encoded file) fails, attempt
-            // to load it as a fasta file.
-            //
-            return loadFasta();
-        }
-#endif
+        // TODO - should this method be doing something???
         return false;
     }
 

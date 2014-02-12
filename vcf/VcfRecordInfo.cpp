@@ -123,7 +123,7 @@ void VcfRecordInfo::setString(const char* key, const char* stringVal)
     for(int i = 0; i < infoSize; i++)
     {
         InfoElement& info = myInfo.get(i);
-        if(info.key == key)
+        if(info.key.compare(key) == 0)
         {
             // Set the value and return.
             info.value = stringVal;
@@ -145,7 +145,7 @@ const std::string* VcfRecordInfo::getString(const char* key)
     for(int i = 0; i < infoSize; i++)
     {
         InfoElement& info = myInfo.get(i);
-        if(info.key == key)
+        if(info.key.compare(key) == 0)
         {
             // Found, so return the value.
             return(&(info.value));

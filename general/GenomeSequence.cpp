@@ -30,6 +30,13 @@
 #include <sstream>
 #include <stdexcept>
 
+#if defined(_WIN32)
+#include <io.h>
+#ifndef R_OK
+#define R_OK 4
+#endif
+#endif
+
 // not general use:
 #include "CSG_MD5.h"
 
@@ -171,9 +178,6 @@ GenomeSequence::~GenomeSequence()
 // if the file exists, map in into memory, and fill in a few useful
 // fields.
 //
-// isColorSpace is used only when the baseFilename is empty, so
-// that we can choose an appropriate default reference file.
-//
 
 bool GenomeSequence::open(bool isColorSpace, int flags)
 {
@@ -234,16 +238,6 @@ void GenomeSequence::sanityCheck(MemoryMap &fasta) const
             default:
                 assert(BaseAsciiMap::base2int[(int)(*this)[genomeIndex]] == 
                        BaseAsciiMap::base2int[(int) fasta[i]]);
-#if 0
-                if(BaseAsciiMap::base2int[(*this)[genomeIndex]] != 
-                   BaseAsciiMap::base2int[(int) fasta[i]])
-                {
-                    int bp1 = BaseAsciiMap::base2int[(*this)[genomeIndex]];
-                    int bp2 = BaseAsciiMap::base2int[fasta[i]];
-                    printf("failing at genome index = %u, fasta index = %u.\n",
-                           genomeIndex,i);
-                }
-#endif
                 genomeIndex++;
                 break;
         }
@@ -341,7 +335,7 @@ bool GenomeSequence::setChromosomeMD5andLength(uint32_t whichChromosome)
 
 //
 // Given a buffer with a fasta format contents, count
-// the number of chromsomes in it and return that value.
+// the number of chromosomes in it and return that value.
 //
 static bool getFastaStats(const char *fastaData, size_t fastaDataSize, uint32_t &chromosomeCount, uint64_t &baseCount)
 {
@@ -476,60 +470,6 @@ bool loadFastaFile(const char *filename,
                 // save the base value
                 // Note: invalid characters come here as well, but we
                 // let ::set deal with mapping them.
-#if 0
-                if (isColorSpace())
-                {
-//
-// anything outside these values represents an invalid base
-// base codes: 0-> A,    1-> C,     2-> G,      3-> T
-// colorspace: 0-> blue, 1-> green, 2-> oragne, 3->red
-//
-                    const char fromBase2CS[] =
-                    {
-                        /* 0000 */ 0,   // A->A
-                        /* 0001 */ 1,   // A->C
-                        /* 0010 */ 2,   // A->G
-                        /* 0011 */ 3,   // A->T
-                        /* 0100 */ 1,   // C->A
-                        /* 0101 */ 0,   // C->C
-                        /* 0110 */ 3,   // C->G
-                        /* 0111 */ 2,   // C->T
-                        /* 1000 */ 2,   // G->A
-                        /* 1001 */ 3,   // G->C
-                        /* 1010 */ 0,   // G->G
-                        /* 1011 */ 1,   // G->T
-                        /* 1100 */ 3,   // T->A
-                        /* 1101 */ 2,   // T->C
-                        /* 1110 */ 1,   // T->G
-                        /* 1111 */ 0,   // T->T
-                    };
-                    //
-                    // we are writing color space values on transitions,
-                    // so we don't write a colorspace value when we
-                    // get the first base value.
-                    //
-                    // On second and subsequent bases, write based on
-                    // the index table above
-                    //
-                    char thisBase = 
-                        BaseAsciiMap::base2int[(int)(fasta[fastaIndex])];
-                    if (lastBase>=0)
-                    {
-                        char color;
-                        if (lastBase>3 || thisBase>3) color=4;
-                        else color = fromBase2CS[(int)(lastBase<<2 | thisBase)];
-                        // re-use the int to base, because ::set expects a base char (ATCG), not
-                        // a color code (0123).  It should only matter on final output.
-                        set(header->elementCount++, 
-                            BaseAsciiMap::int2base[(int) color]);
-                    }
-                    lastBase = thisBase;
-                }
-                else
-                {
-                    set(header->elementCount++, toupper(fasta[fastaIndex]));
-                }
-#endif
                 break;
         }
     }
@@ -773,9 +713,6 @@ bool GenomeSequence::create(bool isColor)
         setChromosomeMD5andLength(whichChromosome-1);
     }
 
-#if 0
-    sanityCheck(fastaFile);
-#endif
     fastaFile.close();
 
     if (_progressStream) *_progressStream << "\r";

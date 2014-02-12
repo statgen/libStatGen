@@ -27,7 +27,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <zlib.h>
 
 #include <fstream>
@@ -162,7 +161,7 @@ private:
         }
     }
     // called when read reports an error for some
-    // reason - 
+    // reason -
     virtual ReturnCode sync();
 public:
     PeekaheadBuffer();

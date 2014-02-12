@@ -155,16 +155,16 @@
 class MemoryMap
 {
 #if defined(_WIN32)
-    static  SYSTEM_INFO system_info;    // for page size information
-    HANDLE  file_handle;
-    HANDLE  map_handle;
+    HANDLE      file_handle;
+    HANDLE      map_handle;
+    DWORD       page_size;
 #else
     int fd;
+    size_t page_size;
 #endif
     off_t offset;
     size_t mapped_length;
     size_t total_length;
-    size_t page_size;
     bool    useMemoryMapFlag;
 public:
 
@@ -179,6 +179,8 @@ public:
     void constructor_clear();
 
     void destructor_clear();
+
+    virtual bool allocate();
 
     /// open a previously created mapped vector
     ///

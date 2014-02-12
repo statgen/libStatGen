@@ -21,7 +21,10 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#ifndef __WIN32__
 #include <unistd.h>
+#endif
 
 ///
 /// TrimSequence is a templated function to find bases

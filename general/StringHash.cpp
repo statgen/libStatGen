@@ -47,9 +47,9 @@ StringHash::~StringHash()
         if (strings[i] != NULL)
             delete strings[i];
 
-    delete [] strings;
-    delete [] objects;
-    delete [] keys;
+    if(strings) delete [] strings;
+    if(objects) delete [] objects;
+    if(keys) delete [] keys;
 }
 
 void StringHash::Clear()
@@ -89,7 +89,8 @@ void StringHash::SetSize(int newsize)
                 unsigned int h   = key & newmask;
 
                 while (newstrings[h] != NULL &&
-                        (newkeys[h] != key || (!stringsEqual(*(newstrings[h]), *(strings[i])))))
+                        (newkeys[h] != key || 
+                         (!stringsEqual(*(newstrings[h]), *(strings[i])))))
                     h = (h + 1) & newmask;
 
                 newkeys[h] = key;
@@ -97,9 +98,9 @@ void StringHash::SetSize(int newsize)
                 newobjects[h] = objects[i];
             }
 
-    delete [] strings;
-    delete [] objects;
-    delete [] keys;
+    if(strings) delete [] strings;
+    if(objects) delete [] objects;
+    if(keys) delete [] keys;
 
     strings = newstrings;
     objects = newobjects;
@@ -260,9 +261,9 @@ StringIntHash::~StringIntHash()
         if (strings[i] != NULL)
             delete strings[i];
 
-    delete [] strings;
-    delete [] integers;
-    delete [] keys;
+    if(strings) delete [] strings;
+    if(integers) delete [] integers;
+    if(keys) delete [] keys;
 }
 
 void StringIntHash::SetSize(int newsize)
@@ -291,9 +292,9 @@ void StringIntHash::SetSize(int newsize)
             newintegers[h] = integers[i];
         }
 
-    delete [] strings;
-    delete [] integers;
-    delete [] keys;
+    if(strings) delete [] strings;
+    if(integers) delete [] integers;
+    if(keys) delete [] keys;
 
     strings = newstrings;
     integers = newintegers;
@@ -431,9 +432,9 @@ StringDoubleHash::~StringDoubleHash()
         if (strings[i] != NULL)
             delete strings[i];
 
-    delete [] strings;
-    delete [] doubles;
-    delete [] keys;
+    if(strings) delete [] strings;
+    if(doubles) delete [] doubles;
+    if(keys) delete [] keys;
 }
 
 void StringDoubleHash::SetSize(int newsize)
@@ -462,9 +463,9 @@ void StringDoubleHash::SetSize(int newsize)
             newdoubles[h] = doubles[i];
         }
 
-    delete [] strings;
-    delete [] doubles;
-    delete [] keys;
+    if(strings) delete [] strings;
+    if(doubles) delete [] doubles;
+    if(keys) delete [] keys;
 
     strings = newstrings;
     doubles = newdoubles;

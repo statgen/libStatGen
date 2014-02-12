@@ -100,7 +100,7 @@ int main() {
 #include <string.h>
 #include <limits.h>
 
-/* compipler specific configuration */
+/* compiler specific configuration */
 
 #if UINT_MAX == 0xffffffffu
 typedef unsigned int khint32_t;
@@ -115,6 +115,10 @@ typedef unsigned long long khint64_t;
 #endif
 
 #ifdef _MSC_VER
+#define inline __inline
+#endif
+
+#ifdef _WIN32
 #define inline __inline
 #endif
 

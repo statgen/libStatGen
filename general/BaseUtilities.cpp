@@ -28,7 +28,6 @@ bool BaseUtilities::isAmbiguous(char base)
         case 'n':
         case '.':
             return(true);
-            break;
         default:
             break;
     };
