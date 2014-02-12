@@ -58,7 +58,8 @@ public:
 
     ~String()
     {
-        delete [] buffer;
+        if(buffer != NULL)
+            delete [] buffer;
     }
 
     String & Clear()

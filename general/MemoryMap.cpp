@@ -25,22 +25,12 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
-#include <unistd.h>
 
 #include "MemoryMap.h"
 
-#if defined(_WIN32)
-
-SYSTEM_INFO MemoryMap::system_info;
-static bool need_system_info = true;
-#include <windows.h>
-
-#if !defined(__CYGWIN__)
-typedef char *  caddr_t;
-#endif
-
-#else
+#ifndef _WIN32
 #include <sys/mman.h>
+#include <unistd.h>
 #endif
 
 #ifndef MAP_POPULATE
@@ -54,16 +44,13 @@ MemoryMap::MemoryMap()
 {
     constructor_clear();
 #if defined(_WIN32)
-    if (need_system_info)
-    {
-        GetSystemInfo(&system_info);
-        need_system_info = false;
-    }
-    page_size = system_info.dwAllocationGranularity;
+    SYSTEM_INFO sysinfo = {0};
+    ::GetSystemInfo(&sysinfo);
+    DWORD cbView = sysinfo.dwAllocationGranularity;
 #else
     page_size = sysconf(_SC_PAGE_SIZE);
 #endif
-};
+}
 
 MemoryMap::~MemoryMap()
 {
@@ -87,8 +74,8 @@ void MemoryMap::debug_print()
 void MemoryMap::constructor_clear()
 {
 #if defined(_WIN32)
-    file_handle = 0;
-    map_handle = 0;
+    file_handle = NULL;
+    map_handle = NULL;
 #else
     fd = -1;
 #endif
@@ -101,18 +88,22 @@ void MemoryMap::constructor_clear()
 
 void MemoryMap::destructor_clear()
 {
+#if defined(_WIN32)
     if (data!=NULL)
     {
-#if defined(_WIN32)
         // free windows mapped object
-        UnmapViewOfFile((LPVOID) data);
+        ::UnmapViewOfFile((LPVOID) data);
+    }
+    if (map_handle != NULL)
+       ::CloseHandle(map_handle);
+    if (file_handle != NULL)
+       ::CloseHandle(file_handle);
 #else
+    if (data!=NULL)
+    {
         // free unix mapped object
         munmap(data, mapped_length);
-#endif
     }
-
-#if !defined(_WIN32)
     // free unix resources
     if (fd!=-1)
     {
@@ -121,292 +112,209 @@ void MemoryMap::destructor_clear()
 #endif
 
     constructor_clear();
-};
-
-#if defined(_WIN32)
-bool MemoryMap::open(const char * file, int flags)
-{
-    const off_t offset = 0;     // in old code, this was an argument to ::open
-    const size_t size = 0;
-
-//
-// XXX lots of errors can happen here that aren't considered yet.
-// WIN32 has more common read only devices (cdroms), and I don't know
-// what the error path looks like trying to open a files read/write on a 
-// read only dataset.
-//
-    BY_HANDLE_FILE_INFORMATION file_handle_information;
-
-// dwShareMode (FILE_SHARE*) specifies what subsequent CreateFile operations
-// are allowed to do.  To get around programming problems, we need to
-// allow an object to first be opened READ (for the header) then READ/WRITE
-// for the vector.
-// XXX fix the above problem - clarify READ/WRITE access to the header vs
-// to the vector itself
-    file_handle = CreateFile(
-        file,
-        (flags==O_RDWR) ? (GENERIC_READ | GENERIC_WRITE) : GENERIC_READ,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, // subsequent opens may either read or write
-        NULL,
-        OPEN_ALWAYS,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-
-#ifdef DEBUG_MAP
-fprintf(stderr,"MemoryMap::open: file_handle=%x\n", h->file_handle);
-#endif
-
-    if(file_handle == INVALID_HANDLE_VALUE) {
-        std::cerr << "MemoryMap::open: CreateFile(" <<  file << ") failed." << std::endl;
-        return true;
-    }
-
-    GetFileInformationByHandle(file_handle, &file_handle_information);
-
-    mapped_length = size;
-
-    if(size==0) mapped_length = file_handle_information.nFileSizeLow - offset;   // map all if size=0
-
-#if !defined(__MINGW32__)
-    if(mapped_length+offset > file_handle_information.nFileSizeLow)
-#else
-// XXX hacked
-    if((unsigned)mapped_length+offset > file_handle_information.nFileSizeLow)
-#endif
-#if 0
-        // XXX free CreateFile resources... HOW?
-        CloseHandle(file_handle);   ??
-        FreeResource(file_handle);  ??
-#endif
-    {
-        std::cerr << "MemoryMap::open: unable to map file " <<  file << " at offset " << offset << "." << std::endl;
-        constructor_clear();
-        return true;
-    }
-
-    map_handle = CreateFileMapping(
-        file_handle,    // file handle
-        NULL,           // dunno
-        (flags==O_RDWR) ? PAGE_READWRITE : PAGE_READONLY,    // map flags
-        0,              // upper 32 bits of map size
-        size,           // lower 32 bits of map size
-        NULL            // winblows id name so others can get the same object by name
-    );
-
-#ifdef DEBUG_MAP
-    std::cout << "MemoryMap::open: map_handle = " << h->map_handle << std::endl;
-#endif
-
-
-    if(map_handle == NULL) {
-        std::cerr << "MemoryMap::open: unable to map file " <<  file << "." << std::endl;
-        constructor_clear();
-        return true;
-    }
-
-#ifdef DEBUG_MAP
-    std::cerr << "MemoryMap::open: calling MapViewOfFile(offset=" << offset << ", mapped_length=" << mapped_length << ")." << std::endl;
-#endif
-    LPVOID map_pointer = MapViewOfFile(
-        map_handle,         // map handle
-        (flags==O_RDWR) ? (FILE_MAP_WRITE | FILE_MAP_READ) : FILE_MAP_READ,
-        (DWORD) 0,          // high 32 bits of map offset
-        (DWORD) offset,     // low 32 bits of map offset
-        mapped_length
-    );
-
-#ifdef DEBUG_MAP
-    DWORD e = GetLastError();
-    std::cerr << "MemoryMap::open: map_pointer = " << map_pointer << ", error = " << error << std::endl;
-#endif
-
-    data = (caddr_t) map_pointer;
-
-    return false;
 }
 
-bool MemoryMap::create(const char *file, size_t size)
+
+bool MemoryMap::allocate()
 {
-    //
-    // first create the file, then open it mapped
-    //
-    struct stat sb;
+    data = (void *) malloc(mapped_length);
 
-    if(stat(file,&sb)!=0) {
-        if(size==0) {
-            std::cerr << "MemoryMap::create requires non zero size when creating a new file." << std::endl;
-            return true;
-        }
-        int d = ::open(file, O_RDWR);
-        off_t result = lseek(d, (off_t) size - 1, SEEK_SET);
-        ::close(d);
-    }
-
-    return open(file, O_RDWR);
-}
-
+    if (data == NULL)
+    {
+#ifdef __WIN32__
+        ::CloseHandle(file_handle);
 #else
-bool MemoryMap::open(const char * file, int flags)
-{
-
-    struct stat buf;
-
-    int mmap_prot_flag = PROT_READ;
-    if (flags != O_RDONLY) mmap_prot_flag = PROT_WRITE;
-
-    fd = ::open(file, flags);
-    if (fd==-1)
-    {
-        fprintf(stderr, "MemoryMap::open: file %s not found\n", (const char *) file);
-        constructor_clear();
-        return true;
-    }
-    if (fstat(fd, &buf))
-    {
+        ::close(fd);
+#endif
         perror("MemoryMap::open");
         constructor_clear();
         return true;
     }
-    mapped_length = buf.st_size;
-    total_length = mapped_length;
 
-    if (useMemoryMapFlag)
-    {
-
-        int additionalFlags = 0;
-
-        // try this for amusement ... not portable:
-//        additionalFlags |= MAP_HUGETLB;
-// #define USE_LOCKED_MMAP
-#if defined(USE_LOCKED_MMAP)
-        // MAP_POPULATE only makes sense if we are reading
-        // the data
-        if (flags != O_RDONLY)
-        {
-            // furthermore, according to Linux mmap page, populate only
-            // works if the map is private.
-            additionalFlags |= MAP_POPULATE;
-            additionalFlags |= MAP_PRIVATE;
-        }
-        else
-        {
-            additionalFlags |= MAP_SHARED;
-        }
+#ifdef __WIN32__
+    DWORD resultSize = 0;
+    ReadFile(file_handle, data, mapped_length, &resultSize, NULL);
 #else
-additionalFlags |= MAP_SHARED;
+    size_t resultSize = read(fd, data, mapped_length);
 #endif
 
-        data = ::mmap(
-                   NULL,           // start
-                   mapped_length,
-                   mmap_prot_flag, // protection flags
-                   additionalFlags,
-                   fd,
-                   offset
-               );
-        if (data == MAP_FAILED)
-        {
-            ::close(fd);
-            std::cerr << "Error: Attempting to map " << mapped_length << " bytes of file "
-                      << file << ":" << std::endl;
-            perror("MemoryMap::open");
-            constructor_clear();
-            return true;
-        }
-
-#if defined(USE_LOCKED_MMAP)
-        //
-        // non-POSIX, so non portable.
-        // This call is limited by the RLIMIT_MEMLOCK resource.
-        //
-        // In bash, "ulimit -l" shows the limit.
-        //
-        if (mlock(data, mapped_length))
-        {
-            std::cerr << "Warning: Attempting to lock " << mapped_length << " bytes of file " << file << ":" << std::endl;
-            perror("unable to lock memory");
-            // not a fatal error, so continue
-        }
-#endif
-
-        // these really don't appear to have any greatly useful effect on
-        // Linux.  Last time I checked, the effect on Solaris and AIX was
-        // exactly what was documented and was significant.
-        //
-        madvise(data, mapped_length, MADV_WILLNEED);   // warning, this could hose the system
-
-    }
-    else
+    if ( resultSize != mapped_length)
     {
-        data = (void *) malloc(mapped_length);
-        if (data==NULL)
-        {
-            ::close(fd);
-            perror("MemoryMap::open");
-            constructor_clear();
-            return true;
-        }
-        ssize_t resultSize = read(fd, data, mapped_length);
-        if (resultSize!=(ssize_t) mapped_length)
-        {
-            ::close(fd);
-            perror("MemoryMap::open");
-            constructor_clear();
-            return true;
-        }
+#ifdef __WIN32__
+        ::CloseHandle(file_handle);
+#else
+        ::close(fd);
+#endif
+        perror("MemoryMap::open");
+        constructor_clear();
+        return true;
     }
     return false;
 }
+
+
+bool MemoryMap::open(const char * file, int flags)
+{
+   const char * message = "MemoryMap::open - problem opening file %s";
+#if defined(_WIN32)
+    file_handle = CreateFile(file,
+                             (flags==O_RDONLY) ? GENERIC_READ : (GENERIC_READ | GENERIC_WRITE),
+                             FILE_SHARE_READ | FILE_SHARE_WRITE, // subsequent opens may either read or write
+                             NULL,
+                             OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL,
+                             NULL);
+
+    if(file_handle == INVALID_HANDLE_VALUE)
+    {
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+
+    LARGE_INTEGER file_size = {0};
+    ::GetFileSizeEx(file_handle, &file_size);
+    mapped_length = total_length = file_size.QuadPart;
+
+#else
+    struct stat buf;
+    fd = ::open(file, flags);
+    if ((fd==-1) || (fstat(fd, &buf) != 0))
+    {
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+    mapped_length = total_length = buf.st_size;
+#endif
+
+    if(!useMemoryMapFlag)
+    {
+        return allocate();
+    }
+
+#if defined(_WIN32)
+    assert(offset == 0);
+
+    map_handle = CreateFileMapping(file_handle, NULL,
+                                   (flags==O_RDONLY) ? PAGE_READONLY : PAGE_READWRITE,
+                                   file_size.HighPart, // upper 32 bits of map size
+                                   file_size.LowPart,  // lower 32 bits of map size
+                                   NULL);
+
+    if(map_handle == NULL)
+    {
+        ::CloseHandle(file_handle);
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+
+    data = MapViewOfFile(map_handle,
+                         (flags == O_RDONLY) ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS,
+                         0, 0, mapped_length);
+
+    if (data == NULL)
+    {
+        CloseHandle(map_handle);
+        CloseHandle(file_handle);
+
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+#else
+    data = ::mmap(NULL, mapped_length,
+                  (flags == O_RDONLY) ? PROT_READ : PROT_READ | PROT_WRITE,
+                  MAP_SHARED, fd, offset);
+
+    if (data == MAP_FAILED)
+    {
+        ::close(fd);
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+#endif
+    return false;
+}
+
 
 bool MemoryMap::create(const char *file, size_t size)
 {
-
     if (file==NULL)
     {
         data = calloc(size, 1);
-        if (data==NULL) return true;
+        return(data==NULL);
     }
-    else
+
+    const char * message = "MemoryMap::create - problem creating file %s";
+
+#ifdef __WIN32__
+    file_handle = CreateFile(file,
+                             GENERIC_READ | GENERIC_WRITE,
+                             FILE_SHARE_READ | FILE_SHARE_WRITE,
+                             NULL,
+                             CREATE_ALWAYS,
+                             FILE_ATTRIBUTE_NORMAL,
+                             NULL);
+
+    if (file_handle == INVALID_HANDLE_VALUE)
     {
-        int mmap_prot_flag = PROT_READ | PROT_WRITE;
-
-        fd = ::open(file, O_RDWR|O_CREAT|O_TRUNC, 0666);
-        if (fd==-1)
-        {
-            fprintf(stderr, "MemoryMap::open: can't create file '%s'\n",(const char *) file);
-            constructor_clear();
-            return true;
-        }
-
-        lseek(fd, (off_t) size - 1, SEEK_SET);
-        char ch = 0;
-        if(write(fd, &ch, 1)!=1) {
-            perror("MemoryMap::create:");
-            throw std::logic_error("unable to write at end of file");
-        }
-
-        data = ::mmap(
-                   NULL,           // start
-                   size,
-                   mmap_prot_flag, // protection flags
-                   MAP_SHARED,     // share/execute/etc flags
-                   fd,
-                   offset
-               );
-        if (data == MAP_FAILED)
-        {
-            ::close(fd);
-            unlink(file);
-            perror("MemoryMap::open");
-            constructor_clear();
-            return true;
-        }
-        mapped_length = size;
-        total_length = size;
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
     }
+
+    SetFilePointer(file_handle, size - 1, NULL, FILE_BEGIN);
+    char dummy = 0;
+    DWORD check = 0;
+    WriteFile(file_handle, &dummy, 1, &check, NULL);
+
+    if (check != 0)
+    {
+        CloseHandle(file_handle);
+        DeleteFile(file);
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+    CloseHandle(file_handle);
+    open(file, O_RDWR);
+#else
+    fd = ::open(file, O_RDWR|O_CREAT|O_TRUNC, 0666);
+    if(fd == -1)
+    {
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+
+    lseek(fd, (off_t) size - 1, SEEK_SET);
+    char dummy = 0;
+    if(write(fd, &dummy, 1)!=1)
+    {
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+
+    data = ::mmap(NULL, size, PROT_READ|PROT_WRITE,
+                  MAP_SHARED, fd, offset);
+
+    if (data == MAP_FAILED)
+    {
+        ::close(fd);
+        unlink(file);
+        fprintf(stderr, message, file);
+        constructor_clear();
+        return true;
+    }
+   mapped_length = total_length = size;
+#endif
     return false;
 }
-#endif
+
 
 bool MemoryMap::create(size_t size)
 {
@@ -417,7 +325,7 @@ bool MemoryMap::close()
 {
     destructor_clear();
     return false;
-};
+}
 
 void MemoryMap::test()
 {

@@ -632,7 +632,7 @@ inline bool ifgetline(IFILE file, void *buffer, size_t max)
     if(file == NULL)
     {
         // return eof since there is no file.
-        return(EOF);
+        return(true);
     }
     return(file->ifgetline(buffer, max));
 }

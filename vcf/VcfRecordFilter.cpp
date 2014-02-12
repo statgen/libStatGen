@@ -17,6 +17,8 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ #include <string>
+
 #include "VcfRecordFilter.h"
 #include "VcfHelper.h"
 
@@ -27,7 +29,10 @@ bool VcfRecordFilter::read(IFILE filePtr)
 {
     static const std::string fieldStopCharsNoParse = "\n\t";
     static const int tabPos = 1;
-    static std::string fieldStopChars = fieldStopCharsNoParse + FILTER_DELIM;
+
+    static std::string fieldStopChars = fieldStopCharsNoParse;
+    fieldStopChars += FILTER_DELIM;
+
     // The start of the first character in stopChars that means there is more
     // filter info in the format field, so continue reading the format field.
     static const int contPos = fieldStopCharsNoParse.length();
@@ -73,7 +78,9 @@ void VcfRecordFilter::reset()
 
 bool VcfRecordFilter::passedAllFilters()
 {
-    return(getString() == "PASS");
+    static std::string pass("PASS");
+
+    return(pass.compare(getString()) == 0);
 }
 
 

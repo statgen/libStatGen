@@ -41,13 +41,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
 #include <sys/types.h>
 
 #ifndef _WIN32
+#include <unistd.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#else
+#include <BaseTsd.h>
 #endif
 
 #include "knetfile.h"
@@ -88,16 +90,20 @@ static int socket_wait(int fd, int is_read)
 #ifndef _WIN32
 	if (ret == -1) perror("select");
 #else
-	if (ret == 0)
+        if (ret == 0)
+        {
             if(!knetsilent)
             {
-		fprintf(stderr, "select time-out\n");
+                fprintf(stderr, "select time-out\n");
             }
-	else if (ret == SOCKET_ERROR)
+        }
+        else if (ret == SOCKET_ERROR)
+        {
             if(!knetsilent)
             {
-		fprintf(stderr, "select: %d\n", WSAGetLastError());
+                fprintf(stderr, "select: %d\n", WSAGetLastError());
             }
+        }
 #endif
 	return ret;
 }
@@ -353,22 +359,15 @@ int kftp_connect_file(knetFile *fp)
 		if (fp->no_reconnect) kftp_get_response(fp);
 	}
 	kftp_pasv_prep(fp);
-    kftp_send_cmd(fp, fp->size_cmd, 1);
-#ifndef _WIN32
-    if ( sscanf(fp->response,"%*d %lld", &file_size) != 1 )
-    {
-        if(!knetsilent)
+        kftp_send_cmd(fp, fp->size_cmd, 1);
+        if ( sscanf(fp->response,"%*d %lld", &file_size) != 1 )
         {
-            fprintf(stderr,"[kftp_connect_file] %s\n", fp->response);
+            if(!knetsilent)
+            {
+                fprintf(stderr,"[kftp_connect_file] %s\n", fp->response);
+            }
+            return -1;
         }
-        return -1;
-    }
-#else
-	const char *p = fp->response;
-	while (*p != ' ') ++p;
-	while (*p < '0' || *p > '9') ++p;
-	file_size = strtoint64(p);
-#endif
 	fp->file_size = file_size;
 	if (fp->offset>=0) {
 		char tmp[32];

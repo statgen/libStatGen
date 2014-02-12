@@ -659,13 +659,13 @@ bool SamRecord::addIntTag(const char* tag, int32_t value)
     {
         // The int is negative, so it will need to use a signed type.
         // See if it is greater than the min value for a char.
-        if(value > std::numeric_limits<char>::min())
+        if(value > ((std::numeric_limits<char>::min)()))
         {
             // It can be stored in a signed char.
             bamvtype = 'c';
             tagBufferSize += 4;
         }
-        else if(value > std::numeric_limits<short>::min())
+        else if(value > ((std::numeric_limits<short>::min)()))
         {
             // It fits in a signed short.
             bamvtype = 's';
@@ -681,13 +681,13 @@ bool SamRecord::addIntTag(const char* tag, int32_t value)
     else
     {
         // It is positive, so an unsigned type can be used.
-        if(value < std::numeric_limits<unsigned char>::max())
+        if(value < ((std::numeric_limits<unsigned char>::max)()))
         {
             // It is under the max of an unsigned char.
             bamvtype = 'C';
             tagBufferSize += 4;
         }
-        else if(value < std::numeric_limits<unsigned short>::max())
+        else if(value < ((std::numeric_limits<unsigned short>::max)()))
         {
             // It is under the max of an unsigned short.
             bamvtype = 'S';

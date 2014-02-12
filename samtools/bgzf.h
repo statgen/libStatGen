@@ -54,14 +54,21 @@ typedef struct {
     int64_t block_address;
     int block_length;
     int block_offset;
-	int cache_size;
+    int cache_size;
     const char* error;
-	void *cache; // a pointer to a hash table
+    void *cache; // a pointer to a hash table
 } BGZF;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+#ifdef _WIN32
+#define __restrict
+#endif
+
+BGZF* dummy();
 
 /*
  * Open an existing file descriptor for reading or writing.
@@ -148,7 +155,7 @@ static inline int bgzf_getc(BGZF *fp)
 #ifdef _USE_KNETFILE
         fp->block_address = knet_tell(fp->x.fpr);
 #else
-#if defined(_WIN32) || defined(_MSC_VER)
+#ifdef __MINGW32__
        fp->block_address = ftell(fp->file);
 #else
        fp->block_address = ftello(fp->file);
