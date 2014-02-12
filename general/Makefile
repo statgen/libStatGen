@@ -75,8 +75,7 @@ TOOLBASE=\
 	StringHash \
 	StringMap \
 	Tabix \
-	UncompressedFileType \
-	WindowsHelper
+	UncompressedFileType
 
 SRCONLY=\
 	PedigreeLoader.cpp \

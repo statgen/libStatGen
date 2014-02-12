@@ -160,6 +160,7 @@ static inline int bgzf_getc(BGZF *fp)
 #else
        fp->block_address = ftello(fp->file);
 #endif
+#endif
         fp->block_offset = 0;
         fp->block_length = 0;
     }
