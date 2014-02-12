@@ -21,6 +21,7 @@
 #ifndef __VCF_HELPER_H__
 #define __VCF_HELPER_H__
 
+#include <string>
 #include "ReusableVector.h"
 
 /// This header file provides helper methods for dealing with VCF Files.
