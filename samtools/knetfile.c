@@ -48,6 +48,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#else
+#include <BaseTsd.h>
 #endif
 
 #include "knetfile.h"
@@ -88,16 +90,20 @@ static int socket_wait(int fd, int is_read)
 #ifndef _WIN32
 	if (ret == -1) perror("select");
 #else
-	if (ret == 0)
+        if (ret == 0)
+        {
             if(!knetsilent)
             {
-		fprintf(stderr, "select time-out\n");
+                fprintf(stderr, "select time-out\n");
             }
-	else if (ret == SOCKET_ERROR)
+        }
+        else if (ret == SOCKET_ERROR)
+        {
             if(!knetsilent)
             {
-		fprintf(stderr, "select: %d\n", WSAGetLastError());
+                fprintf(stderr, "select: %d\n", WSAGetLastError());
             }
+        }
 #endif
 	return ret;
 }

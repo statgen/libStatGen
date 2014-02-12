@@ -155,6 +155,9 @@ static inline int bgzf_getc(BGZF *fp)
 #ifdef _USE_KNETFILE
         fp->block_address = knet_tell(fp->x.fpr);
 #else
+#ifdef __MINGW32__
+       fp->block_address = ftell(fp->file);
+#else
        fp->block_address = ftello(fp->file);
 #endif
         fp->block_offset = 0;

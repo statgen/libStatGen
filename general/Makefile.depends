@@ -17,8 +17,10 @@ $(OBJDIR_OPT)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_OPT)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
 $(OBJDIR_OPT)/CigarRoller.o: InputFile.h FileType.h
-$(OBJDIR_OPT)/Error.o: Error.h
-$(OBJDIR_OPT)/ErrorHandler.o: ErrorHandler.h
+$(OBJDIR_OPT)/Error.o: Error.h PhoneHome.h StringBasics.h InputFile.h
+$(OBJDIR_OPT)/Error.o: FileType.h
+$(OBJDIR_OPT)/ErrorHandler.o: ErrorHandler.h PhoneHome.h StringBasics.h
+$(OBJDIR_OPT)/ErrorHandler.o: InputFile.h FileType.h
 $(OBJDIR_OPT)/FileType.o: FileType.h
 $(OBJDIR_OPT)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
 $(OBJDIR_OPT)/FortranFormat.o: FileType.h IntArray.h Error.h
@@ -63,8 +65,8 @@ $(OBJDIR_OPT)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_OPT)/MiniDeflate.o: MiniDeflate.h
 $(OBJDIR_OPT)/NonOverlapRegions.o: NonOverlapRegions.h
 $(OBJDIR_OPT)/Parameters.o: Parameters.h StringMap.h StringBasics.h
-$(OBJDIR_OPT)/Parameters.o: InputFile.h FileType.h Constant.h MathConstant.h
-$(OBJDIR_OPT)/Parameters.o: Error.h
+$(OBJDIR_OPT)/Parameters.o: InputFile.h FileType.h PhoneHome.h Constant.h
+$(OBJDIR_OPT)/Parameters.o: MathConstant.h Error.h
 $(OBJDIR_OPT)/PedigreeAlleleFreq.o: PedigreeAlleleFreq.h Pedigree.h
 $(OBJDIR_OPT)/PedigreeAlleleFreq.o: Constant.h PedigreeAlleles.h LongInt.h
 $(OBJDIR_OPT)/PedigreeAlleleFreq.o: PedigreePerson.h PedigreeGlobals.h
@@ -102,7 +104,8 @@ $(OBJDIR_OPT)/PedigreePerson.o: LongInt.h PedigreeGlobals.h StringArray.h
 $(OBJDIR_OPT)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_OPT)/PedigreePerson.o: StringHash.h Hash.h IntArray.h MathVector.h
 $(OBJDIR_OPT)/PedigreePerson.o: Error.h
-$(OBJDIR_OPT)/PhoneHome.o: PhoneHome.h ../include/knetfile.h
+$(OBJDIR_OPT)/PhoneHome.o: PhoneHome.h StringBasics.h InputFile.h FileType.h
+$(OBJDIR_OPT)/PhoneHome.o: ../include/knetfile.h
 $(OBJDIR_OPT)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_OPT)/QuickIndex.o: InputFile.h FileType.h StringArray.h StringHash.h
 $(OBJDIR_OPT)/QuickIndex.o: Constant.h Hash.h IntArray.h StringMap.h Error.h
@@ -129,7 +132,6 @@ $(OBJDIR_OPT)/StringMap.o: StringMap.h StringBasics.h InputFile.h FileType.h
 $(OBJDIR_OPT)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
 $(OBJDIR_OPT)/Tabix.o: StatGenStatus.h ErrorHandler.h StringBasics.h
 $(OBJDIR_OPT)/UncompressedFileType.o: UncompressedFileType.h FileType.h
-$(OBJDIR_OPT)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_OPT)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
 $(OBJDIR_OPT)/PedigreeLoader.o: LongInt.h PedigreePerson.h PedigreeGlobals.h
 $(OBJDIR_OPT)/PedigreeLoader.o: StringArray.h StringBasics.h InputFile.h
@@ -168,8 +170,10 @@ $(OBJDIR_DEBUG)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_DEBUG)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h StringBasics.h
 $(OBJDIR_DEBUG)/CigarRoller.o: InputFile.h FileType.h
-$(OBJDIR_DEBUG)/Error.o: Error.h
-$(OBJDIR_DEBUG)/ErrorHandler.o: ErrorHandler.h
+$(OBJDIR_DEBUG)/Error.o: Error.h PhoneHome.h StringBasics.h InputFile.h
+$(OBJDIR_DEBUG)/Error.o: FileType.h
+$(OBJDIR_DEBUG)/ErrorHandler.o: ErrorHandler.h PhoneHome.h StringBasics.h
+$(OBJDIR_DEBUG)/ErrorHandler.o: InputFile.h FileType.h
 $(OBJDIR_DEBUG)/FileType.o: FileType.h
 $(OBJDIR_DEBUG)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
 $(OBJDIR_DEBUG)/FortranFormat.o: FileType.h IntArray.h Error.h
@@ -215,7 +219,7 @@ $(OBJDIR_DEBUG)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_DEBUG)/MiniDeflate.o: MiniDeflate.h
 $(OBJDIR_DEBUG)/NonOverlapRegions.o: NonOverlapRegions.h
 $(OBJDIR_DEBUG)/Parameters.o: Parameters.h StringMap.h StringBasics.h
-$(OBJDIR_DEBUG)/Parameters.o: InputFile.h FileType.h Constant.h
+$(OBJDIR_DEBUG)/Parameters.o: InputFile.h FileType.h PhoneHome.h Constant.h
 $(OBJDIR_DEBUG)/Parameters.o: MathConstant.h Error.h
 $(OBJDIR_DEBUG)/PedigreeAlleleFreq.o: PedigreeAlleleFreq.h Pedigree.h
 $(OBJDIR_DEBUG)/PedigreeAlleleFreq.o: Constant.h PedigreeAlleles.h LongInt.h
@@ -257,7 +261,8 @@ $(OBJDIR_DEBUG)/PedigreePerson.o: PedigreeGlobals.h StringArray.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: StringHash.h Hash.h IntArray.h MathVector.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: Error.h
-$(OBJDIR_DEBUG)/PhoneHome.o: PhoneHome.h ../include/knetfile.h
+$(OBJDIR_DEBUG)/PhoneHome.o: PhoneHome.h StringBasics.h InputFile.h
+$(OBJDIR_DEBUG)/PhoneHome.o: FileType.h ../include/knetfile.h
 $(OBJDIR_DEBUG)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_DEBUG)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_DEBUG)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
@@ -286,7 +291,6 @@ $(OBJDIR_DEBUG)/StringMap.o: FileType.h
 $(OBJDIR_DEBUG)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/Tabix.o: StatGenStatus.h ErrorHandler.h StringBasics.h
 $(OBJDIR_DEBUG)/UncompressedFileType.o: UncompressedFileType.h FileType.h
-$(OBJDIR_DEBUG)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_DEBUG)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
 $(OBJDIR_DEBUG)/PedigreeLoader.o: LongInt.h PedigreePerson.h
 $(OBJDIR_DEBUG)/PedigreeLoader.o: PedigreeGlobals.h StringArray.h
@@ -327,8 +331,10 @@ $(OBJDIR_PROFILE)/Cigar.o: Cigar.h Generic.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/Cigar.o: FileType.h STLUtilities.h
 $(OBJDIR_PROFILE)/CigarRoller.o: CigarRoller.h Cigar.h Generic.h
 $(OBJDIR_PROFILE)/CigarRoller.o: StringBasics.h InputFile.h FileType.h
-$(OBJDIR_PROFILE)/Error.o: Error.h
-$(OBJDIR_PROFILE)/ErrorHandler.o: ErrorHandler.h
+$(OBJDIR_PROFILE)/Error.o: Error.h PhoneHome.h StringBasics.h InputFile.h
+$(OBJDIR_PROFILE)/Error.o: FileType.h
+$(OBJDIR_PROFILE)/ErrorHandler.o: ErrorHandler.h PhoneHome.h StringBasics.h
+$(OBJDIR_PROFILE)/ErrorHandler.o: InputFile.h FileType.h
 $(OBJDIR_PROFILE)/FileType.o: FileType.h
 $(OBJDIR_PROFILE)/FortranFormat.o: FortranFormat.h StringBasics.h InputFile.h
 $(OBJDIR_PROFILE)/FortranFormat.o: FileType.h IntArray.h Error.h
@@ -374,7 +380,7 @@ $(OBJDIR_PROFILE)/MemoryMap.o: MemoryMap.h
 $(OBJDIR_PROFILE)/MiniDeflate.o: MiniDeflate.h
 $(OBJDIR_PROFILE)/NonOverlapRegions.o: NonOverlapRegions.h
 $(OBJDIR_PROFILE)/Parameters.o: Parameters.h StringMap.h StringBasics.h
-$(OBJDIR_PROFILE)/Parameters.o: InputFile.h FileType.h Constant.h
+$(OBJDIR_PROFILE)/Parameters.o: InputFile.h FileType.h PhoneHome.h Constant.h
 $(OBJDIR_PROFILE)/Parameters.o: MathConstant.h Error.h
 $(OBJDIR_PROFILE)/PedigreeAlleleFreq.o: PedigreeAlleleFreq.h Pedigree.h
 $(OBJDIR_PROFILE)/PedigreeAlleleFreq.o: Constant.h PedigreeAlleles.h
@@ -419,7 +425,8 @@ $(OBJDIR_PROFILE)/PedigreePerson.o: PedigreeGlobals.h StringArray.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: StringHash.h Hash.h IntArray.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: MathVector.h Error.h
-$(OBJDIR_PROFILE)/PhoneHome.o: PhoneHome.h ../include/knetfile.h
+$(OBJDIR_PROFILE)/PhoneHome.o: PhoneHome.h StringBasics.h InputFile.h
+$(OBJDIR_PROFILE)/PhoneHome.o: FileType.h ../include/knetfile.h
 $(OBJDIR_PROFILE)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_PROFILE)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_PROFILE)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
@@ -448,7 +455,6 @@ $(OBJDIR_PROFILE)/StringMap.o: FileType.h
 $(OBJDIR_PROFILE)/Tabix.o: Tabix.h IndexBase.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/Tabix.o: StatGenStatus.h ErrorHandler.h StringBasics.h
 $(OBJDIR_PROFILE)/UncompressedFileType.o: UncompressedFileType.h FileType.h
-$(OBJDIR_PROFILE)/WindowsHelper.o: WindowsHelper.h
 $(OBJDIR_PROFILE)/PedigreeLoader.o: Pedigree.h Constant.h PedigreeAlleles.h
 $(OBJDIR_PROFILE)/PedigreeLoader.o: LongInt.h PedigreePerson.h
 $(OBJDIR_PROFILE)/PedigreeLoader.o: PedigreeGlobals.h StringArray.h
