@@ -75,7 +75,7 @@ private:
     CharBuffer myText;
 
     static const std::string GLF_MAGIC;
-    static const int GLF_MAGIC_LEN;
+    static const int GLF_MAGIC_LEN = 4;
 };
 
 #endif

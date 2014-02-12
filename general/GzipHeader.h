@@ -59,7 +59,7 @@ private:
             uint16_t slen;
             uint16_t bsize;
         };
-        char headerBuffer[GZIP_HEADER_SIZE];
+        char headerBuffer[GzipHeader::GZIP_HEADER_SIZE];
     };
     char buffer[GZIP_HEADER_SIZE];
 

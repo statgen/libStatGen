@@ -301,7 +301,7 @@ private:
         uint32_t offset;
         uint32_t min_depth;
         uint8_t rmsMapQ;
-        uint8_t lk[NUM_REC1_LIKELIHOOD];
+        uint8_t lk[GlfRecord::NUM_REC1_LIKELIHOOD];
     } myRec1Base;
 
     static const int REC1_BASE_SIZE = 19;

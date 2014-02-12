@@ -359,22 +359,15 @@ int kftp_connect_file(knetFile *fp)
 		if (fp->no_reconnect) kftp_get_response(fp);
 	}
 	kftp_pasv_prep(fp);
-    kftp_send_cmd(fp, fp->size_cmd, 1);
-#ifndef _WIN32
-    if ( sscanf(fp->response,"%*d %lld", &file_size) != 1 )
-    {
-        if(!knetsilent)
+        kftp_send_cmd(fp, fp->size_cmd, 1);
+        if ( sscanf(fp->response,"%*d %lld", &file_size) != 1 )
         {
-            fprintf(stderr,"[kftp_connect_file] %s\n", fp->response);
+            if(!knetsilent)
+            {
+                fprintf(stderr,"[kftp_connect_file] %s\n", fp->response);
+            }
+            return -1;
         }
-        return -1;
-    }
-#else
-	const char *p = fp->response;
-	while (*p != ' ') ++p;
-	while (*p < '0' || *p > '9') ++p;
-	file_size = strtoint64(p);
-#endif
 	fp->file_size = file_size;
 	if (fp->offset>=0) {
 		char tmp[32];
