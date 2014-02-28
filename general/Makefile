@@ -8,7 +8,8 @@ ifeq ($(UNAME), Linux)
   # an error, but allow unused results and variables for the
   # time being.
   #
-  USER_WARNINGS ?= -Werror -Wno-strict-overflow
+  USER_WARNINGS ?= -Werror $(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-strict-overflow" ; fi)
+#-Wno-strict-overflow
 # -Wno-unused-variable $(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-unused-result" ; fi)
 endif
 ifeq ($(UNAME), Darwin)
