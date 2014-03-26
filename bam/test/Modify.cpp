@@ -136,7 +136,7 @@ void modify::modifyTags()
     // Read the records.
     while(samIn.ReadRecord(samHeader, samRecord))
     {
-        if((count == 0) || (count == 4))
+        if(count == 0)
         {
             assert(samRecord.rmTag("MD", 'Z'));
         }
@@ -144,10 +144,13 @@ void modify::modifyTags()
         {
             assert(samRecord.rmTags("XT:A;MD:Z;AB:c;NM:i"));
         }
+        else if(count == 4)
+        {
+            assert(samRecord.rmTags("MD:Z,AB:c,NM:i"));
+        }
 
         assert(bamOut.WriteRecord(samHeader, samRecord));
         assert(samOut.WriteRecord(samHeader, samRecord));
         ++count;
     }
-    
 }

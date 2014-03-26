@@ -1157,7 +1157,7 @@ bool SamRecord::rmTags(const char* tags)
             extras.Delete(offset);
         }
         // Increment to the next tag.
-        if(currentTagPtr[4] == ';')
+        if((currentTagPtr[4] == ';') || (currentTagPtr[4] == ','))
         {
             // Increment once more.
             currentTagPtr += 5;
@@ -2142,7 +2142,7 @@ bool SamRecord::getTagsString(const char* tags, String& returnString, char delim
             };
         }
         // Increment to the next tag.
-        if(currentTagPtr[4] == ';')
+        if((currentTagPtr[4] == ';') || (currentTagPtr[4] == ','))
         {
             // Increment once more.
             currentTagPtr += 5;

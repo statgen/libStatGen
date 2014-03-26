@@ -254,7 +254,10 @@ public:
     bool rmTag(const char* tag, char type);
 
     /// Remove tags.
-    /// \param tags tags to remove, formatted as  Tag:Type;Tag:Type;Tag:Type...
+    /// The delimiter between the tags is ',' or ';'.  ',' was added since 
+    /// the original delimiter, ';', requires the string to be quoted on the
+    /// command-line.
+    /// \param tags tags to remove, formatted as  Tag:Type,Tag:Type,Tag:Type...
     /// \return true if all tags no longer exist in the record, false if any could not be removed
     /// (Returns true if the tags were not found in the record).
     /// SamStatus is set to INVALID if the tags are incorrectly formatted.
@@ -550,7 +553,10 @@ public:
     /// Sets the Status to SUCCESS when the tags are successfully returned or
     /// the tags were not found.  If a different error occured, the status is
     /// set appropriately.
-    /// \param tags the tags to retrieve, formatted as TAG:TYPE;TAG:TYPE...
+    /// The delimiter between the tags to retrieve is ',' or ';'.  ',' was added
+    /// since the original delimiter, ';', requires the string to be quoted on
+    /// the command-line.
+    /// \param tags the tags to retrieve, formatted as TAG:TYPE,TAG:TYPE...
     /// \param returnString the String to set (this method first clears returnString)
     ///                     to TAG:TYPE:VALUE<delim>TAG:TYPE:VALUE...
     /// \param delim delimiter to use to separate two tags, default is a tab.
