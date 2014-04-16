@@ -43,6 +43,11 @@ else
 TOOLCHAIN_PREFIX=
 endif
 
+UNAME:=$(shell uname)
+UNAME_LIBS:=
+ifeq ($(UNAME:MINGW32%=MINGW32),MINGW32)
+        UNAME_LIBS=-lwsock32
+endif
 
 # CPP0X=-std=c++0x
 
