@@ -44,3 +44,8 @@ $(INSTALLDIR) :
 	@echo Creating directory $(INSTALLDIR)
 	@echo " "
 	@mkdir -p $(INSTALLDIR)
+
+specific_clean :
+	-rm -f $(BINDIR_OPT)/$(EXE)
+	-rm -rf $(BINDIR_DEBUG)
+	-rm -rf $(BINDIR_PROFILE)
