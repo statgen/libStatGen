@@ -44,7 +44,7 @@ public:
 
     /// Get a reference to the data at the specified index.
     /// Throws an exception if the index is out of range.
-    DATA_TYPE& get(unsigned int index);
+    DATA_TYPE& get(unsigned int index) const;
 
     /// Return the number of populated entries in the vector.
     // The next empty position is the same as the size.
@@ -114,7 +114,7 @@ DATA_TYPE& ReusableVector<DATA_TYPE>::getNextEmpty()
 
 
 template <class DATA_TYPE>
-DATA_TYPE& ReusableVector<DATA_TYPE>::get(unsigned int index)
+DATA_TYPE& ReusableVector<DATA_TYPE>::get(unsigned int index) const
 {
     if((index < myNextEmpty) && (index >= 0))
     {
