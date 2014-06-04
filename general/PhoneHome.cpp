@@ -104,10 +104,12 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
 
     if(latestVersion.FastCompareToStem(thisVersion) > 0)
     {
-        std::cerr << "A new version, " << latestVersion 
+        std::cerr << "\n**************************************************************************************\n"
+                  << "A new version, " << latestVersion 
                   << ", of " << ourToolName
                   << " is available (currently running " 
-                  << thisVersion.c_str() << ")\n";
+                  << thisVersion.c_str() << ")"
+                  << "\n**************************************************************************************\n\n";
         return(false);
     }
     return(true);
