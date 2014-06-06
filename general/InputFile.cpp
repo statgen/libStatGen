@@ -189,11 +189,10 @@ bool InputFile::openFile(const char * filename, const char * mode,
             // Not from stdin, so determine the file type.
 
             // Open the file read only to determine file type.
-            FILE* filePtr = fopen(filename, "r");
-            
+            UncompressedFileType file(filename, "r");
             // If the file could not be opened, either create a new one or
             // return failure.
-            if (filePtr == NULL)
+            if (!file.isOpen())
             {
                 // If the mode is for read, then the file must exist, otherwise,
                 // create a new file.
@@ -219,11 +218,11 @@ bool InputFile::openFile(const char * filename, const char * mode,
                 // filetype from the file.
                 // Read the file to see if it a gzip file.
                 GzipHeader gzipHeader;
-                bool isGzip = gzipHeader.readHeader(filePtr);
+                bool isGzip = gzipHeader.readHeader(file);
                 
                 // The file header has been read, so close the file, so it can
                 // be re-opened as the correct type.
-                fclose(filePtr);
+                file.close();
 
                 if (isGzip)
                 {

@@ -65,6 +65,37 @@ bool GzipHeader::readHeader(FILE* filePtr)
 }
 
 
+// Method to read the gzip header from a file.
+// Returns true if the file is a gzip file, false, otherwise.
+bool GzipHeader::readHeader(UncompressedFileType& file)
+{
+    bool isGzip = false;
+
+    // If the file is not already open, return false.
+    if (!file.isOpen())
+    {
+        // File is not open, so return false - not a gzip file.
+        return(false);
+    }
+
+    // Try to read a header from the file.
+    //   if(144 == file.read(buffer, 1, 144, filePtr))
+    if (GZIP_HEADER_SIZE == file.read(buffer, GZIP_HEADER_SIZE))
+    {
+        memcpy(headerBuffer, buffer, GZIP_HEADER_SIZE);
+
+        // Successfully read enough bytes, so check to see if it is a GzipFile.
+        if (isGzipFile())
+        {
+            // It is a gzip file.
+            isGzip = true;
+        }
+    }
+
+    return isGzip;
+}
+
+
 // Determine if the file is a gzip file.
 bool GzipHeader::isGzipFile()
 {

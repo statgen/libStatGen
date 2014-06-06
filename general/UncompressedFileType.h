@@ -21,6 +21,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "FileType.h"
+#include "knetfile.h"
 
 class UncompressedFileType : public FileType
 {
@@ -28,11 +29,13 @@ public:
     UncompressedFileType()
     {
         filePtr = NULL;
+        kfilePtr = NULL;
+        keof = false;
     }
 
     virtual ~UncompressedFileType()
     {
-        if (filePtr != NULL)
+        if((filePtr != NULL) || (kfilePtr != NULL))
         {
             close();
         }
@@ -46,7 +49,8 @@ public:
         // the two pointers are different (false).
         if (rhs != NULL)
             return false;
-        return (filePtr == rhs);
+        // rhs is NULL.  They are the same if both filePtr & kfilePtr are NULL.
+        return((filePtr == rhs) && (kfilePtr == rhs));
     }
 
     bool operator != (void * rhs)
@@ -55,19 +59,30 @@ public:
         // the two pointers are different (true).
         if (rhs != NULL)
             return true;
-        return (filePtr != rhs);
+        // rhs is NULL.  They are the different if either filePtr or kfilePtr
+        // are not NULL.
+        return((filePtr != rhs) || (kfilePtr != rhs));
     }
 
     // Close the file.
     inline int close()
     {
-        if((filePtr != stdout) && (filePtr != stdin))
+        if(filePtr != NULL)
         {
-            int result = fclose(filePtr);
+            if((filePtr != stdout) && (filePtr != stdin))
+            {
+                int result = fclose(filePtr);
+                filePtr = NULL;
+                return result;
+            }
             filePtr = NULL;
+        }
+        else if(kfilePtr != NULL)
+        {
+            int result = knet_close(kfilePtr);
+            kfilePtr = NULL;
             return result;
         }
-        filePtr = NULL;
         return 0;
     }
 
@@ -76,20 +91,34 @@ public:
     inline void rewind()
     {
         // Just call rewind to move to the beginning of the file.
-        ::rewind(filePtr);
+        if(filePtr != NULL)
+        {
+            ::rewind(filePtr);
+        }
+        else if (kfilePtr != NULL)
+        {
+            knet_seek(kfilePtr, 0, SEEK_SET);
+        }
     }
 
     // Check to see if we have reached the EOF.
     inline int eof()
     {
         //  check the file for eof.
-        return feof(filePtr);
+        if(kfilePtr != NULL)
+        {
+            return(keof);
+        }
+        else
+        {
+            return feof(filePtr);
+        }
     }
 
     // Check to see if the file is open.
     virtual inline bool isOpen()
     {
-        if (filePtr != NULL)
+        if((filePtr != NULL) || (kfilePtr != NULL))
         {
             // filePtr is not null, so the file is open.
             return(true);
@@ -100,6 +129,7 @@ public:
     // Write to the file
     inline unsigned int write(const void * buffer, unsigned int size)
     {
+        // knetfile is never used for writing.
         return fwrite(buffer, 1, size, filePtr);
     }
 
@@ -108,6 +138,25 @@ public:
     // be protected.
     inline int read(void * buffer, unsigned int size)
     {
+        if(kfilePtr != NULL)
+        {
+            int bytesRead = knet_read(kfilePtr, buffer, size);
+            if((bytesRead == 0) && (size != 0))
+            {
+                keof = true;
+            }
+            else if((bytesRead != (int)size) && (bytesRead >= 0))
+            {
+                // Less then the requested size was read and an error
+                // was not returned (bgzf_read returns -1 on error).
+                keof = true;
+            }
+            else
+            {
+                keof = false;
+            }
+            return(bytesRead);
+        }
         return fread(buffer, 1, size, filePtr);
     }
 
@@ -116,6 +165,10 @@ public:
     // -1 return value indicates an error.
     virtual inline int64_t tell()
     {
+        if(kfilePtr != NULL)
+        {
+            return knet_tell(kfilePtr);
+        }
         return ftell(filePtr);
     }
 
@@ -129,7 +182,16 @@ public:
     // Returns true on successful seek and false on a failed seek.
     virtual inline bool seek(int64_t offset, int origin)
     {
-        int64_t returnVal = fseek(filePtr, offset, origin);
+        int returnVal = 0;
+        if(kfilePtr != NULL)
+        {
+            returnVal = knet_seek(kfilePtr, offset, origin);
+            keof = false;
+        }
+        else
+        {
+            returnVal = fseek(filePtr, offset, origin);
+        }
         // Check for success - 0 return value.
         if (returnVal == 0)
         {
@@ -143,6 +205,8 @@ public:
 protected:
     // A FILE Pointer is used.
     FILE* filePtr;
+    knetFile *kfilePtr;
+    bool keof;
 };
 
 #endif

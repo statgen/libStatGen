@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
+#include "UncompressedFileType.h"
 
 class GzipHeader
 {
@@ -31,6 +31,10 @@ public:
     // Method to read the gzip header from a file.
     // Returns true if the file is a gzip file, false, otherwise.
     bool readHeader(FILE* filePtr);
+
+    // Method to read the gzip header from a file of UncompresedFileType.
+    // Returns true if the file is a gzip file, false, otherwise.
+    bool readHeader(UncompressedFileType& file);
 
     // Determine if the file is a gzip file.
     bool isGzipFile();

@@ -579,14 +579,14 @@ off_t knet_seek(knetFile *fp, off_t off, int whence)
 		off_t offset = lseek(fp->fd, off, whence);
 		if (offset == -1) return -1;
 		fp->offset = offset;
-		return fp->offset;
+		return 0;
 	} else if (fp->type == KNF_TYPE_FTP) {
 		if (whence == SEEK_CUR) fp->offset += off;
 		else if (whence == SEEK_SET) fp->offset = off;
 		else if (whence == SEEK_END) fp->offset = fp->file_size + off;
 		else return -1;
 		fp->is_ready = 0;
-		return fp->offset;
+		return 0;
 	} else if (fp->type == KNF_TYPE_HTTP) {
 		if (whence == SEEK_END) { // FIXME: can we allow SEEK_END in future?
                     if(!knetsilent)
@@ -600,7 +600,7 @@ off_t knet_seek(knetFile *fp, off_t off, int whence)
 		else if (whence == SEEK_SET) fp->offset = off;
 		else return -1;
 		fp->is_ready = 0;
-		return fp->offset;
+		return 0;
 	}
 	errno = EINVAL;
         if(!knetsilent)
