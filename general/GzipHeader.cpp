@@ -80,7 +80,7 @@ bool GzipHeader::readHeader(UncompressedFileType& file)
 
     // Try to read a header from the file.
     //   if(144 == file.read(buffer, 1, 144, filePtr))
-    if (GZIP_HEADER_SIZE == file.read(buffer, GZIP_HEADER_SIZE))
+    if ((int)GZIP_HEADER_SIZE == file.read(buffer, GZIP_HEADER_SIZE))
     {
         memcpy(headerBuffer, buffer, GZIP_HEADER_SIZE);
 
