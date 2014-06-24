@@ -53,6 +53,12 @@ $(STAT_GEN_LIB_DEBUG):
 $(STAT_GEN_LIB_PROFILE): 
 	$(MAKE) -C $(@D) --no-print-directory profile
 
+$(OBJECTS_OPT): $(REQ_LIBS_OPT)
+
+$(OBJECTS_DEBUG): $(REQ_LIBS_DEBUG)
+
+$(OBJECTS_PROFILE): $(REQ_LIBS_PROFILE)
+
 $(BINDIR_OPT) $(BINDIR_DEBUG) $(BINDIR_PROFILE):
 	mkdir -p $@
 
