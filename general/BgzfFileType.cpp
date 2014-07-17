@@ -32,13 +32,13 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
        (strcmp(filename, "-") == 0))
     {
         // Write to stdout.
-        bgzfHandle = bgzf_fdopen(fileno(stdout), mode);
+        bgzfHandle = bgzf_dopen(fileno(stdout), mode);
     }
     else if(((mode[0] == 'r') || (mode[0] == 'R')) && 
        (strcmp(filename, "-") == 0))
     {
         // read from stdin
-        bgzfHandle = bgzf_fdopen(fileno(stdin), mode);
+        bgzfHandle = bgzf_dopen(fileno(stdin), mode);
     }
     else
     {
@@ -50,8 +50,8 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
     {
         // Check to see if the file is being opened for read, if the eof block
         // is required, and if it is, if it is there.
-        if ((mode[0] == 'r' || mode[0] == 'R') && ourRequireEofBlock &&
-                (bgzf_check_EOF(bgzfHandle) == 0))
+        if ((mode[0] == 'r' || mode[0] == 'R') && (strcmp(filename, "-") != 0)
+            && ourRequireEofBlock && (bgzf_check_EOF(bgzfHandle) != 1))
         {
             std::cerr << "BGZF EOF marker is missing in " << filename << std::endl;
             // the block is supposed to be there, but isn't, so close the file.

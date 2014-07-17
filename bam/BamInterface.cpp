@@ -54,7 +54,11 @@ bool BamInterface::readHeader(IFILE filePtr, SamFileHeader& header,
     
     if(readSize != sizeof(headerLength))
     {
-        status.setStatus(SamStatus::FAIL_IO, "Failed to read the BAM header length.");
+        String errMsg = "Failed to read the BAM header length, read ";
+        errMsg += readSize;
+        errMsg += " bytes instead of ";
+        errMsg += (unsigned int)sizeof(headerLength);
+        status.setStatus(SamStatus::FAIL_IO, errMsg.c_str());
         return(false);
     }
 
