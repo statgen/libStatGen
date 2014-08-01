@@ -141,7 +141,8 @@ SamReferenceInfo& SamReferenceInfo::operator = (const SamReferenceInfo &newInfo)
 
 bool SamReferenceInfo::operator== (const SamReferenceInfo& rhs) const
 {
+    // Hash may be different, but if Contigs are the same, the hashes will
+    // contain the same basic info (maybe just at different indices.
     return((myReferenceContigs == rhs.myReferenceContigs) &&
-           (myReferenceHash == rhs.myReferenceHash) &&
            (myReferenceLengths == rhs.myReferenceLengths));
 }
