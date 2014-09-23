@@ -148,6 +148,22 @@ BGZF *bgzf_open(const char *path, const char *mode)
 		if ((fpw = fopen(path, "w")) == 0) return 0;
 		fp = bgzf_write_init(mode2level(mode));
 		fp->fp = fpw;
+	} else if (strchr(mode, 'a') || strchr(mode, 'A')) {
+		FILE *fpw;
+		if ((fpw = fopen(path, "r+")) == 0) return 0;
+		fp = bgzf_write_init(mode2level(mode));
+		fp->fp = fpw;
+                // Check for trailing EOF block.
+                if(bgzf_check_EOF(fp))
+                {
+                    // Overwrite the trailing EOF.
+                    _bgzf_seek(fp->fp, -28, SEEK_END);
+                }
+                else
+                {
+                    // No trailing EOF block, so go to the end
+                    _bgzf_seek(fp->fp, 0, SEEK_END);
+                }
 	}
 	return fp;
 }
