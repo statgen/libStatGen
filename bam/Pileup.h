@@ -384,7 +384,24 @@ template <class PILEUP_TYPE, class FUNC_CLASS>
 void Pileup<PILEUP_TYPE, FUNC_CLASS>::addAlignmentPosition(int refPosition,
                                                            SamRecord& record)
 {
-    int offset = pileupPosition(refPosition);
+    int offset = 0;
+    try{
+        offset = pileupPosition(refPosition);
+    }
+    catch(std::runtime_error& err)
+    {
+        const char* overflowErr = "Overflow on the pileup buffer:";
+        String errorMessage = err.what();
+        if(strncmp(err.what(), overflowErr, strlen(overflowErr)) == 0)
+        {
+            
+            errorMessage += "\n\tPileup Buffer Overflow: recordName = ";
+            errorMessage += record.getReadName();
+            errorMessage += "; Cigar = ";
+            errorMessage += record.getCigar();
+        }
+        throw std::runtime_error(errorMessage.c_str());
+    }
     
     if((offset < 0) || (offset >= pileupWindow))
     {
