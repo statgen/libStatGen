@@ -17,6 +17,7 @@
 
 #include "VcfGenotypeSample.h"
 #include <stdlib.h>
+#include <sstream>
 
 const int VcfGenotypeSample::INVALID_GT = -1;
 const int VcfGenotypeSample::MISSING_GT = -2;
@@ -28,6 +29,7 @@ VcfGenotypeSample::VcfGenotypeSample()
       myPhased(false),
       myUnphased(false),
       myHasAllGenotypeAlleles(false),
+      myNewGT(false),
       myGTs()
 {
 }
@@ -131,6 +133,15 @@ bool VcfGenotypeSample::read(IFILE filePtr, VcfGenotypeFormat& format)
 }
 
 
+bool VcfGenotypeSample::write(IFILE filePtr)
+{
+    if(myNewGT)
+    {
+        updateGTString();
+    }
+    return(VcfGenotypeField::write(filePtr));
+}
+
 const std::string* VcfGenotypeSample::getString(const std::string& key)
 {
     if(myFormatPtr == NULL)
@@ -147,6 +158,11 @@ const std::string* VcfGenotypeSample::getString(const std::string& key)
         {
             // missing for this sample.
             return(&MISSING_FIELD);
+        }
+
+        if((key == "GT") && myNewGT)
+        {
+            updateGTString();
         }
         return(&(myGenotypeSubFields.get(index)));
     }
@@ -167,6 +183,28 @@ bool VcfGenotypeSample::setString(const std::string& key, const std::string& val
     {
         // Found the type, so set it.
         myGenotypeSubFields.get(index) = value;
+
+        if(key == "GT")
+        {
+            myGTs.clear();
+            myNewGT = false;
+            if(value.find('|') != std::string::npos)
+            {
+                myPhased = true;
+            }
+            if(value.find('/') != std::string::npos)
+            {
+                myUnphased = true;
+            }
+            if(value.find('.') != std::string::npos)
+            {
+                myHasAllGenotypeAlleles = false;
+            }
+            else
+            {
+                myHasAllGenotypeAlleles = true;
+            }
+        }
         return(true);
     }
     // field was not found, so return false.
@@ -194,6 +232,33 @@ int VcfGenotypeSample::getGT(unsigned int index)
 }
 
 
+void VcfGenotypeSample::setGT(unsigned int index, int newGt)
+{
+    if(myGTs.empty())
+    {
+        if(!parseGT())
+        {
+            // Failed to parse GT, so return INVALID_GT.
+            throw(std::runtime_error("VCF failed to parse GT."));
+        }
+    }
+    
+    if(index < myGTs.size())
+    {
+        if(myGTs[index] != newGt)
+        {
+            myNewGT = true;
+            myGTs[index] = newGt;
+        }
+    }
+    else
+    {
+        // Out of range index.
+        throw(std::runtime_error("VCF setGT called with out of range GT index."));
+    }
+}
+
+
 int VcfGenotypeSample::getNumGTs()
 {
     if(myGTs.empty())
@@ -214,6 +279,7 @@ void VcfGenotypeSample::internal_reset()
     myUnphased = false;
     myHasAllGenotypeAlleles = false;
     myGTs.clear();
+    myNewGT = false;
 }
 
 
@@ -222,6 +288,7 @@ bool VcfGenotypeSample::parseGT()
     // Parse the GT.
     const std::string* gtStr = getString("GT");
     myGTs.clear();
+    myNewGT = false;
     if(gtStr == NULL)
     {
         // GT field not found.
@@ -256,4 +323,34 @@ bool VcfGenotypeSample::parseGT()
         myGTs.push_back((int)gtLong);
     }
     return(true);
+}
+
+
+void VcfGenotypeSample::updateGTString()
+{
+    if(myNewGT)
+    {
+        int index = myFormatPtr->getIndex("GT");
+        if(index != VcfGenotypeFormat::GENOTYPE_INDEX_NA)
+        {
+            // Check if it is out of range for this sample - means it 
+            // is missing for this sample.
+            if(index < myGenotypeSubFields.size())
+            {
+                std::stringstream gtSS;
+                char phaseChar = '/';
+                if(myPhased)
+                {
+                    phaseChar = '|';
+                }
+                gtSS << myGTs[0];
+                for(unsigned int i = 1; i < myGTs.size(); i++)
+                {
+                    gtSS << phaseChar << myGTs[i];
+                }
+                myGenotypeSubFields.get(index) = gtSS.str();
+                myNewGT = false;
+            }
+        }
+    }
 }

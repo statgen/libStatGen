@@ -90,6 +90,7 @@ public:
                    const std::string& value);
 
     int getGT(int sampleNum, unsigned int gtIndex);
+    void setGT(int sampleNum, unsigned int gtIndex, int newGt);
 
     int getNumGTs(int sampleNum);
 

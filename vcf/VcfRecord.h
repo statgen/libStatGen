@@ -117,6 +117,9 @@ public:
     inline int getGT(int sampleNum, unsigned int gtIndex)
     { return(myGenotype.getGT(sampleNum, gtIndex)); }
 
+    inline void setGT(int sampleNum, unsigned int gtIndex, int newGt)
+    { myGenotype.setGT(sampleNum, gtIndex, newGt); }
+
     /// Return true if all of the samples are phased and none are unphased,
     /// false if any are unphased or not phased.
     inline bool allPhased() { return(myGenotype.allPhased()); }

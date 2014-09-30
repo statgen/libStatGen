@@ -196,6 +196,19 @@ int VcfRecordGenotype::getGT(int sampleNum, unsigned int gtIndex)
 }
 
 
+void VcfRecordGenotype::setGT(int sampleNum, unsigned int gtIndex, int newGt)
+{
+    if(sampleNum >= mySamples.size())
+    {
+        // Out of range sample index.
+        throw(std::runtime_error("setGT called with out of range sample."));
+    }
+    // Set the field for the sample.
+    mySamples.get(sampleNum).setGT(gtIndex, newGt);
+
+}
+
+
 int VcfRecordGenotype::getNumGTs(int sampleNum)
 {
     if(sampleNum >= mySamples.size())

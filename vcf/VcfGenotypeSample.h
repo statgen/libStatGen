@@ -41,6 +41,8 @@ public:
     /// \return true if a tab ended the field, false if it was \n or EOF.
     bool read(IFILE filePtr, VcfGenotypeFormat& format);
 
+    virtual bool write(IFILE filePtr);
+
     /// Get a pointer to the string containing the value associated with the
     /// specified key(the pointer will be invalid if the field is
     /// changed/reset).  
@@ -63,6 +65,10 @@ public:
     /// not specified and returns MISSING_GT if it is '.'.
     int getGT(unsigned int index);
 
+    /// Set the integer allele at the specified index of the GT field.
+    /// Requires the GT index to already exist.
+    void setGT(unsigned int index, int newGt);
+
     /// Return the number of GT fields for this sample.
     int getNumGTs();
 
@@ -76,11 +82,14 @@ private:
     VcfGenotypeSample(const VcfGenotypeSample& vcfGenotypeSample);
     VcfGenotypeSample& operator=(const VcfGenotypeSample& vcfGenotypeSample);
 
+    void updateGTString();
+
     VcfGenotypeFormat* myFormatPtr;
 
     bool myPhased;
     bool myUnphased;
     bool myHasAllGenotypeAlleles;
+    bool myNewGT;
 
     std::vector<int> myGTs;
 };
