@@ -211,12 +211,12 @@ const Tabix* VcfFileReader::getVcfIndex()
 }
 
 
-bool VcfFileReader::readRecord(VcfRecord& record)
+bool VcfFileReader::readRecord(VcfRecord& record, VcfSubsetSamples* subset)
 {
     myStatus = StatGenStatus::SUCCESS;
     // Subset the read if there are subsets specified.
-    VcfSubsetSamples* subsetPtr = NULL;
-    if(myUseSubset)
+    VcfSubsetSamples* subsetPtr = subset;
+    if((subsetPtr == NULL) && myUseSubset)
     {
         subsetPtr = &mySampleSubset;
     }

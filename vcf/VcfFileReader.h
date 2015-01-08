@@ -100,8 +100,10 @@ public:
     /// Read the next Vcf record from the file until a line passes all
     /// discard rules (if any) or until the end of the file is found..
     /// \param record record to populate with the next record.
+    /// \param subset ptr to subset of samples to keep.  This overrides
+    ///         mySampleSubset that may have been set at open.
     /// \return true if successful, false if not.
-    bool readRecord(VcfRecord& record);
+    bool readRecord(VcfRecord& record, VcfSubsetSamples* subset = NULL);
 
     /// Only read the specified chromosome when readRecord is called.
     /// If an index is not used, the read section can only be set prior to 
