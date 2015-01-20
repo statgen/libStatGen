@@ -1057,6 +1057,16 @@ bool SamFileHeader::parseHeader(String& header)
 // Parse one line of the header.
 bool SamFileHeader::parseHeaderLine(const String& headerLine)
 {
+    // Check if the line starts with @CO.
+    if((headerLine.Length() >= 4) && (headerLine[0] == '@') &&
+       (headerLine[1] == 'C') && (headerLine[2] == 'O') &&
+       (headerLine[3] == '\t'))
+    {
+        // Comment line.
+        String comment = headerLine.SubStr(4);
+        return(addComment(comment));
+    }
+
     StringArray tokens;
 
     // Split the line by tabs.
@@ -1157,10 +1167,6 @@ bool SamFileHeader::parseHeaderLine(const String& headerLine)
             myErrorMessage = "SAM/BAM Header line failed to store PG record.";
             status = false;
         }
-    }
-    else if(tokens[0] == "@CO")
-    {
-        addComment(tokens[1]);
     }
     else
     {
