@@ -22,7 +22,7 @@ install: opt
 
 # Link into the include directory
 $(INCLUDE_PATH)/%.h: %.h
-	ln  -s ../$(DIR_NAME)/$< $@
+	-ln -s ../$(DIR_NAME)/$< $@
 
 
 #########
