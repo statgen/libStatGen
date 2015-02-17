@@ -59,7 +59,7 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
     connect();
 
     // Look for this program in the returned string.
-    int start = ourReturnString.Find(ourToolName);
+    int start = ourReturnString.Find(ourToolName+"\t");
     if(start < 0)
     {
         // Parse the toolName, and check for the program name
@@ -68,7 +68,7 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
         if(colStart >= 0)
         {
             ourToolName.SetLength(colStart);
-            start = ourReturnString.Find(ourToolName);
+            start = ourReturnString.Find(ourToolName+"\t");
         }
     }
 
@@ -217,10 +217,9 @@ bool PhoneHome::connect()
         ourReturnString += buf;
     }
 
-    // std::cerr << ourReturnString.c_str() << std::endl;
     knet_close(file);
     knet_silent(0);
-    ourReturnString = buf;
+    // std::cerr << "PhoneHome URL = " << ourReturnString.c_str() << std::endl;
 #endif
     return(true);
 }
