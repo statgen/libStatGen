@@ -36,3 +36,16 @@ A similar setup should be used for test code, by including Makefiles/Makefile.te
 Other Notes
 -----------
 * Typically the .o files are compiled into their own directory called obj.
+
+
+Compile Issues/Troubleshooting
+------------------------------
+See http://genome.sph.umich.edu/wiki/LibStatGen_Troubleshooting for the latest troubleshooting information.
+
+If you are compiling on OSX and you encounter errors like the following:
+    GenomeSequence.cpp: In instantiation of 'std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const std::basic_string<_CharT, _Traits, _Alloc>&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]':
+    GenomeSequence.cpp:161: instantiated from here
+    GenomeSequence.cpp:161: error: explicit instantiation of 'std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const std::basic_string<_CharT, _Traits, _Alloc>&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' but no definition available
+
+Try compiling with: make USER_COMPILE_VARS=-mmacosx-version-min=10.8
+
