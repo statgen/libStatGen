@@ -383,7 +383,7 @@ public:
 
     /// Check to see if we have reached the EOF.
     /// \return 0 if not EOF, any other value means EOF.
-    inline int ifeof()
+    inline int ifeof() const
     {
         // Not EOF if we are not at the end of the buffer.
         if (myBufferIndex < myCurrentBufferSize)
@@ -420,7 +420,7 @@ public:
 
     /// Returns whether or not the file was successfully opened.
     /// \return true if the file is open, false if not.
-    inline bool isOpen()
+    inline bool isOpen() const
     {
         // It is open if the myFileTypePtr is set and says it is open.
         if ((myFileTypePtr != NULL) && myFileTypePtr->isOpen())
@@ -714,7 +714,11 @@ inline bool ifseek(IFILE file, int64_t offset, int origin)
 /// \return number of bytes written
 int ifprintf(IFILE output, const char * format, ...);
 
-/// Read a line from a file using streaming.
+/// Read a line from a file using streaming.  
+/// Will not fail when the file hits EOF, so do not do: while(iFile >> iStr)
+/// unless within your loop you check for ifeof and break.
+/// Instead, do something like:
+///    while(!iFile->ifeof() && iFile >> iStr)
 /// \param stream file to read from - IFILE is a pointer to an InputFile object
 /// \param str output string containing the line read from the file.
 inline IFILE operator >> (IFILE stream, std::string &str)
