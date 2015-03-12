@@ -488,5 +488,11 @@ void SamFilter::filterRead(SamRecord& record)
     // Filter the read by marking it as unmapped.
     uint16_t flag = record.getFlag(); 
     SamFlag::setUnmapped(flag);
+    // Clear N/A flags.
+    flag &= ~SamFlag::PROPER_PAIR;
+    flag &= ~SamFlag::SECONDARY_ALIGNMENT;
+    flag &= ~SamFlag::SUPPLEMENTARY_ALIGNMENT;
     record.setFlag(flag);
+    // Clear Cigar
+    record.setCigar("*");
 }

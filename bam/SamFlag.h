@@ -42,6 +42,7 @@ public:
     static const int16_t SECONDARY_ALIGNMENT = 0x0100;
     static const int16_t FAILED_QUALITY      = 0x0200;
     static const int16_t DUPLICATE           = 0x0400;
+    static const int16_t SUPPLEMENTARY_ALIGNMENT = 0x0800;
     static const int16_t FRAGMENT_INFO       = 0x00C0;
     static const int16_t FRAGMENT_SHIFT      = 6;
     //@}
