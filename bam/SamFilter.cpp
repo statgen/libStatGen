@@ -495,4 +495,6 @@ void SamFilter::filterRead(SamRecord& record)
     record.setFlag(flag);
     // Clear Cigar
     record.setCigar("*");
+    // Clear mapping quality
+    record.setMapQuality(0);
 }
