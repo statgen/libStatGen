@@ -155,6 +155,11 @@ public:
     /// If the file is not open, true is returned.
     bool IsEOF();
    
+    /// Returns whether or not the file has been opened for streaming 
+    /// input/output.
+    /// \return true = stream; false = not a stream.
+    bool IsStream();
+
     /// Reads the header section from the file and stores it in
     /// the passed in header.
     /// \return true = success; false = failure.
