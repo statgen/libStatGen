@@ -91,9 +91,6 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
         // Read each reference.
         Reference* ref = &(myRefs[refIndex]);
         
-        // Resize the bins so they can be indexed by bin number.
-        ref->bins.resize(MAX_NUM_BINS + 1);
-        
         // Read the number of bins.
         if(ifread(indexFile, &(ref->n_bin), 4) != 4)
         {
@@ -111,6 +108,9 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
             ref->n_unmapped = 0;
         }
 
+        // Resize the bins so they can be indexed by bin number.
+        ref->bins.resize(ref->n_bin + 1);
+        
         // Read each bin.
         for(int binIndex = 0; binIndex < ref->n_bin; binIndex++)
         {
@@ -127,7 +127,7 @@ SamStatus::Status BamIndex::readIndex(const char* filename)
 
             // Add the bin to the reference and get the
             // pointer back so the values can be set in it.
-            Bin* binPtr = &(ref->bins[binNumber]);
+            Bin* binPtr = &(ref->bins[binIndex]);
             binPtr->bin = binNumber;
          
             // Read in the number of chunks.
@@ -285,15 +285,19 @@ bool BamIndex::getChunksForRegion(int32_t refID, int32_t start, int32_t end,
     uint64_t minOffset = 0;
     getMinOffsetFromLinearIndex(refID, start, minOffset);
 
-    uint16_t binInRangeList[MAX_NUM_BINS + 1];
+    bool binInRangeMap[MAX_NUM_BINS+1];
     
-    int numBins = getBinsForRegion(start, end, binInRangeList);
+    getBinsForRegion(start, end, binInRangeMap);
 
-    // loop through the bins in the range and get the chunks.
-    for(int i = 0; i < numBins; ++i)
+    // Loop through the bins in the ref and if they are in the region, get the chunks.
+    for(int i = 0; i < ref->n_bin; ++i)
     {
-        int binNum = binInRangeList[i];
-        const Bin* bin = &(ref->bins[binNum]);
+        const Bin* bin = &(ref->bins[i]);
+        if(binInRangeMap[bin->bin] == false)
+        {
+            // This bin is not in the region, so check the next one.
+            continue;
+        }
 
         // Add each chunk in the bin to the map.
         for(int chunkIndex = 0; chunkIndex < bin->n_chunk; chunkIndex++)

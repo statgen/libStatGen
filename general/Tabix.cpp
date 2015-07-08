@@ -141,9 +141,6 @@ StatGenStatus::Status Tabix::readIndex(const char* filename)
         // Read each reference.
         Reference* ref = &(myRefs[refIndex]);
         
-        // Resize the bins so they can be indexed by bin number.
-        ref->bins.resize(MAX_NUM_BINS + 1);
-        
         // Read the number of bins.
         if(ifread(indexFile, &(ref->n_bin), 4) != 4)
         {
@@ -152,6 +149,9 @@ StatGenStatus::Status Tabix::readIndex(const char* filename)
             return(StatGenStatus::FAIL_PARSE);
         }
 
+        // Resize the bins.
+        ref->bins.resize(ref->n_bin + 1);
+        
         // Read each bin.
         for(int binIndex = 0; binIndex < ref->n_bin; binIndex++)
         {
@@ -167,7 +167,7 @@ StatGenStatus::Status Tabix::readIndex(const char* filename)
 
             // Add the bin to the reference and get the
             // pointer back so the values can be set in it.
-            Bin* binPtr = &(ref->bins[binNumber]);
+            Bin* binPtr = &(ref->bins[binIndex]);
             binPtr->bin = binNumber;
          
             // Read in the number of chunks.

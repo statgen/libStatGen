@@ -143,38 +143,40 @@ int32_t IndexBase::getNumRefs() const
 }
 
 
-// Returns the minimum offset of records that cross the 16K block that
-// contains the specified position for the given reference id.
 // The basic logic is from samtools reg2bins and the samtools format specification pdf.
-int IndexBase::getBinsForRegion(uint32_t start, uint32_t end, uint16_t binList[MAX_NUM_BINS])
+// Set bins in the region to 1 and all other bins to 0.
+void IndexBase::getBinsForRegion(uint32_t start, uint32_t end, bool binMap[MAX_NUM_BINS+1])
 {
-	uint32_t binListIndex = 0, binNum;
-	--end;
+    for(uint32_t index = 0; index < MAX_NUM_BINS+1; index++)
+    {
+        binMap[index] = false;
+    }
 
-        // Check if beg/end go too high, set to max position.
-        if(start > MAX_POSITION)
-        {
-            start = MAX_POSITION;
-        }
-        if(end > MAX_POSITION)
-        {
-            end = MAX_POSITION;
-        }
-
-	binList[binListIndex++] = 0;
-	for (binNum =    1 + (start>>26); binNum <=    1 + (end>>26); ++binNum) 
-            binList[binListIndex++] = binNum;
-	for (binNum =    9 + (start>>23); binNum <=    9 + (end>>23); ++binNum) 
-            binList[binListIndex++] = binNum;
-	for (binNum =   73 + (start>>20); binNum <=   73 + (end>>20); ++binNum)
-            binList[binListIndex++] = binNum;
-	for (binNum =  585 + (start>>17); binNum <=  585 + (end>>17); ++binNum)
-            binList[binListIndex++] = binNum;
-	for (binNum = 4681 + (start>>14); binNum <= 4681 + (end>>14); ++binNum)
-            binList[binListIndex++] = binNum;
-
-        // binListIndex contains the number of items added to the list.
-	return binListIndex;
+    uint32_t binNum = 0;
+    --end;
+    
+    // Check if beg/end go too high, set to max position.
+    if(start > MAX_POSITION)
+    {
+        start = MAX_POSITION;
+    }
+    if(end > MAX_POSITION)
+    {
+        end = MAX_POSITION;
+    }
+    
+    // Turn on bins.
+    binMap[binNum] = true;
+    for (binNum =    1 + (start>>26); binNum <=    1 + (end>>26); ++binNum) 
+        binMap[binNum] = true;
+    for (binNum =    9 + (start>>23); binNum <=    9 + (end>>23); ++binNum) 
+        binMap[binNum] = true;
+    for (binNum =   73 + (start>>20); binNum <=   73 + (end>>20); ++binNum)
+        binMap[binNum] = true;
+    for (binNum =  585 + (start>>17); binNum <=  585 + (end>>17); ++binNum)
+        binMap[binNum] = true;
+    for (binNum = 4681 + (start>>14); binNum <= 4681 + (end>>14); ++binNum)
+        binMap[binNum] = true;
 }
 
 

@@ -87,6 +87,7 @@ protected:
     const static uint32_t MAX_NUM_BINS = 37450; // per specs, at most 37450 bins
 
     // Maximum allowed position (inclusive 512MB - 1)
+    // NOTE: CSI index may not have this same max position.
     const static uint32_t MAX_POSITION = 536870911;
 
     // Number of bits in 1 linear index - how much to shift a position by
@@ -149,9 +150,9 @@ protected:
         static const uint64_t UNSET_MIN_CHUNK_OFFSET = 0xFFFFFFFFFFFFFFFFULL;
     };
 
-    // Add the bins associated with the specified region to the passed in list.
+    // Set bins in the region to 1 and all other bins to 0.
     // start is incluive, end is exclusive.
-    static int getBinsForRegion(uint32_t start, uint32_t end, uint16_t binList[MAX_NUM_BINS]);
+    static void getBinsForRegion(uint32_t start, uint32_t end, bool binMap[MAX_NUM_BINS+1]);
 
     // Number of reference sequences.
     int32_t n_ref;
