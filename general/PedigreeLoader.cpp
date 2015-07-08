@@ -636,7 +636,7 @@ int Pedigree::TranslateSexCode(const char * code, bool & failure)
             return 2;
         default :
         {
-            bool result = atoi(code);
+            int result = atoi(code);
 
             if (result != 0 && result != 1 && result != 2)
             {
