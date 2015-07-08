@@ -38,7 +38,8 @@ public:
         test1();
         test2();
         test3();
-        humanGenomeTest1();
+        // This test is very slow:
+        // humanGenomeTest1();
     }
 };
 
