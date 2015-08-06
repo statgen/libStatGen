@@ -33,6 +33,8 @@ FastQFile::FastQFile(int minReadLength, int numPrintableErrors)
      myQualPerCycle(),
      myCountPerCycle(),
      myCheckSeqID(true),
+     myInterleaved(false),
+     myPrevSeqID(""),
      myMinReadLength(minReadLength),
      myNumPrintableErrors(numPrintableErrors),
      myMaxErrors(-1),
@@ -70,6 +72,13 @@ void FastQFile::enableSeqIDCheck()
 {
     myCheckSeqID = true;
 }
+
+
+/// Interleaved.
+void FastQFile::interleaved()
+{
+    myInterleaved = true;
+}   
 
 
 // Set the number of errors after which to quit reading/validating a file.
@@ -482,28 +491,60 @@ bool FastQFile::validateSequenceIdentifierLine()
       mySequenceIdentifier = 
          (mySequenceIdLine.SubStr(1, endSequenceIdentifier - 1)).c_str();
    }
-   
-   // Check if sequence identifier should be validated for uniqueness.
-   if(myCheckSeqID)
+
+   // If myInterleaved, validate matches the previous seqID.
+   if(myInterleaved && (myPrevSeqID != ""))
    {
-       // Check to see if the sequenceIdentifier is a repeat by adding
-       // it to the set and seeing if it already existed.
-       std::pair<std::map<std::string, unsigned int>::iterator,bool> insertResult;
-       insertResult = 
-           myIdentifierMap.insert(std::make_pair(mySequenceIdentifier.c_str(), 
-                                                 myLineNum));
-       
-       if(insertResult.second == false)
+       // Valid if the sequence identifiers are identical or if
+       // the only difference is a trailing 1 or 2.
+       if(myPrevSeqID.compare(mySequenceIdentifier) != 0)
        {
-           // Sequence Identifier is a repeat.
-           myErrorString = "Repeated Sequence Identifier: ";
-           myErrorString += mySequenceIdentifier.c_str();
-           myErrorString += " at Lines ";
-           myErrorString += insertResult.first->second;
-           myErrorString += " and ";
-           myErrorString += myLineNum;
-           reportErrorOnLine();
-           return(false);
+           // Compare all but the last characters, then check the last characters for 1 or 2.
+           if((myPrevSeqID.compare(0, myPrevSeqID.length()-1, mySequenceIdentifier.c_str(), mySequenceIdentifier.Length()-1) != 0) || 
+              (((myPrevSeqID[myPrevSeqID.length()-1] != '1') || (mySequenceIdentifier[mySequenceIdentifier.Length()-1] != '2')) && 
+               (myPrevSeqID[myPrevSeqID.length()-1] != mySequenceIdentifier[mySequenceIdentifier.Length()-1])))
+           {
+               myErrorString = "Interleaved: consecutive reads do not have matching sequence identifiers: ";
+               myErrorString += mySequenceIdentifier.c_str();
+               myErrorString += " and ";
+               myErrorString += myPrevSeqID.c_str();
+               reportErrorOnLine();
+               myPrevSeqID.clear();
+               return(false);
+           }
+       }
+       myPrevSeqID.clear();
+   }
+   else
+   {
+       if(myInterleaved)
+       {
+           myPrevSeqID = mySequenceIdentifier.c_str();
+       }
+
+       // Check if sequence identifier should be validated for uniqueness if it is 
+       // not the 2nd in an interleaved pair.
+       if(myCheckSeqID)
+       {
+           // Check to see if the sequenceIdentifier is a repeat by adding
+           // it to the set and seeing if it already existed.
+           std::pair<std::map<std::string, unsigned int>::iterator,bool> insertResult;
+           insertResult = 
+               myIdentifierMap.insert(std::make_pair(mySequenceIdentifier.c_str(), 
+                                                     myLineNum));
+           
+           if(insertResult.second == false)
+           {
+               // Sequence Identifier is a repeat.
+               myErrorString = "Repeated Sequence Identifier: ";
+               myErrorString += mySequenceIdentifier.c_str();
+               myErrorString += " at Lines ";
+               myErrorString += insertResult.first->second;
+               myErrorString += " and ";
+               myErrorString += myLineNum;
+               reportErrorOnLine();
+               return(false);
+           }
        }
    }
 

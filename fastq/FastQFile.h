@@ -50,6 +50,9 @@ class FastQFile
     /// (Unique Sequence ID checking is enabled by default).
     void enableSeqIDCheck();
     
+    /// Interleaved.
+    void interleaved();
+    
     /// Set the number of errors after which to quit reading/validating a file,
     /// defaults to -1.
     /// \param maxErrors # of errors before quitting, 
@@ -194,6 +197,13 @@ private:
     // Whether or not to check the sequence identifier for uniqueness.
     // Checking may use up a lot of memory.
     bool myCheckSeqID;
+
+    // Whether or not to check that the file is interleaved.
+    // Disabled by myCheckSeqID
+    bool myInterleaved;
+
+    // Previous sequence id for checking interleaved.
+    std::string myPrevSeqID;
 
     // Map to track which identifiers have appeared in the file.
     std::map<std::string, unsigned int> myIdentifierMap;
