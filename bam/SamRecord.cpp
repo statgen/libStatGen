@@ -578,8 +578,11 @@ SamStatus::Status SamRecord::setBufferFromFile(IFILE filePtr,
     if(ifeof(filePtr) && (numBytes == 0))
     {
         // End of file, nothing was read, no more records.
+            std::string statusMsg = "No more records left to read, ";
+            statusMsg += filePtr->getFileName();
+            statusMsg += ".";
         myStatus.setStatus(SamStatus::NO_MORE_RECS,
-                           "No more records left to read.");
+                           statusMsg.c_str());
         return(SamStatus::NO_MORE_RECS);
     }
     
@@ -591,15 +594,21 @@ SamStatus::Status SamRecord::setBufferFromFile(IFILE filePtr,
         {
             // Error: end of the file reached prior to reading the rest of the
             // record.
+            std::string statusMsg = "EOF reached in the middle of a record, ";
+            statusMsg += filePtr->getFileName();
+            statusMsg += ".";
             myStatus.setStatus(SamStatus::FAIL_PARSE, 
-                               "EOF reached in the middle of a record.");
+                               statusMsg.c_str());
             return(SamStatus::FAIL_PARSE);
         }
         else
         {
             // Error reading.
+            std::string statusMsg = "Failed to read the record size, ";
+            statusMsg += filePtr->getFileName();
+            statusMsg += ".";
             myStatus.setStatus(SamStatus::FAIL_IO, 
-                               "Failed to read the record size.");
+                               statusMsg.c_str());
             return(SamStatus::FAIL_IO);
         }
     }
@@ -618,8 +627,11 @@ SamStatus::Status SamRecord::setBufferFromFile(IFILE filePtr,
     {
         // Error reading the record.  Reset it and return failure.
         resetRecord();
-        myStatus.setStatus(SamStatus::FAIL_IO,
-                           "Failed to read the record");
+        std::string statusMsg = "Failed to read the record, ";
+        statusMsg += filePtr->getFileName();
+        statusMsg += ".";
+        myStatus.setStatus(SamStatus::FAIL_IO, 
+                           statusMsg.c_str());
         return(SamStatus::FAIL_IO);
     }
 
