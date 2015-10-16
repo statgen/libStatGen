@@ -57,6 +57,14 @@ ifeq ($(KNET_ON), 1)
   USE_KNET = -D_USE_KNETFILE
 endif
 
+CXX11_AVAIL ?= 1
+
+CPP0X=$(shell if [ X$(CCVERSION) \> X4.3.0 ] ; then echo " -std=c++0x" ; fi)
+
+ifeq ($(CXX11_AVAIL), 0)
+CPP0X=
+endif
+
 REQ_SETTINGS = 
 
 CFLAGS ?= $(OPTFLAG) -pipe -Wall
