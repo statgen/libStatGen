@@ -24,7 +24,6 @@ SamHeaderRG::SamHeaderRG()
     myType = SamHeaderRecord::RG;
     myTypeString = "RG";
     addRequiredTag("ID");
-    addRequiredTag("SM");
     myKeyTag = "ID";   
 }
 

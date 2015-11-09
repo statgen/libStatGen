@@ -40,7 +40,6 @@ Can't modify the key tag, ID from pid to pid1
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failure: Skipping PG line that has a repeated ID field.
 
-ERROR: Missing required tag: SM.
 Can't modify the key tag, ID from rgID to rgID1
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.

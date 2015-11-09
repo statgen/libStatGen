@@ -468,12 +468,13 @@ void testHeaderWrite()
 
     //////////////////////////////////////////////////////////////////////
     // Add a new RG Tag
-    assert(samHeader.setRGTag("ID", "rgID", "rgID") == true);
-    assert(samHeader.getHeaderString(headerString) == true);
-    // New RG does not show up since it is still missing a required field.
-    assert(headerString == 
-           "@HD\tSO:queryname\tVN:3.1\n@PG\tID:newID\n@SQ\tSN:newName\tLN:111\tAS:HG18\tSP:species\n");
-    assert(strcmp(samHeader.getRGTagValue("ID", "rgID"), "rgID") == 0);
+// Remove this test since SM is no longer required, the RG would be added
+//    assert(samHeader.setRGTag("ID", "rgID", "rgID") == true);
+//    assert(samHeader.getHeaderString(headerString) == true);
+//    // New RG does not show up since it is still missing a required field.
+//    assert(headerString == 
+//           "@HD\tSO:queryname\tVN:3.1\n@PG\tID:newID\n@SQ\tSN:newName\tLN:111\tAS:HG18\tSP:species\n");
+//    assert(strcmp(samHeader.getRGTagValue("ID", "rgID"), "rgID") == 0);
    
     // Add the missing SM field.
     assert(samHeader.setRGTag("SM", "sm1", "rgID") == true);
