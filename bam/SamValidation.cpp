@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010  Regents of the University of Michigan
+ *  Copyright (C) 2010-2015  Regents of the University of Michigan
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -552,7 +552,12 @@ bool SamValidator::isValidCigar(const char* cigar,
                                 const char* sequence,
                                 SamValidationErrors& validationErrors)
 {
-    return(isValidCigar(cigar, strlen(sequence), validationErrors));
+    if(strcmp(sequence, "*") != 0)
+    {
+        return(isValidCigar(cigar, strlen(sequence), validationErrors));
+    }
+    // Sequence is '*', so the length is 0.
+    return(isValidCigar(cigar, 0, validationErrors));
 }
 
 bool SamValidator::isValidCigar(const char* cigar,
@@ -564,7 +569,7 @@ bool SamValidator::isValidCigar(const char* cigar,
     // if not "*", validate the following:
     //   b) must have an integer length for each operator (if not "*"). TODO
     //   c) all operators must be valid (if not "*"). TODO
-    //   d) evaluates to the same read length as the sequence string.
+    //   d) evaluates to the same read length as the sequence string if not '*'.
     bool status = true;
     String message;
 
@@ -591,7 +596,7 @@ bool SamValidator::isValidCigar(const char* cigar,
 
         //   d) is the same length as the sequence string.
         int cigarSeqLen = cigarRoller.getExpectedQueryBaseCount();
-        if(cigarSeqLen != seqLen)
+        if((cigarSeqLen != seqLen) && (seqLen != 0))
         {
             message = "CIGAR does not evaluate to the same length as SEQ, (";
             message += cigarSeqLen;
