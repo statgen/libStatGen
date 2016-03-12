@@ -57,6 +57,7 @@ public:
                                           SamRecord& record,
                                           SamRecord::SequenceTranslation translation) = 0;
 
+    virtual bool isEOF(IFILE filePtr);
 };
 
 #endif

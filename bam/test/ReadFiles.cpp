@@ -22,6 +22,10 @@
 
 void testReadSam()
 {
+    SamFileHeader samHdr;
+    SamFile inSam1("testFiles/testSam1.sam", SamFile::READ, &samHdr);
+    assert(!inSam1.IsEOF());
+
     SamFile inSam;
     assert(inSam.OpenForRead("testFiles/testSam.sam"));
 
@@ -36,6 +40,10 @@ void testReadSam()
 
 void testReadBam()
 {
+    SamFileHeader samHdr;
+    SamFile inSam1("testFiles/testBam1.bam", SamFile::READ, &samHdr);
+    assert(!inSam1.IsEOF());
+
     SamFile inSam;
     assert(inSam.OpenForRead("testFiles/testBam.bam"));
 
@@ -53,6 +61,7 @@ void testRead(SamFile &inSam)
     // Read the SAM Header.
     SamFileHeader samHeader;
     assert(inSam.ReadHeader(samHeader));
+    assert(!inSam.IsEOF());
 
     validateHeader(samHeader);
 

@@ -48,6 +48,8 @@ public:
                                           SamRecord& record,
                                           SamRecord::SequenceTranslation translation);
    
+    virtual bool isEOF(IFILE filePtr);
+
 private:
     void ParseHeaderLine(StringIntHash & tags, StringArray & values);
     String      buffer;

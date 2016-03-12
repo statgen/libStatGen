@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 SamInterface::SamInterface()
+    : myFirstRecord("")
 {
 }
 
@@ -414,3 +415,15 @@ void SamInterface::ParseHeaderLine(StringIntHash & tags, StringArray & values)
     }
 }
 
+
+bool SamInterface::isEOF(IFILE filePtr)
+{
+
+    if(myFirstRecord.Length() != 0)
+    {
+        // First record is set, so return false, not EOF, since we 
+        // know the record still needs to be processed.
+        return(false);
+    }
+    return(GenericSamInterface::isEOF(filePtr));
+}

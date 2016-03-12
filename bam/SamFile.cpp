@@ -423,13 +423,12 @@ bool SamFile::IsOpen()
 // return: int - true = EOF; false = not eof.
 bool SamFile::IsEOF()
 {
-    if (myFilePtr != NULL)
+    if(myIsOpenForRead == false)
     {
-        // File Pointer is set, so return if eof.
-        return(ifeof(myFilePtr));
+        // Not open for read, return true.
+        return(true);
     }
-    // File pointer is not set, so return true, eof.
-    return true;
+    return(myInterfacePtr->isEOF(myFilePtr));
 }
 
 

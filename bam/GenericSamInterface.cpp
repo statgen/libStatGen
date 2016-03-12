@@ -26,3 +26,13 @@ GenericSamInterface::~GenericSamInterface()
 {
 }
 
+bool GenericSamInterface::isEOF(IFILE filePtr)
+{
+    if (filePtr != NULL)
+    {
+        // File Pointer is set, so return if eof.
+        return(ifeof(filePtr));
+    }
+    // File pointer is not set, so return true, eof.
+    return true;
+}
