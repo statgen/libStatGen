@@ -141,6 +141,8 @@ void testVcfReadFile()
     assert(header.getSampleIndex(SAMPLES[1].c_str()) == 1);
     assert(header.getSampleIndex(SAMPLES[0].c_str()) == 0);
     assert(header.getSampleIndex(SAMPLES[2].c_str()) == -1);
+
+    assert(strcmp(reader.getFileName(), "testFiles/vcfFile.vcf") == 0);
  
     // Read the records to make sure they were subset.
     assert(reader.readRecord(record));
@@ -2418,6 +2420,9 @@ void testVcfWriteFile()
     VcfRecordGenotype::addStoreField("HQ");
     assert(writer.open("results/vcfFileNoInfoKeepGQHQ.vcf", header, 
                        InputFile::DEFAULT) == true);
+
+    assert(strcmp(writer.getFileName(), "results/vcfFileNoInfoKeepGQHQ.vcf") == 0);
+
     while(reader.readRecord(record))
     {
         // Test Clearing the INFO field.
@@ -2836,6 +2841,8 @@ void testVcfReadSectionNoIndex()
     reader.open("testFiles/testTabix.vcf.bgzf", header);
     assert(reader.setReadSection("10"));
     assert(reader.readRecord(record) == false);
+
+    assert(strcmp(reader.getFileName(), "testFiles/testTabix.vcf.bgzf") == 0);
 
     // Reopen to begining to check another range.
     reader.open("testFiles/testTabix.vcf.bgzf", header);

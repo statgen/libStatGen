@@ -59,6 +59,14 @@ public:
     //        return(myStatus.getStatus());
     //    }
 
+    /// Get the filename that is currently opened.
+    /// \return filename associated with this class
+    const char* getFileName() const
+    {
+        return(myFilePtr->getFileName());
+    }
+
+
 protected: 
     // Open the vcf file with the specified filename
     // with the specified mode.
