@@ -47,9 +47,9 @@ void warning(const char * msg, ...)
 
     va_start(ap, msg);
 
-    printf("\n\aWARNING - \n");
-    vprintf(msg, ap);
-    printf("\n");
+    fprintf(stderr,"\n\aWARNING - \n");
+    vfprintf(stderr,msg, ap);
+    fprintf(stderr,"\n");
 
     va_end(ap);
 }
