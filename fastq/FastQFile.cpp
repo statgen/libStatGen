@@ -271,7 +271,8 @@ FastQStatus::Status FastQFile::validateFastQFile(const String& filename,
    // Close the input file.
    FastQStatus::Status closeStatus = closeFile();
 
-   if((status != FastQStatus::FASTQ_SUCCESS) && (status != FastQStatus::FASTQ_INVALID))
+   if((status != FastQStatus::FASTQ_SUCCESS) && (status != FastQStatus::FASTQ_INVALID) &&
+      (status != FastQStatus::FASTQ_NO_SEQUENCE_ERROR))
    {
       // Stopped validating due to some error other than invalid, so
       // return that error.
