@@ -21,7 +21,7 @@
 #ifdef __ZLIB_AVAILABLE__
 
 #include <stdexcept> // stdexcept header file
-#include "bgzf.h"
+#include "../samtools/bgzf.h"
 #include "FileType.h"
 
 class BgzfFileType : public FileType
@@ -128,7 +128,7 @@ public:
     {
         if(myUsingBuffer)
         {
-            throw std::runtime_error("IFILE: CANNOT use buffered reads and tell for BGZF files");
+            throw std::runtime_error("IFILE: CANNOT use buffered reads and tell for LSG_BGZF files");
         }
         return bgzf_tell(bgzfHandle);
     }
@@ -162,7 +162,7 @@ public:
 
 protected:
     // A bgzfFile is used.
-    BGZF* bgzfHandle;
+    LSG_BGZF* bgzfHandle;
 
     // Flag indicating EOF since there isn't one on the handle.
     bool myEOF;

@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <limits>
 #include <stdexcept>
+#include <sam.h>
 
 #include "bam.h"
 
@@ -641,6 +642,43 @@ SamStatus::Status SamRecord::setBufferFromFile(IFILE filePtr,
     return(SamStatus::SUCCESS);
 }
 
+SamStatus::Status SamRecord::setBufferFromHtsRec(bam1_t* htsRec, SamFileHeader& header)
+{
+    myStatus = SamStatus::SUCCESS;
+
+    // Clear the record.
+    resetRecord();
+
+    myRecordPtr->myBlockSize = 8 * 32 + htsRec->l_data;
+
+    // allocate space for the record size.
+    if(!allocateRecordStructure(myRecordPtr->myBlockSize + sizeof(int32_t)))
+    {
+        // Failed to allocate space.
+        // Status is set by allocateRecordStructure.
+        return(SamStatus::FAIL_MEM);
+    }
+
+    //myRecordPtr->myBlockSize
+    myRecordPtr->myReferenceID = htsRec->core.tid;
+    myRecordPtr->myPosition = htsRec->core.pos;
+    myRecordPtr->myReadNameLength = htsRec->core.l_qname;
+    myRecordPtr->myMapQuality = htsRec->core.qual;
+    myRecordPtr->myBin = htsRec->core.bin;
+    myRecordPtr->myCigarLength = htsRec->core.n_cigar;
+    myRecordPtr->myFlag = htsRec->core.flag;
+    myRecordPtr->myReadLength = htsRec->core.l_qseq;
+    myRecordPtr->myMateReferenceID = htsRec->core.mtid;
+    myRecordPtr->myMatePosition = htsRec->core.mpos;
+    myRecordPtr->myInsertSize = htsRec->core.isize;
+    std::memcpy(myRecordPtr->myData, htsRec->data, htsRec->l_data);
+
+    setVariablesForNewBuffer(header);
+
+    // Return the status of the record.
+    return(SamStatus::SUCCESS);
+}
+
 
 // Add the specified tag to the record.
 // Returns true if the tag was successfully added, false otherwise.
@@ -1232,29 +1270,56 @@ const void* SamRecord::getRecordBuffer(SequenceTranslation translation)
 }
 
 
-// Write the record as a buffer into the file using the class's 
-// sequence translation setting.
-SamStatus::Status SamRecord::writeRecordBuffer(IFILE filePtr)
-{
-    return(writeRecordBuffer(filePtr, mySequenceTranslation));
-}
+//// Write the record as a buffer into the file using the class's
+//// sequence translation setting.
+//SamStatus::Status SamRecord::writeRecordBuffer(IFILE filePtr)
+//{
+//    return(writeRecordBuffer(filePtr, mySequenceTranslation));
+//}
+//
+//
+//// Write the record as a buffer into the file using the specified translation.
+//SamStatus::Status SamRecord::writeRecordBuffer(IFILE filePtr,
+//                                               SequenceTranslation translation)
+//{
+//    myStatus = SamStatus::SUCCESS;
+//    if((filePtr == NULL) || (filePtr->isOpen() == false))
+//    {
+//        // File is not open, return failure.
+//        myStatus.setStatus(SamStatus::FAIL_ORDER,
+//                           "Can't write to an unopened file.");
+//        return(SamStatus::FAIL_ORDER);
+//    }
+//
+//    if((myIsBufferSynced == false) ||
+//       (myBufferSequenceTranslation != translation))
+//    {
+//        if(!fixBuffer(translation))
+//        {
+//            return(myStatus.getStatus());
+//        }
+//    }
+//
+//    // Write the record.
+//    unsigned int numBytesToWrite = myRecordPtr->myBlockSize + sizeof(int32_t);
+//    unsigned int numBytesWritten =
+//        ifwrite(filePtr, myRecordPtr, numBytesToWrite);
+//
+//    // Return status based on if the correct number of bytes were written.
+//    if(numBytesToWrite == numBytesWritten)
+//    {
+//        return(SamStatus::SUCCESS);
+//    }
+//    // The correct number of bytes were not written.
+//    myStatus.setStatus(SamStatus::FAIL_IO, "Failed to write the entire record.");
+//    return(SamStatus::FAIL_IO);
+//}
 
-
-// Write the record as a buffer into the file using the specified translation.
-SamStatus::Status SamRecord::writeRecordBuffer(IFILE filePtr, 
-                                               SequenceTranslation translation)
+SamStatus::Status SamRecord::copyRecordBufferToHts(bam1_t* htsRec, SequenceTranslation translation)
 {
     myStatus = SamStatus::SUCCESS;
-    if((filePtr == NULL) || (filePtr->isOpen() == false))
-    {
-        // File is not open, return failure.
-        myStatus.setStatus(SamStatus::FAIL_ORDER,
-                           "Can't write to an unopened file.");
-        return(SamStatus::FAIL_ORDER);
-    }
 
-    if((myIsBufferSynced == false) ||
-       (myBufferSequenceTranslation != translation))
+    if((myIsBufferSynced == false) || (myBufferSequenceTranslation != translation))
     {
         if(!fixBuffer(translation))
         {
@@ -1262,19 +1327,30 @@ SamStatus::Status SamRecord::writeRecordBuffer(IFILE filePtr,
         }
     }
 
-    // Write the record.
-    unsigned int numBytesToWrite = myRecordPtr->myBlockSize + sizeof(int32_t);
-    unsigned int numBytesWritten = 
-        ifwrite(filePtr, myRecordPtr, numBytesToWrite);
+    std::int32_t l_data = myRecordPtr->myBlockSize - 32 * 8;
+    bam1_t* tmp = bam_init1();
+    tmp->core.tid = myRecordPtr->myReferenceID;
+    tmp->core.pos = myRecordPtr->myPosition;
+    tmp->core.l_qname = myRecordPtr->myReadNameLength;
+    tmp->core.qual = myRecordPtr->myMapQuality;
+    tmp->core.bin = myRecordPtr->myBin;
+    tmp->core.n_cigar = myRecordPtr->myCigarLength;
+    tmp->core.flag = myRecordPtr->myFlag;
+    tmp->core.l_qseq = myRecordPtr->myReadLength;
+    tmp->core.mtid = myRecordPtr->myMateReferenceID;
+    tmp->core.mpos = myRecordPtr->myMatePosition;
+    tmp->core.isize = myRecordPtr->myInsertSize;
+    tmp->l_data = tmp->m_data = l_data;
+    tmp->data = new std::uint8_t[l_data];
 
-    // Return status based on if the correct number of bytes were written.
-    if(numBytesToWrite == numBytesWritten)
-    {
-        return(SamStatus::SUCCESS);
-    }
-    // The correct number of bytes were not written.
-    myStatus.setStatus(SamStatus::FAIL_IO, "Failed to write the entire record.");
-    return(SamStatus::FAIL_IO);
+    std::memcpy(myRecordPtr->myData, tmp->data, tmp->l_data);
+    bam_copy1(htsRec, tmp);
+
+    delete[] tmp->data;
+    tmp->data = nullptr;
+    bam_destroy1(tmp);
+
+    return(SamStatus::SUCCESS);
 }
 
 

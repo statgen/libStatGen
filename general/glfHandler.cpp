@@ -71,7 +71,7 @@ void glfHandler::OpenStub()
 bool glfHandler::Create(const String & filename)
 {
     isStub = false;
-    // glf is in BGZF format.
+    // glf is in LSG_BGZF format.
     handle = ifopen(filename, "wb", InputFile::BGZF);
 
     if (handle == NULL)

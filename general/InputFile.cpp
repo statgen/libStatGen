@@ -227,10 +227,10 @@ bool InputFile::openFile(const char * filename, const char * mode,
                 if (isGzip)
                 {
                     // This file is a gzip file.
-                    // Check to see if it is BGZF Compression.
+                    // Check to see if it is LSG_BGZF Compression.
                     if (gzipHeader.isBgzfFile())
                     {
-                        // This file has BGZF Compression, so set the file
+                        // This file has LSG_BGZF Compression, so set the file
                         // pointer.
                         if(myAttemptRecovery) {
                             // NB: this reader will throw std::runtime_error when it recovers
@@ -242,7 +242,7 @@ bool InputFile::openFile(const char * filename, const char * mode,
                     }
                     else
                     {
-                        // Not BGZF, just a normal gzip.
+                        // Not LSG_BGZF, just a normal gzip.
                         myFileTypePtr = new GzipFileType(filename, mode);
                    }
                 }
@@ -293,7 +293,7 @@ void InputFile::openFileUsingMode(const char * filename, const char * mode,
             break;
         case BGZF:
             //
-            // BGZF compression - recovery is possible, so use
+            // LSG_BGZF compression - recovery is possible, so use
             // Bgzf recovery reader if asked.
             //
             if(myAttemptRecovery && ((mode[0] == 'r') || (mode[0] == 'R')))

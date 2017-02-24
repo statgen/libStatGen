@@ -22,42 +22,64 @@
 #include "InputFile.h"
 #include "SamFileHeader.h"
 #include "SamRecord.h"
+#include <sam.h>
+#include <cram.h>
+
+
 
 class GenericSamInterface
 {
 public:
-    GenericSamInterface();
-    virtual ~GenericSamInterface();
+    GenericSamInterface(const char*const fn, const char* mode, const char*const ref_fn = nullptr);
+    GenericSamInterface(const char*const fn, const char* mode, const htsFormat& fmt, const char*const ref_fn = nullptr);
+    ~GenericSamInterface();
    
     // Pure virtual method that reads the header section from the specified file
     // and stores it in the passed in header, returns false and sets the status
     // on failure.
     // Will be implemented specifically for sam/bam files.
-    virtual bool readHeader(IFILE filePtr, SamFileHeader& header,
-                            SamStatus& status) = 0;
+    bool readHeader(SamFileHeader& header,
+                            SamStatus& status);
 
     // Pure virtual method that writes the specified header into the specified
     // file, returns false and sets the status on failure.
     // Will be implemented specifically for sam/bam files.
-    virtual bool writeHeader(IFILE filePtr, SamFileHeader& header,
-                             SamStatus& status) = 0;
+    bool writeHeader(SamFileHeader& header,
+                             SamStatus& status);
 
     // Pure virtual method that reads the next record from the specified file 
     // and stores it in the passed in record.
     // Will be implemented specifically for sam/bam files.
     // TODO On error, a more detailed message is appended to statusMsg.
-    virtual void readRecord(IFILE filePtr, SamFileHeader& header, 
+    void readRecord(SamFileHeader& header,
                             SamRecord& record, 
-                            SamStatus& samStatus) = 0;
+                            SamStatus& samStatus);
    
     // Pure virtual method that writes the specified record into the specified
     // file.
     // Will be implemented specifically for sam/bam files.
-    virtual SamStatus::Status writeRecord(IFILE filePtr, SamFileHeader& header,
+    SamStatus::Status writeRecord(SamFileHeader& header,
                                           SamRecord& record,
-                                          SamRecord::SequenceTranslation translation) = 0;
+                                          SamRecord::SequenceTranslation translation);
+    bool isEOF();
 
-    virtual bool isEOF(IFILE filePtr);
+    //[[deprecated]]
+    //bool isEOF(IFILE filePtr) { return isEOF(); }
+    //[[deprecated]]
+    //bool readHeader(IFILE filePtr, SamFileHeader& header, SamStatus& status) { return readHeader(header, status); }
+    //[[deprecated]]
+    //bool writeHeader(IFILE filePtr, SamFileHeader& header, SamStatus& status) { return writeHeader(header, status); }
+    //[[deprecated]]
+    //SamStatus::Status writeRecord(IFILE filePtr, SamFileHeader& header, SamRecord& record, SamRecord::SequenceTranslation translation) { return writeRecord(header, record, translation); }
+    //[[deprecated]]
+    //void readRecord(IFILE filePtr, SamFileHeader& header, SamRecord& record, SamStatus& samStatus) { return readRecord(header, record, samStatus); }
+
+
+private:
+  samFile* fp_;
+  bam_hdr_t* hdr_;
+  bam1_t* rec_;
+  bool eof_;
 };
 
 #endif

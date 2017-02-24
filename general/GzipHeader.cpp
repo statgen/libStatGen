@@ -107,7 +107,7 @@ bool GzipHeader::isGzipFile()
 }
 
 
-// Determine if the file is a BGZF compressed file.
+// Determine if the file is a LSG_BGZF compressed file.
 bool GzipHeader::isBgzfFile()
 {
     if (isGzipFile() && (si1 == 66) && (si2 == 67))

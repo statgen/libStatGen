@@ -100,10 +100,10 @@ static inline void packInt32(uint8_t *buffer, uint32_t value)
 	buffer[3] = value >> 24;
 }
 
-static BGZF *bgzf_read_init()
+static LSG_BGZF *bgzf_read_init()
 {
-	BGZF *fp;
-	fp = calloc(1, sizeof(BGZF));
+	LSG_BGZF *fp;
+	fp = calloc(1, sizeof(LSG_BGZF));
 	fp->open_mode = 'r';
 	fp->uncompressed_block = malloc(BGZF_BLOCK_SIZE);
 	fp->compressed_block = malloc(BGZF_BLOCK_SIZE);
@@ -113,10 +113,10 @@ static BGZF *bgzf_read_init()
 	return fp;
 }
 
-static BGZF *bgzf_write_init(int compress_level) // compress_level==-1 for the default level
+static LSG_BGZF *bgzf_write_init(int compress_level) // compress_level==-1 for the default level
 {
-	BGZF *fp;
-	fp = calloc(1, sizeof(BGZF));
+	LSG_BGZF *fp;
+	fp = calloc(1, sizeof(LSG_BGZF));
 	fp->open_mode = 'w';
 	fp->uncompressed_block = malloc(BGZF_BLOCK_SIZE);
 	fp->compressed_block = malloc(BGZF_BLOCK_SIZE);
@@ -135,9 +135,9 @@ static int mode2level(const char *__restrict mode)
 	return compress_level;
 }
 
-BGZF *bgzf_open(const char *path, const char *mode)
+LSG_BGZF *bgzf_open(const char *path, const char *mode)
 {
-	BGZF *fp = 0;
+	LSG_BGZF *fp = 0;
 	if (strchr(mode, 'r') || strchr(mode, 'R')) {
 		_bgzf_file_t fpr;
 		if ((fpr = _bgzf_open(path, "r")) == 0) return 0;
@@ -168,9 +168,9 @@ BGZF *bgzf_open(const char *path, const char *mode)
 	return fp;
 }
 
-BGZF *bgzf_dopen(int fd, const char *mode)
+LSG_BGZF *bgzf_dopen(int fd, const char *mode)
 {
-	BGZF *fp = 0;
+	LSG_BGZF *fp = 0;
 	if (strchr(mode, 'r') || strchr(mode, 'R')) {
 		_bgzf_file_t fpr;
 		if ((fpr = _bgzf_dopen(fd, "r")) == 0) return 0;
@@ -186,7 +186,7 @@ BGZF *bgzf_dopen(int fd, const char *mode)
 }
 
 // Deflate the block in fp->uncompressed_block into fp->compressed_block. Also adds an extra field that stores the compressed block length.
-static int deflate_block(BGZF *fp, int block_length)
+static int deflate_block(LSG_BGZF *fp, int block_length)
 {
 	uint8_t *buffer = fp->compressed_block;
 	int buffer_size = BGZF_BLOCK_SIZE;
@@ -249,7 +249,7 @@ static int deflate_block(BGZF *fp, int block_length)
 }
 
 // Inflate the block in fp->compressed_block into fp->uncompressed_block
-static int inflate_block(BGZF* fp, int block_length)
+static int inflate_block(LSG_BGZF* fp, int block_length)
 {
 	z_stream zs;
 	zs.zalloc = NULL;
@@ -284,7 +284,7 @@ static int check_header(const uint8_t *header)
 }
 
 #ifdef BGZF_CACHE
-static void free_cache(BGZF *fp)
+static void free_cache(LSG_BGZF *fp)
 {
 	khint_t k;
 	khash_t(cache) *h = (khash_t(cache)*)fp->cache;
@@ -294,7 +294,7 @@ static void free_cache(BGZF *fp)
 	kh_destroy(cache, h);
 }
 
-static int load_block_from_cache(BGZF *fp, int64_t block_address)
+static int load_block_from_cache(LSG_BGZF *fp, int64_t block_address)
 {
 	khint_t k;
 	cache_t *p;
@@ -310,7 +310,7 @@ static int load_block_from_cache(BGZF *fp, int64_t block_address)
 	return p->size;
 }
 
-static void cache_block(BGZF *fp, int size)
+static void cache_block(LSG_BGZF *fp, int size)
 {
 	int ret;
 	khint_t k;
@@ -337,12 +337,12 @@ static void cache_block(BGZF *fp, int size)
 	memcpy(kh_val(h, k).block, fp->uncompressed_block, BGZF_BLOCK_SIZE);
 }
 #else
-static void free_cache(BGZF *fp) {}
-static int load_block_from_cache(BGZF *fp, int64_t block_address) {return 0;}
-static void cache_block(BGZF *fp, int size) {}
+static void free_cache(LSG_BGZF *fp) {}
+static int load_block_from_cache(LSG_BGZF *fp, int64_t block_address) {return 0;}
+static void cache_block(LSG_BGZF *fp, int size) {}
 #endif
 
-int bgzf_read_block(BGZF *fp)
+int bgzf_read_block(LSG_BGZF *fp)
 {
 	uint8_t header[BLOCK_HEADER_LENGTH], *compressed_block;
 	int count, size = 0, block_length, remaining;
@@ -377,7 +377,7 @@ int bgzf_read_block(BGZF *fp)
 	return 0;
 }
 
-ssize_t bgzf_read(BGZF *fp, void *data, ssize_t length)
+ssize_t bgzf_read(LSG_BGZF *fp, void *data, ssize_t length)
 {
 	ssize_t bytes_read = 0;
 	uint8_t *output = data;
@@ -405,7 +405,7 @@ ssize_t bgzf_read(BGZF *fp, void *data, ssize_t length)
 	return bytes_read;
 }
 
-int bgzf_flush(BGZF *fp)
+int bgzf_flush(LSG_BGZF *fp)
 {
 	assert(fp->open_mode == 'w');
 	while (fp->block_offset > 0) {
@@ -421,14 +421,14 @@ int bgzf_flush(BGZF *fp)
 	return 0;
 }
 
-int bgzf_flush_try(BGZF *fp, ssize_t size)
+int bgzf_flush_try(LSG_BGZF *fp, ssize_t size)
 {
 	if (fp->block_offset + size > BGZF_BLOCK_SIZE)
 		return bgzf_flush(fp);
 	return -1;
 }
 
-ssize_t bgzf_write(BGZF *fp, const void *data, ssize_t length)
+ssize_t bgzf_write(LSG_BGZF *fp, const void *data, ssize_t length)
 {
 	const uint8_t *input = data;
 	int block_length = BGZF_BLOCK_SIZE, bytes_written;
@@ -447,7 +447,7 @@ ssize_t bgzf_write(BGZF *fp, const void *data, ssize_t length)
 	return bytes_written;
 }
 
-int bgzf_close(BGZF* fp)
+int bgzf_close(LSG_BGZF* fp)
 {
 	int ret, count, block_length;
 	if (fp == 0) return -1;
@@ -473,12 +473,12 @@ int bgzf_close(BGZF* fp)
 	return 0;
 }
 
-void bgzf_set_cache_size(BGZF *fp, int cache_size)
+void bgzf_set_cache_size(LSG_BGZF *fp, int cache_size)
 {
 	if (fp) fp->cache_size = cache_size;
 }
 
-int bgzf_check_EOF(BGZF *fp)
+int bgzf_check_EOF(LSG_BGZF *fp)
 {
 	static uint8_t magic[28] = "\037\213\010\4\0\0\0\0\0\377\6\0\102\103\2\0\033\0\3\0\0\0\0\0\0\0\0\0";
         // Last 28 bytes of an uncompressed bgzf file which are different
@@ -502,7 +502,7 @@ int bgzf_check_EOF(BGZF *fp)
         return(0);
 }
 
-int64_t bgzf_seek(BGZF* fp, int64_t pos, int where)
+int64_t bgzf_seek(LSG_BGZF* fp, int64_t pos, int where)
 {
 	int block_offset;
 	int64_t block_address;
@@ -535,7 +535,7 @@ int bgzf_is_bgzf(const char *fn)
 	return memcmp(g_magic, buf, 16) == 0? 1 : 0;
 }
 
-int bgzf_getc(BGZF *fp)
+int bgzf_getc(LSG_BGZF *fp)
 {
 	int c;
 	if (fp->block_offset >= fp->block_length) {
@@ -555,7 +555,7 @@ int bgzf_getc(BGZF *fp)
 #define kroundup32(x) (--(x), (x)|=(x)>>1, (x)|=(x)>>2, (x)|=(x)>>4, (x)|=(x)>>8, (x)|=(x)>>16, ++(x))
 #endif
 
-int bgzf_getline(BGZF *fp, int delim, kstring_t *str)
+int bgzf_getline(LSG_BGZF *fp, int delim, kstring_t *str)
 {
 	int l, state = 0;
 	unsigned char *buf = (unsigned char*)fp->uncompressed_block;

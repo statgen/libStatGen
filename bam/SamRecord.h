@@ -19,6 +19,7 @@
 #define __SAM_RECORD_H__
 
 #include <stdint.h>
+#include <sam.h>
 
 #include "GenomeSequence.h"
 #include "SamStatus.h"
@@ -217,6 +218,8 @@ public:
     /// \return status of the reading the BAM record from the file.
     SamStatus::Status setBufferFromFile(IFILE filePtr, SamFileHeader& header);
 
+    SamStatus::Status setBufferFromHtsRec(bam1_t* htsRec, SamFileHeader& header);
+
     //@}
 
     ///////////////////////
@@ -287,15 +290,21 @@ public:
     /// Write the record as a BAM into the specified already opened file.
     /// \param filePtr file to write the BAM record into.
     /// \return status of the write.
-    SamStatus::Status writeRecordBuffer(IFILE filePtr);
+    //SamStatus::Status writeRecordBuffer(IFILE filePtr);
 
     /// Write the record as a BAM into the specified already opened file using
     /// the specified translation on the sequence.
     /// \param filePtr file to write the BAM record into.
     /// \param translation type of sequence translation to use.
     /// \return status of the write.
-    SamStatus::Status writeRecordBuffer(IFILE filePtr, 
-                                        SequenceTranslation translation);
+    //SamStatus::Status writeRecordBuffer(IFILE filePtr, SequenceTranslation translation);
+
+    /// Copies record to hts struct.
+    /// the specified translation on the sequence.
+    /// \param hstRec destination hts record struct.
+    /// \param translation type of sequence translation to use.
+    /// \return status of the copy.
+    SamStatus::Status copyRecordBufferToHts(bam1_t* htsRec, SequenceTranslation translation);
 
     /// Get the block size of the record (BAM format).
     /// \return BAM block size of the record.

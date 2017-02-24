@@ -336,20 +336,20 @@ public:
     /// \return const pointer to the bam index, or null if one has not been opened.
     const BamIndex* GetBamIndex();
 
-    /// Get the current file position.
-    /// \return current position in the file.
-    inline int64_t GetCurrentPosition()
-    {
-        return(iftell(myFilePtr));
-    }
+//    /// Get the current file position.
+//    /// \return current position in the file.
+//    inline int64_t GetCurrentPosition()
+//    {
+//        return(iftell(myFilePtr));
+//    }
     
     /// Turn off file read buffering.
     inline void DisableBuffering()
     {
-        if(myFilePtr != NULL)
-        {
-            myFilePtr->disableBuffering();
-        }
+//        if(myFilePtr != NULL)
+//        {
+//            myFilePtr->disableBuffering();
+//        }
     }
 
     /// Print the statistics that have been recorded due to a call to
@@ -382,7 +382,7 @@ protected:
     // return true.
     // Sets the status and returns false if it was unable to move to a new chunk
     // or there are no more chunks to read, otherwise returns true.
-    bool ensureIndexedReadPosition();
+    //bool ensureIndexedReadPosition();
 
     // Check whether or not the record falls within the specified section. 
     // If no sections are specified or this read falls within the
@@ -392,7 +392,7 @@ protected:
     // region, return false AND set the sam status to indicate NO_MORE_RECS.
     bool checkRecordInSection(SamRecord& record);
 
-    IFILE  myFilePtr;
+    //IFILE  myFilePtr;
     GenericSamInterface* myInterfacePtr;
 
     /// Flag to indicate if a file is open for reading.
@@ -437,7 +437,7 @@ protected:
     SamRecord::SequenceTranslation myWriteTranslation;
     
     std::string myRefName;
-
+    std::string myFilename;
 private:
     bool    myAttemptRecovery;
 
