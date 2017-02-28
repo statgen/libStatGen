@@ -163,6 +163,9 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
         myFilename = filename;
     }
 
+    if (!myInterfacePtr || myInterfacePtr->isEOF())
+        return SamStatus::FAIL_IO;
+
     // File is open for reading.
     myIsOpenForRead = true;
 
@@ -237,6 +240,9 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
         myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //SamInterface;
         myFilename = filename;
     }
+
+    if (!myInterfacePtr || myInterfacePtr->isEOF())
+        return SamStatus::FAIL_IO;
    
     myIsOpenForWrite = true;
 

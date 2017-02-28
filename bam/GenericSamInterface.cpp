@@ -20,6 +20,7 @@
 
 GenericSamInterface::GenericSamInterface(const char*const fn, const char* mode, const char*const ref_fn) :
     fp_(sam_open(fn, mode)),
+    hdr_(nullptr),
     rec_(bam_init1()),
     eof_(false)
 {
@@ -29,6 +30,7 @@ GenericSamInterface::GenericSamInterface(const char*const fn, const char* mode, 
 
 GenericSamInterface::GenericSamInterface(const char*const fn, const char* mode, const htsFormat& fmt, const char*const ref_fn) :
   fp_(sam_open_format(fn, mode, &fmt)), // TODO: fmt may need to be copied as a member
+  hdr_(nullptr),
   rec_(bam_init1()),
   eof_(false)
 {
@@ -54,25 +56,32 @@ GenericSamInterface::~GenericSamInterface()
 bool GenericSamInterface::readHeader(SamFileHeader& header, SamStatus& samStatus)
 {
     bool ret = false;
-    if (hdr_)
+    if (!fp_)
     {
-        samStatus.setStatus(SamStatus::FAIL_ORDER, "Header already exists");
+      samStatus.setStatus(SamStatus::FAIL_IO, "File not open.");
     }
     else
     {
+      if (hdr_)
+      {
+        samStatus.setStatus(SamStatus::FAIL_ORDER, "Header already exists");
+      }
+      else
+      {
         hdr_ = sam_hdr_read(fp_);
         if (!hdr_)
         {
-            samStatus.setStatus(SamStatus::FAIL_IO, "Error reading header from file");
+          samStatus.setStatus(SamStatus::FAIL_IO, "Error reading header from file");
         }
         else
         {
-            std::string tmp(hdr_->text, hdr_->l_text);
-            if (sam_hdr_write(fp_, hdr_) != 0)
-                samStatus.setStatus(SamStatus::FAIL_PARSE, header.getErrorMessage());
-            else
-                ret = true;
+          std::string tmp(hdr_->text, hdr_->l_text);
+          if (!header.addHeader(tmp.c_str()))
+            samStatus.setStatus(SamStatus::FAIL_PARSE, header.getErrorMessage());
+          else
+            ret = true;
         }
+      }
     }
     return ret;
 }
@@ -82,28 +91,35 @@ bool GenericSamInterface::readHeader(SamFileHeader& header, SamStatus& samStatus
 bool GenericSamInterface::writeHeader(SamFileHeader& header, SamStatus& samStatus)
 {
     bool ret = false;
-    if (hdr_)
+
+    if (!fp_)
     {
-        samStatus.setStatus(SamStatus::FAIL_ORDER, "Header already exists");
+      samStatus.setStatus(SamStatus::FAIL_IO, "File not open.");
     }
     else
     {
-        std::string tmp;
-        header.getHeaderString(tmp);
-        hdr_ = sam_hdr_parse(tmp.size(), tmp.data());
-        if (!hdr_)
+        if (hdr_)
         {
-            samStatus.setStatus(SamStatus::FAIL_PARSE, "Header data corrupt");
+            samStatus.setStatus(SamStatus::FAIL_ORDER, "Header already exists");
         }
         else
         {
-            header.resetHeader();
-            std::string tmp(hdr_->text, hdr_->l_text);
-            if (!header.addHeader(tmp.c_str()))
-                samStatus.setStatus(SamStatus::FAIL_IO, "Failed to write header");
+            std::string tmp;
+            header.getHeaderString(tmp);
+            hdr_ = sam_hdr_parse(tmp.size(), tmp.data());
+            if (!hdr_)
+            {
+                samStatus.setStatus(SamStatus::FAIL_PARSE, "Header data corrupt");
+            }
             else
-                ret = true;
+            {
+                if (sam_hdr_write(fp_, hdr_) != 0)
+                    samStatus.setStatus(SamStatus::FAIL_IO, "Failed to write header");
+                else
+                    ret = true;
+            }
         }
+
     }
     return ret;
 }
@@ -112,21 +128,26 @@ bool GenericSamInterface::writeHeader(SamFileHeader& header, SamStatus& samStatu
 // the passed in record.
 void GenericSamInterface::readRecord(SamFileHeader& header, SamRecord& record, SamStatus& samStatus)
 {
-
-    if (sam_read1(fp_, hdr_, rec_) < 0)
+    if (fp_)
     {
-        samStatus.setStatus(SamStatus::NO_MORE_RECS, "End of file");
-        eof_ = true;
-    }
-    else
-    {
-        record.setBufferFromHtsRec(rec_, header);
+      if (sam_read1(fp_, hdr_, rec_) < 0)
+      {
+          samStatus.setStatus(SamStatus::NO_MORE_RECS, "End of file");
+          eof_ = true;
+      }
+      else
+      {
+          record.setBufferFromHtsRec(rec_, header);
+      }
     }
 }
 
 // Writes the specified record into the specified BAM file.
 SamStatus::Status GenericSamInterface::writeRecord(SamFileHeader& header, SamRecord& record, SamRecord::SequenceTranslation translation)
 {
+    if (!fp_)
+        return SamStatus::FAIL_IO;
+
     SamStatus::Status ret = record.copyRecordBufferToHts(rec_, translation);
     if (ret == SamStatus::SUCCESS)
     {
@@ -140,5 +161,5 @@ SamStatus::Status GenericSamInterface::writeRecord(SamFileHeader& header, SamRec
 
 bool GenericSamInterface::isEOF()
 {
-    return eof_;
+    return (!fp_ || eof_);
 }
