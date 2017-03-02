@@ -22,7 +22,7 @@
    THE SOFTWARE.
 */
 
-/* The LSG_BGZF library was originally written by Bob Handsaker from the Broad
+/* The BGZF library was originally written by Bob Handsaker from the Broad
  * Institute. It was later improved by the SAMtools developers. */
 
 #ifndef __BGZF_H
@@ -49,7 +49,7 @@ typedef struct {
     void *uncompressed_block, *compressed_block;
     void *cache; // a pointer to a hash table
     void *fp; // actual file handler; FILE* on writing; FILE* or knetFile* on reading
-} LSG_BGZF;
+} BGZF;
 
 #ifndef KSTRING_T
 #define KSTRING_T kstring_t
@@ -63,7 +63,7 @@ typedef struct __kstring_t {
 extern "C" {
 #endif
 
-LSG_BGZF* dummy();
+BGZF* dummy();
 
 	/******************
 	 * Basic routines *
@@ -77,12 +77,12 @@ LSG_BGZF* dummy();
 	 *              the zlib compression level; if both 'r' and 'w' are present, 'w' is ignored.
      * @return      BGZF file handler; 0 on error
 	 */
-	LSG_BGZF* bgzf_dopen(int fd, const char *mode);
+	BGZF* bgzf_dopen(int fd, const char *mode);
 
 	/**
 	 * Open the specified file for reading or writing.
 	 */
-	LSG_BGZF* bgzf_open(const char* path, const char *mode);
+	BGZF* bgzf_open(const char* path, const char *mode);
 
 	/**
 	 * Close the BGZF and free all associated resources.
@@ -90,7 +90,7 @@ LSG_BGZF* dummy();
 	 * @param fp    BGZF file handler
 	 * @return      0 on success and -1 on error
 	 */
-	int bgzf_close(LSG_BGZF *fp);
+	int bgzf_close(BGZF *fp);
 
 	/**
 	 * Read up to _length_ bytes from the file storing into _data_.
@@ -100,7 +100,7 @@ LSG_BGZF* dummy();
 	 * @param length size of data to read
 	 * @return       number of bytes actually read; 0 on end-of-file and -1 on error
 	 */
-	ssize_t bgzf_read(LSG_BGZF *fp, void *data, ssize_t length);
+	ssize_t bgzf_read(BGZF *fp, void *data, ssize_t length);
 
 	/**
 	 * Write _length_ bytes from _data_ to the file.
@@ -110,12 +110,12 @@ LSG_BGZF* dummy();
 	 * @param length size of data to write
 	 * @return       number of bytes actually written; -1 on error
 	 */
-	ssize_t bgzf_write(LSG_BGZF *fp, const void *data, ssize_t length);
+	ssize_t bgzf_write(BGZF *fp, const void *data, ssize_t length);
 
 	/**
 	 * Write the data in the buffer to the file.
 	 */
-	int bgzf_flush(LSG_BGZF *fp);
+	int bgzf_flush(BGZF *fp);
 
 	/**
 	 * Return a virtual file pointer to the current location in the file.
@@ -133,7 +133,7 @@ LSG_BGZF* dummy();
 	 * @param whence must be SEEK_SET
 	 * @return       0 on success and -1 on error
 	 */
-	int64_t bgzf_seek(LSG_BGZF *fp, int64_t pos, int whence);
+	int64_t bgzf_seek(BGZF *fp, int64_t pos, int whence);
 
 	/**
 	 * Check if the BGZF end-of-file (EOF) marker is present
@@ -141,7 +141,7 @@ LSG_BGZF* dummy();
 	 * @param fp    BGZF file handler opened for reading
 	 * @return      1 if EOF is present; 0 if not or on I/O error
 	 */
-	int bgzf_check_EOF(LSG_BGZF *fp);
+	int bgzf_check_EOF(BGZF *fp);
 
 	/**
 	 * Check if a file is in the BGZF format
@@ -161,19 +161,19 @@ LSG_BGZF* dummy();
 	 * @param fp    BGZF file handler
 	 * @param size  size of cache in bytes; 0 to disable caching (default)
 	 */
-	void bgzf_set_cache_size(LSG_BGZF *fp, int size);
+	void bgzf_set_cache_size(BGZF *fp, int size);
 
 	/**
 	 * Flush the file if the remaining buffer size is smaller than _size_ 
 	 */
-	int bgzf_flush_try(LSG_BGZF *fp, ssize_t size);
+	int bgzf_flush_try(BGZF *fp, ssize_t size);
 
 	/**
 	 * Read one byte from a BGZF file. It is faster than bgzf_read()
 	 * @param fp     BGZF file handler
 	 * @return       byte read; -1 on end-of-file or error
 	 */
-	int bgzf_getc(LSG_BGZF *fp);
+	int bgzf_getc(BGZF *fp);
 
 	/**
 	 * Read one line from a BGZF file. It is faster than bgzf_getc()
@@ -183,12 +183,12 @@ LSG_BGZF* dummy();
 	 * @param str    string to write to; must be initialized
 	 * @return       length of the string; 0 on end-of-file; negative on error
 	 */
-	int bgzf_getline(LSG_BGZF *fp, int delim, kstring_t *str);
+	int bgzf_getline(BGZF *fp, int delim, kstring_t *str);
 
 	/**
 	 * Read the next BGZF block.
 	 */
-	int bgzf_read_block(LSG_BGZF *fp);
+	int bgzf_read_block(BGZF *fp);
 
 #ifdef __cplusplus
 }

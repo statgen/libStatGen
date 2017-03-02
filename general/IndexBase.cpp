@@ -88,8 +88,8 @@ bool SortedChunkList::mergeOverlapping()
             continue;
         }
         
-        // If the next chunk's start position's LSG_BGZF block is less than or
-        // equal to the LSG_BGZF block of the current chunk's end position,
+        // If the next chunk's start position's BGZF block is less than or
+        // equal to the BGZF block of the current chunk's end position,
         // combine the two chunks into the current chunk.
         if((nextPos->second.chunk_beg >> 16) <= 
            (currentPos->second.chunk_end >> 16))

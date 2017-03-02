@@ -128,7 +128,7 @@ public:
     {
         if(myUsingBuffer)
         {
-            throw std::runtime_error("IFILE: CANNOT use buffered reads and tell for LSG_BGZF files");
+            throw std::runtime_error("IFILE: CANNOT use buffered reads and tell for BGZF files");
         }
         return bgzf_tell(bgzfHandle);
     }
@@ -162,7 +162,7 @@ public:
 
 protected:
     // A bgzfFile is used.
-    LSG_BGZF* bgzfHandle;
+    BGZF* bgzfHandle;
 
     // Flag indicating EOF since there isn't one on the handle.
     bool myEOF;

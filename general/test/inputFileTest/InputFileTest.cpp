@@ -319,7 +319,7 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
        catch (std::exception& e)
        {
            caught = true;
-           assert(strcmp(e.what(), "IFILE: CANNOT use buffered reads and tell for LSG_BGZF files") == 0);
+           assert(strcmp(e.what(), "IFILE: CANNOT use buffered reads and tell for BGZF files") == 0);
        }
        assert(caught);
    }
@@ -355,7 +355,7 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
        catch (std::exception& e)
        {
            caught = true;
-           assert(strcmp(e.what(), "IFILE: CANNOT use buffered reads and tell for LSG_BGZF files") == 0);
+           assert(strcmp(e.what(), "IFILE: CANNOT use buffered reads and tell for BGZF files") == 0);
        }
        assert(caught);
        disableBuffering();

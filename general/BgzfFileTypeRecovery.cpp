@@ -366,8 +366,8 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
         // if we have a bad header, start looking forward for a good one,
         if(!header.sane()) {
             // sync does not consume the next good header, it simply syncs()
-            // the data stream to the next believed good LSG_BGZF header:
-            if(debug) std::cerr << "BGZFReader::readahead found corrupt LSG_BGZF header - now calling sync()\n";
+            // the data stream to the next believed good BGZF header:
+            if(debug) std::cerr << "BGZFReader::readahead found corrupt BGZF header - now calling sync()\n";
             rc = sync();
             //
             // even though we can now decompress, we need to tell the caller
@@ -381,7 +381,7 @@ PeekaheadBuffer::ReturnCode BGZFReader::readahead(ssize_t count)
         rc = m_fileReader.read((uint8_t *) &gzipBuffer, header.BSIZE() + 1 - sizeof(header));
 
         if(rc == reSync) {
-            if(debug) std::cerr << "BGZFReader::readahead got incomplete LSG_BGZF read - now calling sync()\n";
+            if(debug) std::cerr << "BGZFReader::readahead got incomplete BGZF read - now calling sync()\n";
             sync();
             return reSync;
         }
@@ -461,9 +461,9 @@ void testBGZFBuffer()
 
     //
     // this should:
-    //  decompress a LSG_BGZF block, populating the buffer with
+    //  decompress a BGZF block, populating the buffer with
     //  unzipped data, possibly returning a BGZFBuffer::ReturnCode of 
-    //  resync if it turns out the LSG_BGZF data was interrupted by bad
+    //  resync if it turns out the BGZF data was interrupted by bad
     //  CRC checks.
     //
     rc = b.readahead(64);
@@ -543,8 +543,8 @@ int BgzfFileTypeRecovery::read(void * buffer, unsigned int size)
             return 0;
         case PeekaheadBuffer::reSync:
             // we could encode more info in the exception message here:
-            if(debug) std::cerr << "throwing LSG_BGZF sync exception\n";
-            throw std::runtime_error("LSG_BGZF stream resync");
+            if(debug) std::cerr << "throwing BGZF sync exception\n";
+            throw std::runtime_error("BGZF stream resync");
         case PeekaheadBuffer::ok:
             //
             // in bgzfReader, we always are ensured we

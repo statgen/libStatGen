@@ -20,7 +20,7 @@
 #include "SamRecord.h"
 #include "BamInterface.h"
 #include "SamInterface.h"
-#include "BgzfFileType.h"
+//#include "BgzfFileType.h"
 
 // Constructor, init variables.
 SamFile::SamFile()
@@ -120,15 +120,11 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
         {
             // uncompressed BAM File.
             // -.ubam is the filename, read uncompressed bam from stdin.
-            // uncompressed BAM is still compressed with LSG_BGZF, but using
-            // compression level 0, so still open as LSG_BGZF since it has a
-            // LSG_BGZF header.
+            // uncompressed BAM is still compressed with BGZF, but using
+            // compression level 0, so still open as BGZF since it has a
+            // BGZF header.
             filename = "-";
 
-            // Uncompressed, so do not require the eof block.
-#ifdef __ZLIB_AVAILABLE__
-            BgzfFileType::setRequireEofBlock(false);
-#endif
             htsFormat fmt;
             hts_parse_format(&fmt, "bam");
             fmt.compression = htsCompression::no_compression;

@@ -39,7 +39,7 @@ public:
     // Determine if the file is a gzip file.
     bool isGzipFile();
 
-    // Determine if the file is a LSG_BGZF compressed file.
+    // Determine if the file is a BGZF compressed file.
     bool isBgzfFile();
 
 private:

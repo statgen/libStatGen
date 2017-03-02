@@ -27,6 +27,7 @@ void testReadSam()
     assert(!inSam1.IsEOF());
     SamRecord rec;
     assert(inSam1.ReadRecord(samHdr, rec) == true);
+    assert(inSam1.ReadRecord(samHdr, rec) == false);
     assert(inSam1.IsEOF());
 
     SamFile inSam;
@@ -48,6 +49,7 @@ void testReadBam()
     assert(!inSam1.IsEOF());
     SamRecord rec;
     assert(inSam1.ReadRecord(samHdr, rec) == true);
+    assert(inSam1.ReadRecord(samHdr, rec) == false);
     assert(inSam1.IsEOF());
 
     SamFile inSam;

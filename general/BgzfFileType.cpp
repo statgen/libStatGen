@@ -53,7 +53,7 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
         if ((mode[0] == 'r' || mode[0] == 'R') && (strcmp(filename, "-") != 0)
             && ourRequireEofBlock && (bgzf_check_EOF(bgzfHandle) != 1))
         {
-            std::cerr << "LSG_BGZF EOF marker is missing in " << filename << std::endl;
+            std::cerr << "BGZF EOF marker is missing in " << filename << std::endl;
             // the block is supposed to be there, but isn't, so close the file.
             close();
         }
