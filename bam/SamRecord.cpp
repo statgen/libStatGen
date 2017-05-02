@@ -18,11 +18,9 @@
 #include <stdlib.h>
 #include <limits>
 #include <stdexcept>
-#include <sam.h>
+#include "SamRecord.h"
 
 #include "bam.h"
-
-#include "SamRecord.h"
 #include "SamValidation.h"
 
 #include "BaseUtilities.h"

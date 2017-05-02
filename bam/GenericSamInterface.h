@@ -22,8 +22,8 @@
 #include "InputFile.h"
 #include "SamFileHeader.h"
 #include "SamRecord.h"
-#include <sam.h>
-#include <cram.h>
+#include <htslib/sam.h>
+#include <htslib/cram.h>
 
 
 

@@ -19,7 +19,7 @@
 #define __SAM_RECORD_H__
 
 #include <stdint.h>
-#include <sam.h>
+#include <htslib/sam.h>
 
 #include "GenomeSequence.h"
 #include "SamStatus.h"
