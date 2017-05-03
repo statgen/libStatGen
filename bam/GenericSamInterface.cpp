@@ -68,6 +68,9 @@ bool GenericSamInterface::readHeader(SamFileHeader& header, SamStatus& samStatus
       }
       else
       {
+        // Clear the passed in header.
+        header.resetHeader();
+
         hdr_ = sam_hdr_read(fp_);
         if (!hdr_)
         {
