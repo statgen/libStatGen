@@ -281,7 +281,7 @@ bool SamFile::ReadBamIndex(const char* bamIndexFilename)
         return(false);
     }
     myStatus = SamStatus::SUCCESS;
-    return(true);
+    return(myInterfacePtr->loadIndex(bamIndexFilename));
 }
 
 
@@ -684,7 +684,7 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end,
     myPrevRefID = 0;
     myPrevReadName.Clear();
 
-    return(true);
+    return(myInterfacePtr->setReadSection(refID, (start == -1 ? 0 : start), (end == -1 ? INT_MAX : end)));
 }
 
 
@@ -730,7 +730,7 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
     myPrevRefID = 0;
     myPrevReadName.Clear();
 
-    return(true);
+    return(myInterfacePtr->setReadSection(refName, (start == -1 ? 0 : start), (end == -1 ? (std::uint32_t)-1 : end)));
 }
 
 

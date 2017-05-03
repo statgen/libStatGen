@@ -33,6 +33,13 @@ public:
     GenericSamInterface(const char*const fn, const char* mode, const char*const ref_fn = nullptr);
     GenericSamInterface(const char*const fn, const char* mode, const htsFormat& fmt, const char*const ref_fn = nullptr);
     ~GenericSamInterface();
+
+    bool loadIndex();
+    bool loadIndex(const char*const idx_name);
+
+    bool setReadSection(const char*const ref_name, std::int32_t beg = 0, std::int32_t end = INT_MAX);
+    bool setReadSection(std::int32_t ref_id, std::int32_t beg = 0, std::int32_t end = INT_MAX);
+
    
     // Pure virtual method that reads the header section from the specified file
     // and stores it in the passed in header, returns false and sets the status
@@ -78,6 +85,8 @@ public:
 
 private:
   samFile* fp_;
+  hts_idx_t* idx_;
+  hts_itr_t* itr_;
   bam_hdr_t* hdr_;
   bam1_t* rec_;
   bool eof_;

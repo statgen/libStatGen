@@ -16,12 +16,13 @@
  */
 
 #include <htslib/sam.h>
-#include <htslib/hts.h>
 #include "GenericSamInterface.h"
 
 
 GenericSamInterface::GenericSamInterface(const char*const fn, const char* mode, const char*const ref_fn) :
     fp_(sam_open(fn, mode)),
+    idx_(nullptr),
+    itr_(nullptr),
     hdr_(nullptr),
     rec_(bam_init1()),
     eof_(false)
@@ -32,6 +33,8 @@ GenericSamInterface::GenericSamInterface(const char*const fn, const char* mode, 
 
 GenericSamInterface::GenericSamInterface(const char*const fn, const char* mode, const htsFormat& fmt, const char*const ref_fn) :
   fp_(sam_open_format(fn, mode, &fmt)), // TODO: fmt may need to be copied as a member
+  idx_(nullptr),
+  itr_(nullptr),
   hdr_(nullptr),
   rec_(bam_init1()),
   eof_(false)
@@ -48,8 +51,46 @@ GenericSamInterface::~GenericSamInterface()
     if (rec_)
         bam_destroy1(rec_);
 
+    if (itr_)
+        hts_itr_destroy(itr_);
+
+    if (idx_)
+        hts_idx_destroy(idx_);
+
     if (fp_)
         sam_close(fp_);
+}
+
+bool GenericSamInterface::loadIndex()
+{
+    if (idx_)
+        return false;
+    idx_ = sam_index_load(fp_, fp_->fn);
+    return (bool)idx_;
+}
+
+bool GenericSamInterface::loadIndex(const char*const idx_name)
+{
+    if (idx_)
+        return false;
+    idx_ = sam_index_load2(fp_, fp_->fn, idx_name);
+    return (bool)idx_;
+}
+
+bool GenericSamInterface::setReadSection(const char*const ref_name, std::int32_t beg, std::int32_t end)
+{
+    return this->setReadSection(bam_name2id(hdr_, ref_name), beg, end);
+}
+
+bool GenericSamInterface::setReadSection(std::int32_t ref_id, std::int32_t beg, std::int32_t end)
+{
+    if (!idx_)
+        return false;
+    eof_ = false;
+    if (itr_)
+        hts_itr_destroy(itr_);
+    itr_ = sam_itr_queryi(idx_, ref_id, beg, end);
+    return (bool)itr_;
 }
 
 // Reads the header section from the specified BAM file and stores it in
@@ -142,15 +183,26 @@ void GenericSamInterface::readRecord(SamFileHeader& header, SamRecord& record, S
 {
     if (fp_)
     {
-      if (sam_read1(fp_, hdr_, rec_) < 0)
-      {
-          samStatus.setStatus(SamStatus::NO_MORE_RECS, "End of file");
-          eof_ = true;
-      }
-      else
-      {
-          record.setBufferFromHtsRec(rec_, header);
-      }
+        if (idx_)
+        {
+            if (sam_itr_next(fp_, itr_, rec_) < 0)
+            {
+                samStatus.setStatus(SamStatus::NO_MORE_RECS, "End of file");
+                eof_ = true;
+            }
+
+        }
+        else
+        {
+            if (sam_read1(fp_, hdr_, rec_) < 0)
+            {
+                samStatus.setStatus(SamStatus::NO_MORE_RECS, "End of file");
+                eof_ = true;
+            }
+        }
+
+        if (!eof_)
+            record.setBufferFromHtsRec(rec_, header);
     }
 }
 
