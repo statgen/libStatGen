@@ -74,6 +74,7 @@ public:
     //[[deprecated]]
     //void readRecord(IFILE filePtr, SamFileHeader& header, SamRecord& record, SamStatus& samStatus) { return readRecord(header, record, samStatus); }
 
+    htsExactFormat format() const;
 
 private:
   samFile* fp_;

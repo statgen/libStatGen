@@ -16,6 +16,7 @@
  */
 
 #include <htslib/sam.h>
+#include <htslib/hts.h>
 #include "GenericSamInterface.h"
 
 
@@ -173,4 +174,12 @@ SamStatus::Status GenericSamInterface::writeRecord(SamFileHeader& header, SamRec
 bool GenericSamInterface::isEOF()
 {
     return (!fp_ || eof_);
+}
+
+htsExactFormat GenericSamInterface::format() const
+{
+  if (fp_)
+      return fp_->format.format;
+  else
+      return htsExactFormat::format_maximum;
 }

@@ -115,6 +115,7 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             hts_parse_format(&fmt, "bam");
             myInterfacePtr = new GenericSamInterface(filename, "r", fmt); //BamInterface;
             myFilename = filename;
+            myIsOpenForRead = true;
         }
         else if(strcmp(filename, "-.ubam") == 0)
         {
@@ -164,6 +165,8 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
 
     // File is open for reading.
     myIsOpenForRead = true;
+    if (myInterfacePtr->format() == htsExactFormat::bam)
+      myIsBamOpenForRead = true;
 
     // Read the header if one was passed in.
     if(header != NULL)
