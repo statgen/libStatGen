@@ -1325,7 +1325,7 @@ SamStatus::Status SamRecord::copyRecordBufferToHts(bam1_t* htsRec, SequenceTrans
         }
     }
 
-    std::int32_t l_data = myRecordPtr->myBlockSize - 32 * 8;
+    std::int32_t l_data = myRecordPtr->myBlockSize - 32;
     bam1_t* tmp = bam_init1();
     tmp->core.tid = myRecordPtr->myReferenceID;
     tmp->core.pos = myRecordPtr->myPosition;

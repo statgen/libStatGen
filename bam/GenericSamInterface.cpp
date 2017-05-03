@@ -15,6 +15,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <htslib/sam.h>
 #include "GenericSamInterface.h"
 
 
@@ -116,10 +117,17 @@ bool GenericSamInterface::writeHeader(SamFileHeader& header, SamStatus& samStatu
             }
             else
             {
+                //https://github.com/samtools/htslib/issues/104
+                hdr_->l_text = tmp.size();
+                hdr_->text = (char*)tmp.data();
+
                 if (sam_hdr_write(fp_, hdr_) != 0)
                     samStatus.setStatus(SamStatus::FAIL_IO, "Failed to write header");
                 else
                     ret = true;
+
+                hdr_->l_text = 0;
+                hdr_->text = nullptr;
             }
         }
 
@@ -154,7 +162,7 @@ SamStatus::Status GenericSamInterface::writeRecord(SamFileHeader& header, SamRec
     SamStatus::Status ret = record.copyRecordBufferToHts(rec_, translation);
     if (ret == SamStatus::SUCCESS)
     {
-        if (sam_write1(fp_, hdr_, rec_) != 0)
+        if (sam_write1(fp_, hdr_, rec_) < 0)
         {
             ret = SamStatus::FAIL_IO;
         }
