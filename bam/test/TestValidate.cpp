@@ -35,7 +35,7 @@ void validateRead1(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 1
     // Create record structure for validating.
-    int expectedBlockSize = 89;
+    int expectedBlockSize = 90; // for htslib, update from 89 to 90
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "1";
     const char* expectedMateReferenceNameOrEqual = "=";
@@ -52,7 +52,7 @@ void validateRead1(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = TestValidate::READ1_POS;
-    expectedRecordPtr->myReadNameLength = 23;
+    expectedRecordPtr->myReadNameLength = 24; // for htslib, update from 23 to 24
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 2;
@@ -220,7 +220,14 @@ void validateRead1(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -253,42 +260,85 @@ void validateRead1(SamRecord& samRecord)
     }
 
     // Validate the tags.  
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'D');
-    varPtr++;
-    assert(*varPtr == 'Z');
-    varPtr++;
-    assert(*varPtr == '3');
-    varPtr++;
-    assert(*varPtr == '7');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'N');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'X');
-    varPtr++;
-    assert(*varPtr == 'T');
-    varPtr++;
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'R');
-    varPtr++;
+    // Update the order
+    if(*varPtr == 'X')
+    {
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '7');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+    }
+    else
+    {
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '7');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+    }
 }
 
 
@@ -297,7 +347,7 @@ void validateRead2(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 2
     // Create record structure for validating.
-    int expectedBlockSize = 61;
+    int expectedBlockSize = 62; //htslib update from 61
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "1";
     const char* expectedMateReferenceNameOrEqual = "=";
@@ -314,7 +364,7 @@ void validateRead2(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = TestValidate::READ2_POS;
-    expectedRecordPtr->myReadNameLength = 23;
+    expectedRecordPtr->myReadNameLength = 24; // htslib, update from 23
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 0;
@@ -472,7 +522,14 @@ void validateRead2(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -501,7 +558,7 @@ void validateRead3(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 3
     // Create record structure for validating.
-    int expectedBlockSize = 87;
+    int expectedBlockSize = 90; //htslib updated from 87
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -518,7 +575,7 @@ void validateRead3(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = 74;
-    expectedRecordPtr->myReadNameLength = 21;
+    expectedRecordPtr->myReadNameLength = 24; // htslib, update from 21
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 1;
@@ -622,7 +679,14 @@ void validateRead3(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -651,50 +715,100 @@ void validateRead3(SamRecord& samRecord)
     }
 
     // Validate the tags.  
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'D');
-    varPtr++;
-    assert(*varPtr == 'Z');
-    varPtr++;
-    assert(*varPtr == '3');
-    varPtr++;
-    assert(*varPtr == '0');
-    varPtr++;
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == '0');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == '5');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'N');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 2);
-    varPtr++;
-    assert(*varPtr == 'X');
-    varPtr++;
-    assert(*varPtr == 'T');
-    varPtr++;
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'R');
-    varPtr++;
+    if(*varPtr == 'X')
+    {
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 2);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == '5');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+    }
+    else
+    {
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == '5');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 2);
+        varPtr++;
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+    }
 }
 
 
@@ -703,7 +817,7 @@ void validateRead4(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 4
     // Create record structure for validating.
-    int expectedBlockSize = 57;
+    int expectedBlockSize = 60; // htslib update from 57
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -720,11 +834,12 @@ void validateRead4(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = 74;
-    expectedRecordPtr->myReadNameLength = 21;
+    expectedRecordPtr->myReadNameLength = 24; //htslib update from 21
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 0;
-    expectedRecordPtr->myFlag = 97;
+    // Record 4's flag is now 101 since hstlib updated it from 97 for SAM files, but not BAM files to indicate unmapped since cigar is '*'
+    expectedRecordPtr->myFlag = 101;
     expectedRecordPtr->myReadLength = 0;
     expectedRecordPtr->myMateReferenceID = 17;
     expectedRecordPtr->myMatePosition = 756;
@@ -873,7 +988,14 @@ void validateRead4(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -898,7 +1020,7 @@ void validateRead5(SamRecord& samRecord)
 {
     //////////////////////////////////////////
     // Validate Record 5
-    int expectedBlockSize = 87;
+    int expectedBlockSize = 90; // htslib change 87 to 90
     const char* expectedReferenceName = "2";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -915,7 +1037,7 @@ void validateRead5(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 1;
     expectedRecordPtr->myPosition = 74;
-    expectedRecordPtr->myReadNameLength = 21;
+    expectedRecordPtr->myReadNameLength = 24; // htslib change 21 to 24
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 1;
@@ -1067,7 +1189,14 @@ void validateRead5(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -1096,50 +1225,100 @@ void validateRead5(SamRecord& samRecord)
     }
 
     // Validate the tags.  
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'D');
-    varPtr++;
-    assert(*varPtr == 'Z');
-    varPtr++;
-    assert(*varPtr == '3');
-    varPtr++;
-    assert(*varPtr == '0');
-    varPtr++;
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == '0');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == '5');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'N');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 2);
-    varPtr++;
-    assert(*varPtr == 'X');
-    varPtr++;
-    assert(*varPtr == 'T');
-    varPtr++;
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'R');
-    varPtr++;
+    if(*varPtr == 'X')
+    {
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 2);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == '5');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+    }
+    else
+    {
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == '0');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == '5');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 2);
+        varPtr++;
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+    }
 }
 
 
@@ -1148,7 +1327,7 @@ void validateRead6(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 6
     // Create record structure for validating.
-    int expectedBlockSize = 77;
+    int expectedBlockSize = 80; //htslib update 77 to 80
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -1165,7 +1344,7 @@ void validateRead6(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = TestValidate::READ6_POS;
-    expectedRecordPtr->myReadNameLength = 21;
+    expectedRecordPtr->myReadNameLength = 24; //htslib update 21 to 24
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 3;
@@ -1247,7 +1426,14 @@ void validateRead6(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -1294,7 +1480,7 @@ void validateRead7(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 7
     // Create record structure for validating.
-    int expectedBlockSize = 83;
+    int expectedBlockSize = 86; // htslib update 83 to 86
     const char* expectedReferenceName = "2";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -1311,7 +1497,7 @@ void validateRead7(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 1;
     expectedRecordPtr->myPosition = TestValidate::READ7_POS;
-    expectedRecordPtr->myReadNameLength = 21;
+    expectedRecordPtr->myReadNameLength = 24; //htslib update 21 to 24
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 4;
@@ -1393,7 +1579,14 @@ void validateRead7(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -1447,7 +1640,7 @@ void validateRead8(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 8
     // Create record structure for validating.
-    int expectedBlockSize = 65;
+    int expectedBlockSize = 66; // htslib update 65 to 66
     const char* expectedReferenceName = "*";
     const char* expectedMateReferenceName = "*";
     const char* expectedMateReferenceNameOrEqual = "*";
@@ -1464,7 +1657,7 @@ void validateRead8(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = -1;
     expectedRecordPtr->myPosition = -1;
-    expectedRecordPtr->myReadNameLength = 27;
+    expectedRecordPtr->myReadNameLength = 28; // htslib update 27 to 28
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4680;
     expectedRecordPtr->myCigarLength = 0;
@@ -1548,7 +1741,14 @@ void validateRead8(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -1577,7 +1777,7 @@ void validateRead9(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 9
     // Create record structure for validating.
-    int expectedBlockSize = 77;
+    int expectedBlockSize = 80; // htslib update 77 to 80
     const char* expectedReferenceName = "3";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -1594,7 +1794,7 @@ void validateRead9(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 2;
     expectedRecordPtr->myPosition = 74;
-    expectedRecordPtr->myReadNameLength = 21;
+    expectedRecordPtr->myReadNameLength = 24; //htslib update 21 to 24
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 3;
@@ -1679,7 +1879,14 @@ void validateRead9(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
@@ -1726,7 +1933,7 @@ void validateRead10(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 10
     // Create record structure for validating.
-    int expectedBlockSize = 59;
+    int expectedBlockSize = 60; //htslib update 59 to 60
     const char* expectedReferenceName = "*";
     const char* expectedMateReferenceName = "*";
     const char* expectedMateReferenceNameOrEqual = "*";
@@ -1743,7 +1950,7 @@ void validateRead10(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = -1;
     expectedRecordPtr->myPosition = -1;
-    expectedRecordPtr->myReadNameLength = 27;
+    expectedRecordPtr->myReadNameLength = 28; //htslib update 27 to 28
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4680;
     expectedRecordPtr->myCigarLength = 0;
@@ -1826,7 +2033,14 @@ void validateRead10(SamRecord& samRecord)
     // Validate the readname.
     for(int i = 0; i < expectedRecordPtr->myReadNameLength; i++)
     {
-        assert(*varPtr == samRecord.getReadName()[i]);
+        if(i > strlen(samRecord.getReadName()))
+        {
+            assert(*varPtr == '\0');
+        }
+        else
+        {
+            assert(*varPtr == samRecord.getReadName()[i]);
+        }
         varPtr++;
     }
 
