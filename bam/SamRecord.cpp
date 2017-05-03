@@ -647,7 +647,7 @@ SamStatus::Status SamRecord::setBufferFromHtsRec(bam1_t* htsRec, SamFileHeader& 
     // Clear the record.
     resetRecord();
 
-    myRecordPtr->myBlockSize = (8 * 32) + htsRec->l_data;
+    myRecordPtr->myBlockSize = 32 + htsRec->l_data;
 
     // allocate space for the record size.
     if(!allocateRecordStructure(myRecordPtr->myBlockSize + sizeof(int32_t)))
