@@ -41,7 +41,8 @@ int main(int argc, char ** argv)
 
 
 const int IFILE_Test::TEST_FILE_SIZE = 37;
-const int IFILE_Test::BGZF_TEST_FILE_SIZE = 93;
+// HTSLIB change 93 to 65 const int IFILE_Test::BGZF_TEST_FILE_SIZE = 93;
+const int IFILE_Test::BGZF_TEST_FILE_SIZE = 65;
 const std::string IFILE_Test::TEST_FILE_CONTENTS = "ABCDabcd1234\nEFGefg567\nhijklHIJKL8910";
 
 void IFILE_Test::test()
