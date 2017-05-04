@@ -460,7 +460,11 @@ void validateRead1ModQuality(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 1
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 89; //for htslib, update from 89 to 90
+#else
     int expectedBlockSize = 90; //for htslib, update from 89 to 90
+#endif
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "1";
     const char* expectedMateReferenceNameOrEqual = "=";
@@ -477,7 +481,11 @@ void validateRead1ModQuality(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = 1010;
-    expectedRecordPtr->myReadNameLength = 24;  //for htslib, update from 23 to 24
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 23;  // htslib, update from 23 to 24
+#else
+    expectedRecordPtr->myReadNameLength = 24;  // htslib, update from 23 to 24
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 2;

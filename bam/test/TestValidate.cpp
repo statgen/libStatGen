@@ -35,7 +35,11 @@ void validateRead1(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 1
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 89; // for htslib, update from 89 to 90
+#else
     int expectedBlockSize = 90; // for htslib, update from 89 to 90
+#endif
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "1";
     const char* expectedMateReferenceNameOrEqual = "=";
@@ -52,7 +56,11 @@ void validateRead1(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = TestValidate::READ1_POS;
-    expectedRecordPtr->myReadNameLength = 24; // for htslib, update from 23 to 24
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 23; // htslib, update from 23 to 24
+#else
+    expectedRecordPtr->myReadNameLength = 24; // htslib, update from 23 to 24
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 2;
@@ -347,7 +355,11 @@ void validateRead2(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 2
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 61; //htslib update from 61
+#else
     int expectedBlockSize = 62; //htslib update from 61
+#endif
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "1";
     const char* expectedMateReferenceNameOrEqual = "=";
@@ -364,7 +376,11 @@ void validateRead2(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = TestValidate::READ2_POS;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 23; // htslib, update from 23
+#else
     expectedRecordPtr->myReadNameLength = 24; // htslib, update from 23
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 0;
@@ -558,7 +574,11 @@ void validateRead3(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 3
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 87; //htslib updated from 87
+#else
     int expectedBlockSize = 90; //htslib updated from 87
+#endif
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -575,7 +595,11 @@ void validateRead3(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = 74;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 21; // htslib, update from 21
+#else
     expectedRecordPtr->myReadNameLength = 24; // htslib, update from 21
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 1;
@@ -817,7 +841,11 @@ void validateRead4(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 4
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 57; // htslib update from 57
+#else
     int expectedBlockSize = 60; // htslib update from 57
+#endif
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -834,7 +862,11 @@ void validateRead4(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = 74;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 21; //htslib update from 21
+#else
     expectedRecordPtr->myReadNameLength = 24; //htslib update from 21
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 0;
@@ -1020,7 +1052,11 @@ void validateRead5(SamRecord& samRecord)
 {
     //////////////////////////////////////////
     // Validate Record 5
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 87; // htslib change 87 to 90
+#else
     int expectedBlockSize = 90; // htslib change 87 to 90
+#endif
     const char* expectedReferenceName = "2";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -1037,7 +1073,11 @@ void validateRead5(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 1;
     expectedRecordPtr->myPosition = 74;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 21; // htslib change 21 to 24
+#else
     expectedRecordPtr->myReadNameLength = 24; // htslib change 21 to 24
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 1;
@@ -1327,7 +1367,11 @@ void validateRead6(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 6
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 77; //htslib update 77 to 80
+#else
     int expectedBlockSize = 80; //htslib update 77 to 80
+#endif
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -1344,7 +1388,11 @@ void validateRead6(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = TestValidate::READ6_POS;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 21; //htslib update 21 to 24
+#else
     expectedRecordPtr->myReadNameLength = 24; //htslib update 21 to 24
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 3;
@@ -1480,7 +1528,11 @@ void validateRead7(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 7
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 83; // htslib update 83 to 86
+#else
     int expectedBlockSize = 86; // htslib update 83 to 86
+#endif
     const char* expectedReferenceName = "2";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -1497,7 +1549,11 @@ void validateRead7(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 1;
     expectedRecordPtr->myPosition = TestValidate::READ7_POS;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 21; //htslib update 21 to 24
+#else
     expectedRecordPtr->myReadNameLength = 24; //htslib update 21 to 24
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 4;
@@ -1640,7 +1696,11 @@ void validateRead8(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 8
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 65; // htslib update 65 to 66
+#else
     int expectedBlockSize = 66; // htslib update 65 to 66
+#endif
     const char* expectedReferenceName = "*";
     const char* expectedMateReferenceName = "*";
     const char* expectedMateReferenceNameOrEqual = "*";
@@ -1657,7 +1717,11 @@ void validateRead8(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = -1;
     expectedRecordPtr->myPosition = -1;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 27; // htslib update 27 to 28
+#else
     expectedRecordPtr->myReadNameLength = 28; // htslib update 27 to 28
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4680;
     expectedRecordPtr->myCigarLength = 0;
@@ -1777,7 +1841,11 @@ void validateRead9(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 9
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 77; // htslib update 77 to 80
+#else
     int expectedBlockSize = 80; // htslib update 77 to 80
+#endif
     const char* expectedReferenceName = "3";
     const char* expectedMateReferenceName = "18";
     const char* expectedMateReferenceNameOrEqual = "18";
@@ -1794,7 +1862,11 @@ void validateRead9(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 2;
     expectedRecordPtr->myPosition = 74;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 21; //htslib update 21 to 24
+#else
     expectedRecordPtr->myReadNameLength = 24; //htslib update 21 to 24
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 3;
@@ -1933,7 +2005,11 @@ void validateRead10(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 10
     // Create record structure for validating.
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 59; //htslib update 59 to 60
+#else
     int expectedBlockSize = 60; //htslib update 59 to 60
+#endif
     const char* expectedReferenceName = "*";
     const char* expectedMateReferenceName = "*";
     const char* expectedMateReferenceNameOrEqual = "*";
@@ -1950,7 +2026,11 @@ void validateRead10(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = -1;
     expectedRecordPtr->myPosition = -1;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 27; //htslib update 27 to 28
+#else
     expectedRecordPtr->myReadNameLength = 28; //htslib update 27 to 28
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4680;
     expectedRecordPtr->myCigarLength = 0;

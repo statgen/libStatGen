@@ -24,7 +24,8 @@ public:
     void test();
 
     static const int TEST_FILE_SIZE;
-    static const int BGZF_TEST_FILE_SIZE;
+    static const int BGZF_TEST_FILE_SIZE_1;
+    static const int BGZF_TEST_FILE_SIZE_2;
     static const std::string TEST_FILE_CONTENTS;
 
 private:
