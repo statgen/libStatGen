@@ -333,15 +333,9 @@ bool SamFile::ReadBamIndex()
         // Not found - try without the bam extension.
         // Locate the start of the bam extension
         size_t startExt = indexName.find(".bam");
-        if(startExt == std::string::npos)
-        {
-            // Could not find the .bam extension, so just return false since the
-            // call to ReadBamIndex set the status.
-            return(false);
-        }
-        // Remove ".bam" and try reading the index again.
-        indexName.erase(startExt,  4);
-        return(ReadBamIndex(indexName.c_str()));
+        if(startExt != std::string::npos && indexName.erase(startExt,  4).size() && ReadBamIndex(indexName.c_str()))
+            return(true);
+        return(myInterfacePtr->loadIndex()); // Try to load non bai index with htslib
     }
     return(true);
 }

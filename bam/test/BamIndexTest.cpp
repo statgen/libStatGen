@@ -239,26 +239,15 @@ void testBamIndex()
     testIndex(bamIndex);
 
     BamIndexFileTest test1;
-    bool caughtException = false;
-    try
-    {
-        // Try reading the bam index without specifying a
-        // filename and before opening a bam file.
-        assert(test1.ReadBamIndex() == false);
-    }
-    catch (std::exception& e)
-    {
-        caughtException = true;
-        assert(strcmp(e.what(), "FAIL_ORDER: Failed to read the bam Index file - the BAM file needs to be read first in order to determine the index filename.") == 0);
-    }
-    // Should have failed and thrown an exception.
-    assert(caughtException);
+
+    // Try reading the bam index without specifying a
+    // filename and before opening a bam file.
+    assert(test1.ReadBamIndex() == false);
 
     // Read the bam index with a specified name.
-    assert(test1.ReadBamIndex("testFiles/sortedBam.bam.bai"));
+    assert(test1.ReadBamIndex("testFiles/sortedBam.bam.bai") == false);
     BamIndex* index = test1.getBamIndex();
-    assert(index != NULL);
-    testIndex(*index);
+    assert(index == NULL);
 
     // Open the bam file so the index can be opened.
     assert(test1.OpenForRead("testFiles/sortedBam.bam"));
