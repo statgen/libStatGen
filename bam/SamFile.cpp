@@ -294,6 +294,17 @@ bool SamFile::ReadBamIndex(const char* bamIndexFilename)
 // Read BAM Index file.
 bool SamFile::ReadBamIndex()
 {
+    if(myFilename.empty())
+    {
+        // Can't read the bam index file because the BAM file has not yet been
+        // opened, so we don't know the base filename for the index file.
+        std::string errorMessage = "Failed to read the bam Index file -"
+            " the BAM file needs to be read first in order to determine"
+            " the index filename.";
+        myStatus.setStatus(SamStatus::FAIL_ORDER, errorMessage.c_str());
+        return(false);
+    }
+
     std::string indexName = myFilename;
     indexName += ".bai";
 
