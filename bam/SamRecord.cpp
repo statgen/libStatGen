@@ -1341,7 +1341,7 @@ SamStatus::Status SamRecord::copyRecordBufferToHts(bam1_t* htsRec, SequenceTrans
     tmp->l_data = tmp->m_data = l_data;
     tmp->data = new std::uint8_t[l_data];
 
-    std::memcpy(myRecordPtr->myData, tmp->data, tmp->l_data);
+    std::memcpy(tmp->data, myRecordPtr->myData, l_data);
     bam_copy1(htsRec, tmp);
 
     delete[] tmp->data;
