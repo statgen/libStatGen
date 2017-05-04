@@ -850,8 +850,9 @@ void testFlagRead(const char* fileName)
     // Required flag 0x4
     // Exclude nothing
     // Finds flags:
-    //   133, 101 (record 4's flag is now 101 since for SAM files htslib
-    // updated it from 97 to 101) & 141.
+    //   133 & 141.
+    // TODO - some versions of htslib may include record 4 for sam files since
+    // it converts the flag from 97 to 101 since the cigar is '*'.
     assert(inSam.OpenForRead(fileName));
     assert(inSam.ReadHeader(samHeader));
     validateHeader(samHeader);
@@ -860,8 +861,13 @@ void testFlagRead(const char* fileName)
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead2(samRecord);
 
-    assert(inSam.ReadRecord(samHeader, samRecord) == true);
-    validateRead4(samRecord);
+    if(strcmp(fileName, "testFiles/testSam.sam") == 0)
+    {
+        // htslib changes the flag from 97 to 101 for sam files if
+        // the cigar is '*'
+        assert(inSam.ReadRecord(samHeader, samRecord) == true);
+        validateRead4(samRecord);
+    }
 
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead8(samRecord);

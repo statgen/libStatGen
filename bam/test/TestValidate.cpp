@@ -870,8 +870,7 @@ void validateRead4(SamRecord& samRecord)
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 0;
-    // Record 4's flag is now 101 since hstlib updated it from 97 for SAM files, but not BAM files to indicate unmapped since cigar is '*'
-    expectedRecordPtr->myFlag = 101;
+    expectedRecordPtr->myFlag = 97;
     expectedRecordPtr->myReadLength = 0;
     expectedRecordPtr->myMateReferenceID = 17;
     expectedRecordPtr->myMatePosition = 756;
@@ -897,7 +896,10 @@ void validateRead4(SamRecord& samRecord)
     assert(samRecord.getMapQuality() == expectedRecordPtr->myMapQuality);
     assert(samRecord.getBin() == expectedRecordPtr->myBin);
     assert(samRecord.getCigarLength() == expectedRecordPtr->myCigarLength);
-    assert(samRecord.getFlag() == expectedRecordPtr->myFlag);
+    // for sam files, in some versions of htslib, it adjusts the flag to 101
+    // since the cigar is '*'
+    assert((samRecord.getFlag() == expectedRecordPtr->myFlag) ||
+           (samRecord.getFlag() == 101));
     assert(samRecord.getReadLength() == expectedRecordPtr->myReadLength);
     assert(samRecord.getMateReferenceID() ==
            expectedRecordPtr->myMateReferenceID);
@@ -1006,7 +1008,10 @@ void validateRead4(SamRecord& samRecord)
     assert(bufferPtr->myMapQuality == expectedRecordPtr->myMapQuality);
     assert(bufferPtr->myBin == expectedRecordPtr->myBin);
     assert(bufferPtr->myCigarLength == expectedRecordPtr->myCigarLength);
-    assert(bufferPtr->myFlag == expectedRecordPtr->myFlag);
+    // for sam files, in some versions of htslib, it adjusts the flag to 101
+    // since the cigar is '*'
+    assert((bufferPtr->myFlag == expectedRecordPtr->myFlag) ||
+           (bufferPtr->myFlag == 101));
     assert(bufferPtr->myReadLength == expectedRecordPtr->myReadLength);
     assert(bufferPtr->myMateReferenceID ==
            expectedRecordPtr->myMateReferenceID);
