@@ -266,6 +266,9 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
 // Read BAM Index file.
 bool SamFile::ReadBamIndex(const char* bamIndexFilename)
 {
+    if (!IsOpen())
+        return false;
+
     // Cleanup a previously setup index.
     if(myBamIndex != NULL)
     {
@@ -294,6 +297,9 @@ bool SamFile::ReadBamIndex(const char* bamIndexFilename)
 // Read BAM Index file.
 bool SamFile::ReadBamIndex()
 {
+    if (!IsOpen())
+        return false;
+
     if(myFilename.empty())
     {
         // Can't read the bam index file because the BAM file has not yet been
