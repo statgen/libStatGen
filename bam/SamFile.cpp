@@ -112,6 +112,7 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             filename = "-";
 
             htsFormat fmt;
+            fmt.specific = NULL;
             hts_parse_format(&fmt, "bam");
             myInterfacePtr = new GenericSamInterface(filename, "r", fmt); //BamInterface;
             myFilename = filename;
@@ -127,6 +128,7 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             filename = "-";
 
             htsFormat fmt;
+            fmt.specific = NULL;
             hts_parse_format(&fmt, "bam");
             fmt.compression = htsCompression::no_compression;
         
@@ -139,6 +141,7 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             // read sam from stdin
             filename = "-";
             htsFormat fmt;
+            fmt.specific = NULL;
             hts_parse_format(&fmt, "sam");
             myInterfacePtr = new GenericSamInterface(filename, "r", fmt); //SamInterface;
             myFilename = filename;
@@ -202,6 +205,7 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
         }
 
         htsFormat fmt;
+        fmt.specific = NULL;
         hts_parse_format(&fmt, "bam");
         fmt.compression = htsCompression::no_compression;
         myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //BamInterface;
@@ -220,6 +224,7 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
         }
 
         htsFormat fmt;
+        fmt.specific = NULL;
         hts_parse_format(&fmt, "bam");
         myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //BamInterface;
         myFilename = filename;
@@ -235,6 +240,7 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
         }
 
         htsFormat fmt;
+        fmt.specific = NULL;
         hts_parse_format(&fmt, "sam");
         myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //SamInterface;
         myFilename = filename;
