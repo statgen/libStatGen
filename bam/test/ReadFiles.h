@@ -16,6 +16,7 @@
  */
 
 #include "SamFile.h"
+void testWriteCram();
 void testReadCram();
 void testReadCramSpecifyingRef();
 void testReadSam();

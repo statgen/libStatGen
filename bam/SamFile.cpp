@@ -229,6 +229,25 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
         myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //BamInterface;
         myFilename = filename;
     }
+    else if (lastchar >= 4 &&
+             filename[lastchar - 4] == 'c' &&
+             filename[lastchar - 3] == 'r' &&
+             filename[lastchar - 2] == 'a' &&
+             filename[lastchar - 1] == 'm')
+    {
+        // BAM File.
+        // if -.bam is the filename, write compressed bam to stdout
+        if((lastchar == 6) && (filename[0] == '-') && (filename[1] == '.'))
+        {
+            filename = "-";
+        }
+
+        htsFormat fmt;
+        fmt.specific = NULL;
+        hts_parse_format(&fmt, "cram");
+        myInterfacePtr = new GenericSamInterface(filename, "w", fmt, myRefPtr ? myRefPtr->getReferenceName().c_str() : nullptr); //BamInterface;
+        myFilename = filename;
+    }
     else
     {
         // SAM File

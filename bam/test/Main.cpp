@@ -40,6 +40,7 @@ int main(int argc, char ** argv)
 #ifdef __ZLIB_AVAILABLE__
         testReadBam();
         testReadBam();
+        testWriteCram();
         testReadCram();
         testReadCramSpecifyingRef();
 #endif
