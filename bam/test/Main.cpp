@@ -40,6 +40,8 @@ int main(int argc, char ** argv)
 #ifdef __ZLIB_AVAILABLE__
         testReadBam();
         testReadBam();
+        testReadCram();
+        testReadCramSpecifyingRef();
 #endif
         testAddHeaderAndTagToFile("testFiles/testSam.sam",
                                   "results/addedTagToSam.bam");

@@ -20,6 +20,41 @@
 #include "SamTags.h"
 #include <assert.h>
 
+void testReadCram()
+{
+    SamFileHeader samHdr;
+    SamFile inSam1("testFiles/test.cram", SamFile::READ, &samHdr);
+
+    assert(!inSam1.IsEOF());
+    SamRecord rec;
+
+    int i = 0;
+    for ( ; inSam1.ReadRecord(samHdr, rec); ++i)
+    {
+        rec.getReadLength();
+    }
+    assert(i == 7);
+}
+
+void testReadCramSpecifyingRef()
+{
+    SamFileHeader samHdr;
+    SamFile inSam1;
+    GenomeSequence ref("testFiles/test.fa");
+    inSam1.SetReference(&ref);
+    inSam1.OpenForRead("testFiles/test.cram", &samHdr);
+
+    assert(!inSam1.IsEOF());
+    SamRecord rec;
+
+    int i = 0;
+    for ( ; inSam1.ReadRecord(samHdr, rec); ++i)
+    {
+        rec.getReadLength();
+    }
+    assert(i == 7);
+}
+
 void testReadSam()
 {
     SamFileHeader samHdr;

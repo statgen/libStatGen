@@ -159,7 +159,7 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
     {
         // Not from stdin.  Read the file to determine the type.
 
-        myInterfacePtr = new GenericSamInterface(filename, "r"); //SamInterface;
+        myInterfacePtr = new GenericSamInterface(filename, "r", myRefPtr ? myRefPtr->getReferenceName().c_str() : nullptr);
         myFilename = filename;
     }
 
