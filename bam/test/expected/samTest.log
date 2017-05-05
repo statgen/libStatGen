@@ -1,3 +1,9 @@
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.
 
@@ -16,6 +22,12 @@ SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.
 
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
 ERROR: Missing required tag: SN.
 1 invalid SAM/BAM Header lines were skipped due to:
 SAM/BAM Header line failed to store SQ record.
@@ -45,4 +57,7 @@ Can't modify the key tag, ID from rgID to rgID1
 SAM/BAM Header line failure: Skipping RG line that has a repeated ID field.
 
 Can't modify the key tag, ID from rgID1 to rgID111
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
+[W::sam_parse1] mapped query must have a CIGAR; treated as unmapped
 SamCoordOutput::flush, no output file/header is set, so records removed without being written
