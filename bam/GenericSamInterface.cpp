@@ -183,7 +183,7 @@ void GenericSamInterface::readRecord(SamFileHeader& header, SamRecord& record, S
 {
     if (fp_)
     {
-        if (idx_)
+        if (idx_ && itr_)
         {
             if (sam_itr_next(fp_, itr_, rec_) < 0)
             {

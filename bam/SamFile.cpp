@@ -286,7 +286,10 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
 bool SamFile::ReadBamIndex(const char* bamIndexFilename)
 {
     if (!IsOpen())
+    {
+        myStatus.setStatus(SamStatus::FAIL_ORDER, "SAM/BAM/CRAM file must be open before reading index");
         return false;
+    }
 
     // Cleanup a previously setup index.
     if(myBamIndex != NULL)
@@ -295,18 +298,22 @@ bool SamFile::ReadBamIndex(const char* bamIndexFilename)
         myBamIndex = NULL;
     }
 
-    // Create a new bam index.
-    myBamIndex = new BamIndex();
-    SamStatus::Status indexStat = myBamIndex->readIndex(bamIndexFilename);
-
-    if(indexStat != SamStatus::SUCCESS)
+    std::size_t pathLen = strlen(bamIndexFilename);
+    if(pathLen > 4 && !strcmp(bamIndexFilename + pathLen - 4, ".bai"))
     {
-        std::string errorMessage = "Failed to read the bam Index file: ";
-        errorMessage += bamIndexFilename;
-        myStatus.setStatus(indexStat, errorMessage.c_str());
-        delete myBamIndex;
-        myBamIndex = NULL;
-        return(false);
+        // Create a new bam index.
+        myBamIndex = new BamIndex();
+        SamStatus::Status indexStat = myBamIndex->readIndex(bamIndexFilename);
+
+        if (indexStat != SamStatus::SUCCESS)
+        {
+            std::string errorMessage = "Failed to read the bam Index file: ";
+            errorMessage += bamIndexFilename;
+            myStatus.setStatus(indexStat, errorMessage.c_str());
+            delete myBamIndex;
+            myBamIndex = NULL;
+            return (false);
+        }
     }
     myStatus = SamStatus::SUCCESS;
     return(myInterfacePtr->loadIndex(bamIndexFilename));
@@ -317,7 +324,10 @@ bool SamFile::ReadBamIndex(const char* bamIndexFilename)
 bool SamFile::ReadBamIndex()
 {
     if (!IsOpen())
+    {
+        myStatus.setStatus(SamStatus::FAIL_ORDER, "SAM/BAM/CRAM file must be open before reading index");
         return false;
+    }
 
     if(myFilename.empty())
     {
@@ -349,13 +359,30 @@ bool SamFile::ReadBamIndex()
     // Check to see if the index file was found.
     if(!foundFile)
     {
-        // Not found - try without the bam extension.
-        // Locate the start of the bam extension
-        size_t startExt = indexName.find(".bam");
-        if(startExt != std::string::npos && indexName.erase(startExt,  4).size() && ReadBamIndex(indexName.c_str()))
-            return(true);
-        return(myInterfacePtr->loadIndex()); // Try to load non bai index with htslib
+      try
+      {
+          // Not found - try without the bam extension.
+          // Locate the start of the bam extension
+          size_t startExt = indexName.find(".bam");
+          if(startExt != std::string::npos && indexName.erase(startExt,  4).size() && ReadBamIndex(indexName.c_str()))
+              foundFile = true;
+      }
+      catch (std::exception&)
+      {
+          foundFile = false;
+      }
     }
+
+    if (!foundFile)
+    {
+        if (!myInterfacePtr->loadIndex()) // Try to load non bai index with htslib
+        {
+            myStatus.setStatus(SamStatus::FAIL_IO, "Failed to read the bam Index file");
+            return (false);
+        }
+    }
+
+    myStatus = SamStatus::SUCCESS;
     return(true);
 }
 
@@ -518,7 +545,7 @@ bool SamFile::ReadRecord(SamFileHeader& header,
     // chunks for that region.
     if(myNewSection)
     {
-        if(!processNewSection(header))
+        if(myInterfacePtr->format() != htsExactFormat::cram && !processNewSection(header))
         {
             // Failed processing a new section.  Could be an 
             // order issue like the file not being open or the
@@ -695,7 +722,7 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end,
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
     // set after the file is opened.
-    if(!myIsBamOpenForRead)
+    if(!myIsOpenForRead)
     {
         // There is not a BAM file open for reading.
         myStatus.setStatus(SamStatus::FAIL_ORDER, 
@@ -731,7 +758,7 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
     // set after the file is opened.
-    if(!myIsBamOpenForRead)
+    if(!myIsOpenForRead)
     {
         // There is not a BAM file open for reading.
         myStatus.setStatus(SamStatus::FAIL_ORDER, 
