@@ -22,6 +22,7 @@
 #define __VCF_RECORD_INFO_H__
 
 #include <list>
+#include <utility>
 
 #include "VcfRecordField.h"
 #include "ReusableVector.h"
@@ -53,7 +54,7 @@ public:
     /// reset the field for a new entry.
     void clear() {reset();}
 
-    int getNumInfoFields() { return(myInfo.size()); }
+    int getNumInfoFields() const { return(myInfo.size()); }
 
     /// Set the string value associated with the specified key.  
     /// \param key to set the value for.
@@ -80,6 +81,14 @@ public:
     /// is in range, but does not have a value.
     const std::string* getString(int index);
 
+    /// Get a reference to the InfoElement containing the value associated with the
+    /// specified info index (the pointer will be invalid if the field is
+    /// changed/reset).
+    /// \param index to get the value for.
+    /// \return const references to the InfoElement for this index, index
+    /// must be in range.
+    std::pair<std::string, std::string> getInfoPair(int index) const;
+
 
 
 protected:
@@ -102,7 +111,6 @@ private:
     };
 
     ReusableVector<InfoElement> myInfo;
-    std::string myInfoString;
 };
 
 

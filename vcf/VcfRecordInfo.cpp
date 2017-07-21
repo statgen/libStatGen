@@ -168,3 +168,14 @@ const std::string* VcfRecordInfo::getString(int index)
 
     return(&(myInfo.get(index).value));
 }
+
+std::pair<std::string, std::string> VcfRecordInfo::getInfoPair(int index) const
+{
+    if (index < myInfo.size())
+    {
+        InfoElement& e = myInfo.get(index);
+        return std::pair<std::string, std::string>(e.key, e.value);
+    }
+
+    return std::pair<std::string, std::string>();
+}
