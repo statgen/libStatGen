@@ -553,7 +553,7 @@ void LongParameters::Status()
     int  line_len = 0;
 
     bool legacy_parameters = false;
-    bool legacy_count = 0;
+    int legacy_count = 0;
 
     for (LongParameterList * ptr = list + 1; ptr->description != NULL; ptr++)
         if (ptr->type == LP_LEGACY_PARAMETERS)
