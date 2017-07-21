@@ -168,23 +168,3 @@ const std::string* VcfRecordInfo::getString(int index)
 
     return(&(myInfo.get(index).value));
 }
-
-
-const std::string* VcfRecordInfo::getInfoString()
-{
-    if (myInfoString.empty())
-    {
-        int infoSize = myInfo.size();
-        if (infoSize <= 0)
-            return (nullptr);
-        for (int i = 0; i < infoSize; i++)
-        {
-            InfoElement& info = myInfo.get(i);
-            if (i != 0) myInfoString += ";";
-                myInfoString += info.key;
-            if (info.value.empty())
-                myInfoString += "=" + info.value;
-        }
-    }
-    return &myInfoString;
-}

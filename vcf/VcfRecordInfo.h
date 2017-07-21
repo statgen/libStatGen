@@ -79,10 +79,6 @@ public:
     /// the index is out of range, a pointer to an empty string if the index
     /// is in range, but does not have a value.
     const std::string* getString(int index);
-    
-    /// Get a pointer to the string containing the entire INFO String 
-    /// Returns null pointer if no INFO fields were available
-    const std::string* getInfoString();
 
 
 
