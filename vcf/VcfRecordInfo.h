@@ -79,6 +79,25 @@ public:
     /// the index is out of range, a pointer to an empty string if the index
     /// is in range, but does not have a value.
     const std::string* getString(int index);
+    
+    /// Get a pointer to the string containing the entire INFO String 
+    /// Returns null pointer if no INFO fields were available
+    const std::string* getInfoString()
+    {
+        std::string myInfoString;
+        int infoSize = myInfo.size();
+        if(infoSize <= 0) return (nullptr);
+        for(int i = 0; i < infoSize; i++)
+        {
+            InfoElement& info = myInfo().get(i);
+            if(i != 0) myInfoString+= ";";
+            if(info.value.empty()) myInfoString += info.key.c_str();
+            else myInfoString += info.key.c_str() + "=" + info.value.c_str();
+        } 
+        return &myInfoString;
+    }
+
+
 
 protected:
 
