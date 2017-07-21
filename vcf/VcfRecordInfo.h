@@ -82,20 +82,7 @@ public:
     
     /// Get a pointer to the string containing the entire INFO String 
     /// Returns null pointer if no INFO fields were available
-    const std::string* getInfoString()
-    {
-        std::string myInfoString;
-        int infoSize = myInfo.size();
-        if(infoSize <= 0) return (nullptr);
-        for(int i = 0; i < infoSize; i++)
-        {
-            InfoElement& info = myInfo().get(i);
-            if(i != 0) myInfoString+= ";";
-            if(info.value.empty()) myInfoString += info.key.c_str();
-            else myInfoString += info.key.c_str() + "=" + info.value.c_str();
-        } 
-        return &myInfoString;
-    }
+    const std::string* getInfoString();
 
 
 
@@ -119,6 +106,7 @@ private:
     };
 
     ReusableVector<InfoElement> myInfo;
+    std::string myInfoString;
 };
 
 
