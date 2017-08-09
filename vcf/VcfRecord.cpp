@@ -64,7 +64,8 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly,
         return(false);
     }
     // Read the 1-based Position
-    if(!readTilTab(filePtr, my1BasedPos))
+    std::string strPos;
+    if(!readTilTab(filePtr, strPos))
     {
         myStatus.setStatus(StatGenStatus::FAIL_PARSE, 
                            "Error reading VCF Record POS.");
@@ -73,7 +74,7 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly,
     else
     {
         // Read the position, so convert to an integer.
-        my1BasedPosNum = atoi(my1BasedPos.c_str());
+        my1BasedPosNum = atoi(strPos.c_str());
     }
     // Read the ID.
     if(!readTilTab(filePtr, myID))
@@ -156,7 +157,7 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly,
         catch(std::exception& e)
         {
             myDummyString = "Failed parsing the Genotype Fields of " + myChrom + ":" + 
-                my1BasedPos + " (chr:pos) - " + e.what();
+                std::to_string(my1BasedPosNum) + " (chr:pos) - " + e.what();
             myStatus.setStatus(StatGenStatus::FAIL_PARSE, myDummyString.c_str());
             return(false);
         }
@@ -188,15 +189,16 @@ bool VcfRecord::write(IFILE filePtr, bool siteOnly)
         numWritten += ifprintf(filePtr, "%s\t", myChrom.c_str());
         numExpected += myChrom.length() + 1;
     }
-    if(my1BasedPos.length() == 0)
+    if(false) //my1BasedPos.length() == 0)
     {
         numWritten += ifprintf(filePtr, ".\t");
         numExpected += 2;
     }
     else
     {
-        numWritten += ifprintf(filePtr, "%s\t", my1BasedPos.c_str());
-        numExpected += my1BasedPos.length() + 1;
+        std::string strPos = std::to_string(my1BasedPosNum);
+        numWritten += ifprintf(filePtr, "%s\t", strPos.c_str());
+        numExpected += strPos.length() + 1;
     }
     if(myID.length() == 0)
     {
@@ -273,7 +275,7 @@ void VcfRecord::reset()
 {
     myChrom.clear();
     my1BasedPosNum = 0;
-    my1BasedPos.clear();
+    //my1BasedPos.clear();
     myID.clear();
     myRef.clear();
     myAlt.clear();

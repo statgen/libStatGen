@@ -194,7 +194,7 @@ private:
 
     std::string myChrom;
     int my1BasedPosNum;
-    std::string my1BasedPos;
+    //std::string my1BasedPos;
     vcfIDtype myID;
     std::string myRef;
     std::string myAlt;
