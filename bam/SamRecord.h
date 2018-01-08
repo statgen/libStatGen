@@ -30,6 +30,8 @@
 #include "SamFileHeader.h"
 #include "CigarRoller.h"
 
+#define lsg_bam_reg2bin(beg,end) hts_reg2bin((beg),(end),14,5)
+
 /// Structure of a BAM record.
 struct bamRecordStruct
 {

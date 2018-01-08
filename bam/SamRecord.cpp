@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include "SamRecord.h"
 
-#include "bam.h"
+#include <htslib/sam.h>
 #include "SamValidation.h"
 
 #include "BaseUtilities.h"
@@ -1426,7 +1426,7 @@ uint16_t SamRecord::getBin()
         // The bin that is set in the record is not valid, so
         // reset it.
         myRecordPtr->myBin = 
-            bam_reg2bin(myRecordPtr->myPosition, get1BasedAlignmentEnd());      
+            lsg_bam_reg2bin(myRecordPtr->myPosition, get1BasedAlignmentEnd());      
         myIsBinValid = true;
     }
     return(myRecordPtr->myBin);
@@ -2562,7 +2562,7 @@ bool SamRecord::fixBuffer(SequenceTranslation translation)
         // The bin that is set in the record is not valid, so
         // reset it.
         myRecordPtr->myBin = 
-            bam_reg2bin(myRecordPtr->myPosition, get1BasedAlignmentEnd());      
+            lsg_bam_reg2bin(myRecordPtr->myPosition, get1BasedAlignmentEnd());      
         myIsBinValid = true;
     }
 
