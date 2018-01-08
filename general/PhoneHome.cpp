@@ -16,7 +16,7 @@
  */
 
 #include "PhoneHome.h"
-#include "../samtools/knetfile.h"
+#include <htslib/knetfile.h>
 
 #include <time.h>
 #include <iostream>
@@ -201,7 +201,6 @@ bool PhoneHome::connect()
     ourReturnString.Clear();
     //  return(true);
 #ifndef _NO_PHONEHOME
-    knet_silent(1);
     knetFile *file = knet_open(ourURL.c_str(), "r");
     if (file == 0) return(false);
 
@@ -218,7 +217,6 @@ bool PhoneHome::connect()
     }
 
     knet_close(file);
-    knet_silent(0);
     // std::cerr << "PhoneHome URL = " << ourReturnString.c_str() << std::endl;
 #endif
     return(true);

@@ -26,7 +26,7 @@ $(OBJDIR_OPT)/SamFile.o: ../include/MathVector.h ../include/CigarRoller.h
 $(OBJDIR_OPT)/SamFile.o: ../include/Cigar.h GenericSamInterface.h BamIndex.h
 $(OBJDIR_OPT)/SamFile.o: ../include/IndexBase.h SamStatistics.h
 $(OBJDIR_OPT)/SamFile.o: BamInterface.h SamInterface.h
-$(OBJDIR_OPT)/SamFile.o: ../include/BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_OPT)/SamFile.o: ../include/BgzfFileType.h
 $(OBJDIR_OPT)/GenericSamInterface.o: GenericSamInterface.h SamStatus.h
 $(OBJDIR_OPT)/GenericSamInterface.o: ../include/StatGenStatus.h
 $(OBJDIR_OPT)/GenericSamInterface.o: ../include/ErrorHandler.h
@@ -91,7 +91,7 @@ $(OBJDIR_OPT)/BamInterface.o: ../include/LongHash.h ../include/Error.h
 $(OBJDIR_OPT)/BamInterface.o: ../include/MathVector.h
 $(OBJDIR_OPT)/BamInterface.o: ../include/CigarRoller.h ../include/Cigar.h
 $(OBJDIR_OPT)/BamInterface.o: ../include/CharBuffer.h
-$(OBJDIR_OPT)/SamRecord.o: ../include/bam.h SamRecord.h
+$(OBJDIR_OPT)/SamRecord.o: SamRecord.h
 $(OBJDIR_OPT)/SamRecord.o: ../include/GenomeSequence.h
 $(OBJDIR_OPT)/SamRecord.o: ../include/MemoryMapArray.h ../include/Generic.h
 $(OBJDIR_OPT)/SamRecord.o: ../include/MemoryMap.h ../include/BaseAsciiMap.h
@@ -410,7 +410,7 @@ $(OBJDIR_DEBUG)/SamFile.o: ../include/MathVector.h ../include/CigarRoller.h
 $(OBJDIR_DEBUG)/SamFile.o: ../include/Cigar.h GenericSamInterface.h
 $(OBJDIR_DEBUG)/SamFile.o: BamIndex.h ../include/IndexBase.h SamStatistics.h
 $(OBJDIR_DEBUG)/SamFile.o: BamInterface.h SamInterface.h
-$(OBJDIR_DEBUG)/SamFile.o: ../include/BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_DEBUG)/SamFile.o: ../include/BgzfFileType.h
 $(OBJDIR_DEBUG)/GenericSamInterface.o: GenericSamInterface.h SamStatus.h
 $(OBJDIR_DEBUG)/GenericSamInterface.o: ../include/StatGenStatus.h
 $(OBJDIR_DEBUG)/GenericSamInterface.o: ../include/ErrorHandler.h
@@ -479,7 +479,7 @@ $(OBJDIR_DEBUG)/BamInterface.o: ../include/LongHash.h ../include/Error.h
 $(OBJDIR_DEBUG)/BamInterface.o: ../include/MathVector.h
 $(OBJDIR_DEBUG)/BamInterface.o: ../include/CigarRoller.h ../include/Cigar.h
 $(OBJDIR_DEBUG)/BamInterface.o: ../include/CharBuffer.h
-$(OBJDIR_DEBUG)/SamRecord.o: ../include/bam.h SamRecord.h
+$(OBJDIR_DEBUG)/SamRecord.o: SamRecord.h
 $(OBJDIR_DEBUG)/SamRecord.o: ../include/GenomeSequence.h
 $(OBJDIR_DEBUG)/SamRecord.o: ../include/MemoryMapArray.h ../include/Generic.h
 $(OBJDIR_DEBUG)/SamRecord.o: ../include/MemoryMap.h ../include/BaseAsciiMap.h
@@ -813,7 +813,7 @@ $(OBJDIR_PROFILE)/SamFile.o: ../include/MathVector.h ../include/CigarRoller.h
 $(OBJDIR_PROFILE)/SamFile.o: ../include/Cigar.h GenericSamInterface.h
 $(OBJDIR_PROFILE)/SamFile.o: BamIndex.h ../include/IndexBase.h
 $(OBJDIR_PROFILE)/SamFile.o: SamStatistics.h BamInterface.h SamInterface.h
-$(OBJDIR_PROFILE)/SamFile.o: ../include/BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_PROFILE)/SamFile.o: ../include/BgzfFileType.h
 $(OBJDIR_PROFILE)/GenericSamInterface.o: GenericSamInterface.h SamStatus.h
 $(OBJDIR_PROFILE)/GenericSamInterface.o: ../include/StatGenStatus.h
 $(OBJDIR_PROFILE)/GenericSamInterface.o: ../include/ErrorHandler.h
@@ -882,7 +882,7 @@ $(OBJDIR_PROFILE)/BamInterface.o: ../include/LongHash.h ../include/Error.h
 $(OBJDIR_PROFILE)/BamInterface.o: ../include/MathVector.h
 $(OBJDIR_PROFILE)/BamInterface.o: ../include/CigarRoller.h ../include/Cigar.h
 $(OBJDIR_PROFILE)/BamInterface.o: ../include/CharBuffer.h
-$(OBJDIR_PROFILE)/SamRecord.o: ../include/bam.h SamRecord.h
+$(OBJDIR_PROFILE)/SamRecord.o: SamRecord.h
 $(OBJDIR_PROFILE)/SamRecord.o: ../include/GenomeSequence.h
 $(OBJDIR_PROFILE)/SamRecord.o: ../include/MemoryMapArray.h
 $(OBJDIR_PROFILE)/SamRecord.o: ../include/Generic.h ../include/MemoryMap.h
