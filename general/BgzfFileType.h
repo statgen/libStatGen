@@ -36,6 +36,7 @@ public:
 
     virtual ~BgzfFileType()
     {
+        bgzf_close(bgzfHandle);
         bgzfHandle = NULL;
     }
 

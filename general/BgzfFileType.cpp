@@ -29,36 +29,48 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
 {
     BgzfFileType::numThreads = 1;
     char threadSpec[8];
+    char bgzfMode[4];
     const char* thread_start = strchr(mode, '@');
+    int mode_len = thread_start-mode;
+    if(mode_len < 4){
+        strncpy(bgzfMode, mode, mode_len);
+        bgzfMode[mode_len] = '\0';
+    } else {
+        strncpy(bgzfMode, mode, 3);
+        bgzfMode[3] = '\0';
+    }
     if (thread_start != NULL && thread_start+1 != '\0'){
-      thread_start++;
-      strncpy(threadSpec, thread_start, 7);
-      threadSpec[7] = '\0';
-      numThreads = strtol(threadSpec, NULL, 10);
+        // Advance past the @, then parse the number of threads
+        thread_start++;
+        strncpy(threadSpec, thread_start, 7);
+        threadSpec[7] = '\0';
+        numThreads = strtol(threadSpec, NULL, 10);
+        // If we can't parse the number, revert to one thread
+        if (numThreads == 0){ numThreads = 1; }
     }
     // If the file is for write and is '-', then write to stdout.
     if(((mode[0] == 'w') || (mode[0] == 'W')) &&
        (strcmp(filename, "-") == 0))
     {
         // Write to stdout.
-        bgzfHandle = bgzf_dopen(fileno(stdout), mode);
+        bgzfHandle = bgzf_dopen(fileno(stdout), bgzfMode);
     }
     else if(((mode[0] == 'r') || (mode[0] == 'R')) &&
        (strcmp(filename, "-") == 0))
     {
         // read from stdin
-        bgzfHandle = bgzf_dopen(fileno(stdin), mode);
+        bgzfHandle = bgzf_dopen(fileno(stdin), bgzfMode);
     }
     else
     {
-        bgzfHandle = bgzf_open(filename, mode);
+        bgzfHandle = bgzf_open(filename, bgzfMode);
     }
 
     myStartPos = 0;
     if (bgzfHandle != NULL)
     {
-        //If the file handle is valid, set it for multithreaded operations
-        bgzf_mt(bgzfHandle, numThreads, 1);
+        //Only do multithreaded IO if more than one thread is used.
+        if(numThreads > 1){ bgzf_mt(bgzfHandle, numThreads, 256); }
         // Check to see if the file is being opened for read, if the eof block
         // is required, and if it is, if it is there.
         if ((mode[0] == 'r' || mode[0] == 'R') && (strcmp(filename, "-") != 0)
