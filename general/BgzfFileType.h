@@ -21,7 +21,7 @@
 #ifdef __ZLIB_AVAILABLE__
 
 #include <stdexcept> // stdexcept header file
-#include "bgzf.h"
+#include <bgzf.h>
 #include "FileType.h"
 
 class BgzfFileType : public FileType

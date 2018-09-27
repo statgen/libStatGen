@@ -6,7 +6,7 @@ $(OBJDIR_OPT)/BaseQualityHelper.o: BaseQualityHelper.h
 $(OBJDIR_OPT)/BaseUtilities.o: BaseUtilities.h BaseAsciiMap.h StringBasics.h
 $(OBJDIR_OPT)/BaseUtilities.o: InputFile.h FileType.h
 $(OBJDIR_OPT)/BasicHash.o: BasicHash.h Error.h
-$(OBJDIR_OPT)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
+$(OBJDIR_OPT)/BgzfFileType.o: BgzfFileType.h FileType.h
 $(OBJDIR_OPT)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_OPT)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_OPT)/Chromosome.o: Chromosome.h GenomeSequence.h MemoryMapArray.h
@@ -44,7 +44,7 @@ $(OBJDIR_OPT)/IndexBase.o: IndexBase.h InputFile.h FileType.h StatGenStatus.h
 $(OBJDIR_OPT)/IndexBase.o: ErrorHandler.h
 $(OBJDIR_OPT)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_OPT)/InputFile.o: InputFile.h FileType.h StringBasics.h GzipHeader.h
-$(OBJDIR_OPT)/InputFile.o: BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_OPT)/InputFile.o: BgzfFileType.h
 $(OBJDIR_OPT)/InputFile.o: BgzfFileTypeRecovery.h GzipFileType.h
 $(OBJDIR_OPT)/InputFile.o: UncompressedFileType.h
 $(OBJDIR_OPT)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
@@ -105,7 +105,6 @@ $(OBJDIR_OPT)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_OPT)/PedigreePerson.o: StringHash.h Hash.h IntArray.h MathVector.h
 $(OBJDIR_OPT)/PedigreePerson.o: Error.h
 $(OBJDIR_OPT)/PhoneHome.o: PhoneHome.h StringBasics.h InputFile.h FileType.h
-$(OBJDIR_OPT)/PhoneHome.o: ../include/knetfile.h
 $(OBJDIR_OPT)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_OPT)/QuickIndex.o: InputFile.h FileType.h StringArray.h StringHash.h
 $(OBJDIR_OPT)/QuickIndex.o: Constant.h Hash.h IntArray.h StringMap.h Error.h
@@ -159,7 +158,7 @@ $(OBJDIR_DEBUG)/BaseQualityHelper.o: BaseQualityHelper.h
 $(OBJDIR_DEBUG)/BaseUtilities.o: BaseUtilities.h BaseAsciiMap.h
 $(OBJDIR_DEBUG)/BaseUtilities.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/BasicHash.o: BasicHash.h Error.h
-$(OBJDIR_DEBUG)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
+$(OBJDIR_DEBUG)/BgzfFileType.o: BgzfFileType.h FileType.h
 $(OBJDIR_DEBUG)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_DEBUG)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/Chromosome.o: Chromosome.h GenomeSequence.h MemoryMapArray.h
@@ -198,7 +197,7 @@ $(OBJDIR_DEBUG)/IndexBase.o: IndexBase.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/IndexBase.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_DEBUG)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_DEBUG)/InputFile.o: InputFile.h FileType.h StringBasics.h
-$(OBJDIR_DEBUG)/InputFile.o: GzipHeader.h BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_DEBUG)/InputFile.o: GzipHeader.h BgzfFileType.h
 $(OBJDIR_DEBUG)/InputFile.o: BgzfFileTypeRecovery.h GzipFileType.h
 $(OBJDIR_DEBUG)/InputFile.o: UncompressedFileType.h
 $(OBJDIR_DEBUG)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
@@ -262,7 +261,7 @@ $(OBJDIR_DEBUG)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: StringHash.h Hash.h IntArray.h MathVector.h
 $(OBJDIR_DEBUG)/PedigreePerson.o: Error.h
 $(OBJDIR_DEBUG)/PhoneHome.o: PhoneHome.h StringBasics.h InputFile.h
-$(OBJDIR_DEBUG)/PhoneHome.o: FileType.h ../include/knetfile.h
+$(OBJDIR_DEBUG)/PhoneHome.o: FileType.h
 $(OBJDIR_DEBUG)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_DEBUG)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_DEBUG)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h
@@ -319,7 +318,7 @@ $(OBJDIR_PROFILE)/BaseQualityHelper.o: BaseQualityHelper.h
 $(OBJDIR_PROFILE)/BaseUtilities.o: BaseUtilities.h BaseAsciiMap.h
 $(OBJDIR_PROFILE)/BaseUtilities.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/BasicHash.o: BasicHash.h Error.h
-$(OBJDIR_PROFILE)/BgzfFileType.o: BgzfFileType.h ../include/bgzf.h FileType.h
+$(OBJDIR_PROFILE)/BgzfFileType.o: BgzfFileType.h FileType.h
 $(OBJDIR_PROFILE)/BgzfFileTypeRecovery.o: BgzfFileTypeRecovery.h FileType.h
 $(OBJDIR_PROFILE)/CharBuffer.o: CharBuffer.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/Chromosome.o: Chromosome.h GenomeSequence.h
@@ -359,7 +358,7 @@ $(OBJDIR_PROFILE)/IndexBase.o: IndexBase.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/IndexBase.o: StatGenStatus.h ErrorHandler.h
 $(OBJDIR_PROFILE)/Input.o: Input.h Error.h Constant.h
 $(OBJDIR_PROFILE)/InputFile.o: InputFile.h FileType.h StringBasics.h
-$(OBJDIR_PROFILE)/InputFile.o: GzipHeader.h BgzfFileType.h ../include/bgzf.h
+$(OBJDIR_PROFILE)/InputFile.o: GzipHeader.h BgzfFileType.h
 $(OBJDIR_PROFILE)/InputFile.o: BgzfFileTypeRecovery.h GzipFileType.h
 $(OBJDIR_PROFILE)/InputFile.o: UncompressedFileType.h
 $(OBJDIR_PROFILE)/IntArray.o: IntArray.h Error.h Hash.h Sort.h Constant.h
@@ -426,7 +425,7 @@ $(OBJDIR_PROFILE)/PedigreePerson.o: StringBasics.h InputFile.h FileType.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: StringHash.h Hash.h IntArray.h
 $(OBJDIR_PROFILE)/PedigreePerson.o: MathVector.h Error.h
 $(OBJDIR_PROFILE)/PhoneHome.o: PhoneHome.h StringBasics.h InputFile.h
-$(OBJDIR_PROFILE)/PhoneHome.o: FileType.h ../include/knetfile.h
+$(OBJDIR_PROFILE)/PhoneHome.o: FileType.h
 $(OBJDIR_PROFILE)/QuickIndex.o: QuickIndex.h MathVector.h StringBasics.h
 $(OBJDIR_PROFILE)/QuickIndex.o: InputFile.h FileType.h StringArray.h
 $(OBJDIR_PROFILE)/QuickIndex.o: StringHash.h Constant.h Hash.h IntArray.h

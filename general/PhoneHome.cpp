@@ -16,7 +16,7 @@
  */
 
 #include "PhoneHome.h"
-#include "knetfile.h"
+#include <knetfile.h>
 
 #include <time.h>
 #include <iostream>

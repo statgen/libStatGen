@@ -19,7 +19,7 @@
 #include <limits>
 #include <stdexcept>
 
-#include "bam.h"
+#include <bam.h>
 
 #include "SamRecord.h"
 #include "SamValidation.h"
