@@ -29,15 +29,21 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
 {
     BgzfFileType::numThreads = 1;
     char threadSpec[8];
-    char bgzfMode[4];
+    char bgzfMode[8];
     const char* thread_start = strchr(mode, '@');
-    int mode_len = thread_start-mode;
-    if(mode_len < 4){
+    int mode_len = 0;
+    if (thread_start != NULL){
+        mode_len = thread_start-mode;
+    } else {
+        mode_len = strnlen(mode, 7);
+    }
+    printf("%s", mode);
+    if(mode_len < 8){
         strncpy(bgzfMode, mode, mode_len);
         bgzfMode[mode_len] = '\0';
     } else {
-        strncpy(bgzfMode, mode, 3);
-        bgzfMode[3] = '\0';
+        strncpy(bgzfMode, mode, 7);
+        bgzfMode[7] = '\0';
     }
     if (thread_start != NULL && thread_start+1 != '\0'){
         // Advance past the @, then parse the number of threads
