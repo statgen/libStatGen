@@ -503,7 +503,7 @@ public:
         int returnSize = 0;
         if (myWriteIndex == 0 ) { return 0; }
         returnSize += myFileTypePtr->write(myWriteBuffer, myWriteIndex);
-        memset(myWriteBuffer, '\0', myCurrentBufferSize);
+        memset(myWriteBuffer, '\0', myAllocatedBufferSize);
         myWriteIndex = 0;
         return returnSize;
     }
