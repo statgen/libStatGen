@@ -32,9 +32,12 @@ InputFile::InputFile(const char * filename, const char * mode,
     myAttemptRecovery = false;
     myFileTypePtr = NULL;
     myBufferIndex = 0;
+    myWriteIndex = 0;
     myCurrentBufferSize = 0;
     myAllocatedBufferSize = DEFAULT_BUFFER_SIZE;
     myFileBuffer = new char[myAllocatedBufferSize];
+    myWriteBuffer = new char[myAllocatedBufferSize];
+    memset(myWriteBuffer, '\0', myAllocatedBufferSize);
     myFileName.clear();
 
     openFile(filename, mode, compressionMode);
@@ -55,13 +58,13 @@ int InputFile::readTilChar(const std::string& stopChars, std::string& stringRef)
         {
             return(-1);
         }
-        
+
         // Try to find the character in the stopChars.
         pos = stopChars.find(charRead);
 
         if(pos == std::string::npos)
         {
-            // Didn't find a stop character and it is not an EOF, 
+            // Didn't find a stop character and it is not an EOF,
             // so add it to the string.
             stringRef += charRead;
         }
@@ -84,7 +87,7 @@ int InputFile::readTilChar(const std::string& stopChars)
         {
             return(-1);
         }
-        
+
         // Try to find the character in the stopChars.
         pos = stopChars.find(charRead);
     }
@@ -163,7 +166,7 @@ bool InputFile::openFile(const char * filename, const char * mode,
 {
     //
     // if recovering, we don't want to issue big readaheads, since
-    // that interferes with the decompression - we only want to 
+    // that interferes with the decompression - we only want to
     // decompress one at a time, and handle the exceptions immediately
     // rather than at some indeterminate point in time.
     //
@@ -180,7 +183,7 @@ bool InputFile::openFile(const char * filename, const char * mode,
         // Check if reading from stdin.
         if((strcmp(filename, "-") == 0) || (strcmp(filename, "-.gz") == 0))
         {
-            // Reading from stdin, open it based on the 
+            // Reading from stdin, open it based on the
             // compression mode.
             openFileUsingMode(filename, mode, compressionMode);
         }
@@ -219,7 +222,7 @@ bool InputFile::openFile(const char * filename, const char * mode,
                 // Read the file to see if it a gzip file.
                 GzipHeader gzipHeader;
                 bool isGzip = gzipHeader.readHeader(file);
-                
+
                 // The file header has been read, so close the file, so it can
                 // be re-opened as the correct type.
                 file.close();

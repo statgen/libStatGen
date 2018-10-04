@@ -14,7 +14,7 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*! \file */ 
+/*! \file */
 #ifndef __INPUTFILE_H__
 #define __INPUTFILE_H__
 
@@ -54,10 +54,13 @@ public:
         myAttemptRecovery = false;
         myFileTypePtr = NULL;
         myBufferIndex = 0;
+        myWriteIndex = 0;
         myCurrentBufferSize = 0;
         // Default to buffer.
         myAllocatedBufferSize = DEFAULT_BUFFER_SIZE;
         myFileBuffer = new char[myAllocatedBufferSize];
+        myWriteBuffer = new char[myAllocatedBufferSize];
+        memset(myWriteBuffer, '\0', myAllocatedBufferSize);
         myFileName.clear();
     }
 
@@ -68,7 +71,7 @@ public:
     /// \param filename file to open
     /// \param mode same format as fopen: "r" for read & "w" for write.
     /// \param compressionMode set the type of file to open for writing or
-    /// for reading from stdin (when reading files, the compression type is 
+    /// for reading from stdin (when reading files, the compression type is
     /// determined by reading the file).
     InputFile(const char * filename, const char * mode,
               InputFile::ifileCompression compressionMode = InputFile::DEFAULT);
@@ -127,7 +130,7 @@ public:
         }
     }
 
-    
+
     /// Close the file.
     /// \return status of the close (0 is success).
     inline int ifclose()
@@ -136,8 +139,10 @@ public:
         {
             return EOF;
         }
+        ifflush();
         int result = myFileTypePtr->close();
         delete myFileTypePtr;
+        myWriteBuffer = NULL;
         myFileTypePtr = NULL;
         myFileName.clear();
         return result;
@@ -228,13 +233,13 @@ public:
                     }
 
                     // Now copy the rest of the bytes into the buffer.
-                    memcpy((char*)buffer+availableBytes, 
+                    memcpy((char*)buffer+availableBytes,
                            myFileBuffer, copySize);
 
                     // set the buffer index to the location after what we are
                     // returning as read.
                     myBufferIndex = copySize;
-                
+
                     returnSize += copySize;
                 }
             }
@@ -301,7 +306,7 @@ public:
 
     /// Read, appending the characters into the specified string until new
     /// line or EOF is found, returning -1 if EOF is found first and 0 if new
-    /// line is found first.  The new line and EOF are not written into the 
+    /// line is found first.  The new line and EOF are not written into the
     /// specified string.
     /// \param line reference to a string that the read characters should
     /// be apppended to (does not include the new line or eof).
@@ -415,7 +420,92 @@ public:
             // No myFileTypePtr, so return 0 - nothing written.
             return 0;
         }
-        return myFileTypePtr->write(buffer, size);
+        if(myAllocatedBufferSize == 0){
+            return myFileTypePtr->write(buffer, size);
+        }
+        //return myFileTypePtr->write(buffer, size);
+        // There are 2 cases:
+        //  1) There are already size available bytes in buffer.
+        //  2) There are not size bytes in buffer.
+
+        // Determine the number of available bytes in the buffer.
+        unsigned int availableBytes = myAllocatedBufferSize - myWriteIndex;
+        //printf("Index: %d\n", myWriteIndex);
+        //printf("Bufsize bytes: %d\n", myAllocatedBufferSize);
+        //printf("Available bytes: %d\n", availableBytes);
+        //unsigned int remainingBytes = size;
+        //unsigned int tmpIdx = 0;
+
+        int returnSize = 0;
+        // If the incoming buffer would exceed the available bytes in the
+        // buffer, go ahead and write the buffer and reset
+        if (size > availableBytes){
+            myFileTypePtr->write(myWriteBuffer, myWriteIndex);
+            myWriteIndex = 0;
+            availableBytes = myAllocatedBufferSize;
+            memset(myWriteBuffer, '\0', myAllocatedBufferSize);
+        }
+        // If the new write is bigger than the buffer, go ahead and write it,
+        // skipping the buffer.
+        if (size >= myAllocatedBufferSize){
+            myFileTypePtr->write(buffer, size);
+        } else {
+        // Otherwise, write it into the buffer but not to disk
+            memcpy(myWriteBuffer+myWriteIndex, buffer, size);
+            myWriteIndex += size;
+        }
+        return size;
+
+        // Case 1: There are already size available bytes in buffer.
+        /*
+        while (remainingBytes > 0)
+        {
+            if (availableBytes == 0) {
+                returnSize += myFileTypePtr->write(myWriteBuffer, myCurrentBufferSize);
+                myWriteIndex = 0;
+                availableBytes = myCurrentBufferSize - myWriteIndex;
+                memset(myWriteBuffer, '\0', myCurrentBufferSize);
+            }
+            if (remainingBytes >= availableBytes && availableBytes > 0)
+            {
+                // Size > availableBytes > 0
+                // Copy the available bytes into the buffer.
+                memcpy(myWriteBuffer+myWriteIndex, (char*)buffer+tmpIdx, availableBytes);
+                myWriteIndex += availableBytes;
+                tmpIdx += availableBytes;
+                remainingBytes -= availableBytes;
+                returnSize += availableBytes;
+                availableBytes = myCurrentBufferSize - myWriteIndex;
+            } else if (remainingBytes > 0 && remainingBytes < availableBytes){
+                memcpy(myWriteBuffer+myWriteIndex, buffer, remainingBytes);
+                myWriteIndex += remainingBytes;
+                tmpIdx += remainingBytes;
+                //remainingBytes -= remainingBytes;
+                returnSize += remainingBytes;
+                remainingBytes = 0;
+                availableBytes = myCurrentBufferSize - myWriteIndex;
+            }
+            // Increment the buffer index.
+        }
+        return returnSize;
+        if (remainingBytes > 0) {
+            memcpy(myFileBuffer+myWriteIndex, (char*)buffer+tmpIdx, remainingBytes);
+            myWriteIndex += remainingBytes;
+            tmpIdx += remainingBytes;
+            remainingBytes -= remainingBytes;
+            returnSize += remainingBytes;
+        }
+        */
+        return returnSize;
+    }
+
+    inline unsigned int ifflush(){
+        int returnSize = 0;
+        if (myWriteIndex == 0 ) { return 0; }
+        returnSize += myFileTypePtr->write(myWriteBuffer, myWriteIndex);
+        memset(myWriteBuffer, '\0', myCurrentBufferSize);
+        myWriteIndex = 0;
+        return returnSize;
     }
 
     /// Returns whether or not the file was successfully opened.
@@ -476,7 +566,7 @@ public:
     }
 
     /// Enable (default) or disable recovery.
-    /// 
+    ///
     /// When true, we can attach a myFileTypePtr
     /// that implements a recovery capable decompressor.
     /// This requires that the caller be able to catch
@@ -489,7 +579,7 @@ public:
 
     bool attemptRecoverySync(bool (*checkSignature)(void *data) , int length)
     {
-        if(myFileTypePtr==NULL) return false; 
+        if(myFileTypePtr==NULL) return false;
         return myFileTypePtr->attemptRecoverySync(checkSignature, length);
     }
 
@@ -533,10 +623,14 @@ protected:
     // Buffer used to do large reads rather than 1 by 1 character reads
     // from the file.  The class is then managed to iterate through the buffer.
     char* myFileBuffer;
+    char* myWriteBuffer;
+
 
     // Current index into the buffer.  Used to track where we are in reading the
     // file from the buffer.
     int myBufferIndex;
+    int myWriteIndex;
+
 
     // Current number of entries in the buffer.  Used to ensure that
     // if a read did not fill the buffer, we stop before hitting the
@@ -551,7 +645,7 @@ protected:
 typedef InputFile* IFILE;
 
 
-/// Open a file with the specified name and mode, using a filename of "-" to 
+/// Open a file with the specified name and mode, using a filename of "-" to
 /// indicate stdin/stdout.
 /// \param filename file to open ("-" meands stdin/stdout)
 /// \param mode same format as fopen: "r" for read & "w" for write.
@@ -714,7 +808,7 @@ inline bool ifseek(IFILE file, int64_t offset, int origin)
 /// \return number of bytes written
 int ifprintf(IFILE output, const char * format, ...);
 
-/// Read a line from a file using streaming.  
+/// Read a line from a file using streaming.
 /// Will not fail when the file hits EOF, so do not do: while(iFile >> iStr)
 /// unless within your loop you check for ifeof and break.
 /// Instead, do something like:
@@ -736,11 +830,11 @@ inline IFILE operator >> (IFILE stream, std::string &str)
 inline InputFile& operator << (InputFile& stream, const std::string& str)
 {
     unsigned int numExpected = str.length();
-    unsigned int numWritten = 
+    unsigned int numWritten =
         stream.ifwrite(str.c_str(), numExpected);
     if(numExpected != numWritten)
     {
-        std::cerr << "Failed to stream to IFILE, expected " 
+        std::cerr << "Failed to stream to IFILE, expected "
                   << numExpected << " but only wrote "
                   << numWritten << std::endl;
     }
@@ -753,11 +847,11 @@ inline InputFile& operator << (InputFile& stream, const std::string& str)
 inline InputFile& operator << (InputFile& stream, const char* str)
 {
     unsigned int numExpected = strlen(str);
-    unsigned int numWritten = 
+    unsigned int numWritten =
         stream.ifwrite(str, numExpected);
     if(numExpected != numWritten)
     {
-        std::cerr << "Failed to stream to IFILE, expected " 
+        std::cerr << "Failed to stream to IFILE, expected "
                   << numExpected << " but only wrote "
                   << numWritten << std::endl;
     }
@@ -785,11 +879,11 @@ InputFile& operator << (InputFile& stream, unsigned int num);
 /// \param ch character that should be written to the file.
 inline InputFile& operator << (InputFile& stream, char ch)
 {
-    unsigned int numWritten = 
+    unsigned int numWritten =
         stream.ifwrite(&ch, 1);
     if(1 != numWritten)
     {
-        std::cerr << "Failed to stream to IFILE, expected 1, but only wrote " 
+        std::cerr << "Failed to stream to IFILE, expected 1, but only wrote "
                   << numWritten << std::endl;
     }
     return(stream);
