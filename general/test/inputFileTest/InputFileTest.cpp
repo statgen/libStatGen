@@ -41,7 +41,8 @@ int main(int argc, char ** argv)
 
 
 const int IFILE_Test::TEST_FILE_SIZE = 37;
-const int IFILE_Test::BGZF_TEST_FILE_SIZE = 93;
+const int IFILE_Test::BGZF_TEST_FILE_SIZE_1 = 65;  // htslib 1.4 and future
+const int IFILE_Test::BGZF_TEST_FILE_SIZE_2 = 93;  //htslib 1.3.2 & our prior code
 const std::string IFILE_Test::TEST_FILE_CONTENTS = "ABCDabcd1234\nEFGefg567\nhijklHIJKL8910";
 
 void IFILE_Test::test()
@@ -268,7 +269,8 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
    // is not just straight file offset.
    if((strcmp(extension, "bam") == 0) || (strcmp(extension, "glf") == 0))
    {
-       assert(iftell() == (BGZF_TEST_FILE_SIZE << 16));
+       assert((iftell() == (BGZF_TEST_FILE_SIZE_1 << 16)) ||
+              (iftell() == (BGZF_TEST_FILE_SIZE_2 << 16)));
    }
    else
    {
@@ -350,7 +352,8 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
        bool caught = false;
        try
        {
-           assert(iftell() == (BGZF_TEST_FILE_SIZE << 16));
+           assert((iftell() == (BGZF_TEST_FILE_SIZE_1 << 16)) ||
+                  (iftell() == (BGZF_TEST_FILE_SIZE_2 << 16)));
        }
        catch (std::exception& e)
        {
@@ -359,7 +362,8 @@ void IFILE_Test::test_ifeof_ifrewind(const char* extension)
        }
        assert(caught);
        disableBuffering();
-       assert(iftell() == (BGZF_TEST_FILE_SIZE << 16));
+       assert((iftell() == (BGZF_TEST_FILE_SIZE_1 << 16)) ||
+              (iftell() == (BGZF_TEST_FILE_SIZE_2 << 16)));
    }
    else
    {

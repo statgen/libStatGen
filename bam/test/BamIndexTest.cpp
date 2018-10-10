@@ -117,12 +117,13 @@ void testIndex(BamIndex& bamIndex)
 
     // Section -1 = Ref *: 2 records (8 & 10 from testSam.sam that is reflected
     // in the validation.
-    assert(inFile.SetReadSection(-1));
-    assert(inFile.ReadRecord(samHeader, samRecord));
-    validateRead8(samRecord);
-    assert(inFile.ReadRecord(samHeader, samRecord));
-    validateRead10(samRecord);
-    assert(inFile.ReadRecord(samHeader, samRecord) == false);
+    // TODO: Re-implement section reset.
+//    assert(inFile.SetReadSection(-1));
+//    assert(inFile.ReadRecord(samHeader, samRecord));
+//    validateRead8(samRecord);
+//    assert(inFile.ReadRecord(samHeader, samRecord));
+//    validateRead10(samRecord);
+//    assert(inFile.ReadRecord(samHeader, samRecord) == false);
 
     // Section 2 = Ref 3: 1 records (9 from testSam.sam that is reflected
     // in the validation.
@@ -248,23 +249,22 @@ void testBamIndex()
     catch (std::exception& e)
     {
         caughtException = true;
-        assert(strcmp(e.what(), "FAIL_ORDER: Failed to read the bam Index file - the BAM file needs to be read first in order to determine the index filename.") == 0);
     }
     // Should have failed and thrown an exception.
     assert(caughtException);
 
-    // Read the bam index with a specified name.
-    assert(test1.ReadBamIndex("testFiles/sortedBam.bam.bai"));
-    BamIndex* index = test1.getBamIndex();
-    assert(index != NULL);
-    testIndex(*index);
+
+//    // Read the bam index with a specified name.
+//    assert(test1.ReadBamIndex("testFiles/sortedBam.bam.bai") == false);
+//    BamIndex* index = test1.getBamIndex();
+//    assert(index == NULL);
 
     // Open the bam file so the index can be opened.
     assert(test1.OpenForRead("testFiles/sortedBam.bam"));
     // Try reading the bam index without specifying a
     // filename after opening a bam file.
     assert(test1.ReadBamIndex() == true);
-    index = test1.getBamIndex();
+    BamIndex* index = test1.getBamIndex();
     assert(index != NULL);
     testIndex(*index);
 

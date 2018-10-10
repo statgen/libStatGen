@@ -20,7 +20,7 @@
 #include "SamRecord.h"
 #include "BamInterface.h"
 #include "SamInterface.h"
-#include "BgzfFileType.h"
+//#include "BgzfFileType.h"
 
 // Constructor, init variables.
 SamFile::SamFile()
@@ -92,6 +92,7 @@ SamFile::~SamFile()
 // Open a sam/bam file for reading with the specified filename.
 bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
 {
+    myFilename = filename;
     // Reset for any previously operated on files.
     resetFile();
 
@@ -110,17 +111,12 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             // -.bam is the filename, read compressed bam from stdin
             filename = "-";
 
-            myFilePtr = new InputFile;
-            // support recover mode - this switches in a reader
-            // capable of recovering from bad BGZF compression blocks.
-            myFilePtr->setAttemptRecovery(myAttemptRecovery);
-            myFilePtr->openFile(filename, "rb", InputFile::BGZF);
-
-            myInterfacePtr = new BamInterface;
-
-            // Read the magic string.
-            char magic[4];
-            ifread(myFilePtr, magic, 4);
+            htsFormat fmt;
+            fmt.specific = NULL;
+            hts_parse_format(&fmt, "bam");
+            myInterfacePtr = new GenericSamInterface(filename, "r", fmt); //BamInterface;
+            myFilename = filename;
+            myIsOpenForRead = true;
         }
         else if(strcmp(filename, "-.ubam") == 0)
         {
@@ -131,25 +127,24 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             // BGZF header.
             filename = "-";
 
-            // Uncompressed, so do not require the eof block.
-#ifdef __ZLIB_AVAILABLE__
-            BgzfFileType::setRequireEofBlock(false);
-#endif
-            myFilePtr = ifopen(filename, "rb", InputFile::BGZF);
+            htsFormat fmt;
+            fmt.specific = NULL;
+            hts_parse_format(&fmt, "bam");
+            fmt.compression = htsCompression::no_compression;
         
-            myInterfacePtr = new BamInterface;
-
-            // Read the magic string.
-            char magic[4];
-            ifread(myFilePtr, magic, 4);
+            myInterfacePtr = new GenericSamInterface(filename, "r", fmt); //BamInterface;
+            myFilename = filename;
         }
         else if((strcmp(filename, "-") == 0) || (strcmp(filename, "-.sam") == 0))
         {
             // SAM File.
             // read sam from stdin
             filename = "-";
-            myFilePtr = ifopen(filename, "rb", InputFile::UNCOMPRESSED);
-            myInterfacePtr = new SamInterface;
+            htsFormat fmt;
+            fmt.specific = NULL;
+            hts_parse_format(&fmt, "sam");
+            myInterfacePtr = new GenericSamInterface(filename, "r", fmt); //SamInterface;
+            myFilename = filename;
         }
         else
         {
@@ -157,8 +152,6 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
             errorMessage += filename;
             errorMessage += ".  From stdin, can only be '-', '-.sam', '-.bam', or '-.ubam'";
             myStatus.setStatus(SamStatus::FAIL_IO, errorMessage.c_str());
-            delete myFilePtr;
-            myFilePtr = NULL;
             return(false);          
         }
     }
@@ -166,46 +159,17 @@ bool SamFile::OpenForRead(const char * filename, SamFileHeader* header)
     {
         // Not from stdin.  Read the file to determine the type.
 
-        myFilePtr = new InputFile;
-
-        // support recovery mode - this conditionally enables a reader
-        // capable of recovering from bad BGZF compression blocks.
-        myFilePtr->setAttemptRecovery(myAttemptRecovery);
-        bool rc = myFilePtr->openFile(filename, "rb", InputFile::DEFAULT);
-
-        if (rc == false)
-        {
-            std::string errorMessage = "Failed to Open ";
-            errorMessage += filename;
-            errorMessage += " for reading";
-            myStatus.setStatus(SamStatus::FAIL_IO, errorMessage.c_str());
-            delete myFilePtr;
-            myFilePtr = NULL;
-            return(false);
-        }
-        
-        char magic[4];
-        ifread(myFilePtr, magic, 4);
-        
-        if (magic[0] == 'B' && magic[1] == 'A' && magic[2] == 'M' &&
-            magic[3] == 1)
-        {
-            myInterfacePtr = new BamInterface;
-            // Set that it is a bam file open for reading.  This is needed to
-            // determine if an index file can be used.
-            myIsBamOpenForRead = true;
-        }
-        else
-        {
-            // Not a bam, so rewind to the beginning of the file so it
-            // can be read.
-            ifrewind(myFilePtr);
-            myInterfacePtr = new SamInterface;
-        }
+        myInterfacePtr = new GenericSamInterface(filename, "r", myRefPtr ? myRefPtr->getReferenceName().c_str() : nullptr);
+        myFilename = filename;
     }
+
+    if (!myInterfacePtr || myInterfacePtr->isEOF())
+        return SamStatus::FAIL_IO;
 
     // File is open for reading.
     myIsOpenForRead = true;
+    if (myInterfacePtr->format() == htsExactFormat::bam)
+      myIsBamOpenForRead = true;
 
     // Read the header if one was passed in.
     if(header != NULL)
@@ -240,9 +204,12 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
             filename = "-";
         }
 
-        myFilePtr = ifopen(filename, "wb0", InputFile::BGZF);
-
-        myInterfacePtr = new BamInterface;
+        htsFormat fmt;
+        fmt.specific = NULL;
+        hts_parse_format(&fmt, "bam");
+        fmt.compression = htsCompression::no_compression;
+        myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //BamInterface;
+        myFilename = filename;
     }
     else if (lastchar >= 3 && 
              filename[lastchar - 3] == 'b' &&
@@ -255,9 +222,31 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
         {
             filename = "-";
         }
-        myFilePtr = ifopen(filename, "wb", InputFile::BGZF);
-        
-        myInterfacePtr = new BamInterface;
+
+        htsFormat fmt;
+        fmt.specific = NULL;
+        hts_parse_format(&fmt, "bam");
+        myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //BamInterface;
+        myFilename = filename;
+    }
+    else if (lastchar >= 4 &&
+             filename[lastchar - 4] == 'c' &&
+             filename[lastchar - 3] == 'r' &&
+             filename[lastchar - 2] == 'a' &&
+             filename[lastchar - 1] == 'm')
+    {
+        // BAM File.
+        // if -.bam is the filename, write compressed bam to stdout
+        if((lastchar == 6) && (filename[0] == '-') && (filename[1] == '.'))
+        {
+            filename = "-";
+        }
+
+        htsFormat fmt;
+        fmt.specific = NULL;
+        hts_parse_format(&fmt, "cram");
+        myInterfacePtr = new GenericSamInterface(filename, "w", fmt, myRefPtr ? myRefPtr->getReferenceName().c_str() : nullptr); //BamInterface;
+        myFilename = filename;
     }
     else
     {
@@ -268,19 +257,16 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
         {
             filename = "-";
         }
-        myFilePtr = ifopen(filename, "wb", InputFile::UNCOMPRESSED);
-   
-        myInterfacePtr = new SamInterface;
+
+        htsFormat fmt;
+        fmt.specific = NULL;
+        hts_parse_format(&fmt, "sam");
+        myInterfacePtr = new GenericSamInterface(filename, "w", fmt); //SamInterface;
+        myFilename = filename;
     }
 
-    if (myFilePtr == NULL)
-    {
-        std::string errorMessage = "Failed to Open ";
-        errorMessage += filename;
-        errorMessage += " for writing";
-        myStatus.setStatus(SamStatus::FAIL_IO, errorMessage.c_str());
-        return(false);
-    }
+    if (!myInterfacePtr || myInterfacePtr->isEOF())
+        return SamStatus::FAIL_IO;
    
     myIsOpenForWrite = true;
 
@@ -299,6 +285,12 @@ bool SamFile::OpenForWrite(const char * filename, SamFileHeader* header)
 // Read BAM Index file.
 bool SamFile::ReadBamIndex(const char* bamIndexFilename)
 {
+    if (!IsOpen())
+    {
+        myStatus.setStatus(SamStatus::FAIL_ORDER, "SAM/BAM/CRAM file must be open before reading index");
+        return false;
+    }
+
     // Cleanup a previously setup index.
     if(myBamIndex != NULL)
     {
@@ -306,28 +298,38 @@ bool SamFile::ReadBamIndex(const char* bamIndexFilename)
         myBamIndex = NULL;
     }
 
-    // Create a new bam index.
-    myBamIndex = new BamIndex();
-    SamStatus::Status indexStat = myBamIndex->readIndex(bamIndexFilename);
-
-    if(indexStat != SamStatus::SUCCESS)
+    std::size_t pathLen = strlen(bamIndexFilename);
+    if(pathLen > 4 && !strcmp(bamIndexFilename + pathLen - 4, ".bai"))
     {
-        std::string errorMessage = "Failed to read the bam Index file: ";
-        errorMessage += bamIndexFilename;
-        myStatus.setStatus(indexStat, errorMessage.c_str());
-        delete myBamIndex;
-        myBamIndex = NULL;
-        return(false);
+        // Create a new bam index.
+        myBamIndex = new BamIndex();
+        SamStatus::Status indexStat = myBamIndex->readIndex(bamIndexFilename);
+
+        if (indexStat != SamStatus::SUCCESS)
+        {
+            std::string errorMessage = "Failed to read the bam Index file: ";
+            errorMessage += bamIndexFilename;
+            myStatus.setStatus(indexStat, errorMessage.c_str());
+            delete myBamIndex;
+            myBamIndex = NULL;
+            return (false);
+        }
     }
     myStatus = SamStatus::SUCCESS;
-    return(true);
+    return(myInterfacePtr->loadIndex(bamIndexFilename));
 }
 
 
 // Read BAM Index file.
 bool SamFile::ReadBamIndex()
 {
-    if(myFilePtr == NULL)
+    if (!IsOpen())
+    {
+        myStatus.setStatus(SamStatus::FAIL_ORDER, "SAM/BAM/CRAM file must be open before reading index");
+        return false;
+    }
+
+    if(myFilename.empty())
     {
         // Can't read the bam index file because the BAM file has not yet been
         // opened, so we don't know the base filename for the index file.
@@ -338,9 +340,7 @@ bool SamFile::ReadBamIndex()
         return(false);
     }
 
-    const char* bamBaseName = myFilePtr->getFileName();
-    
-    std::string indexName = bamBaseName;
+    std::string indexName = myFilename;
     indexName += ".bai";
 
     bool foundFile = true;
@@ -359,19 +359,30 @@ bool SamFile::ReadBamIndex()
     // Check to see if the index file was found.
     if(!foundFile)
     {
-        // Not found - try without the bam extension.
-        // Locate the start of the bam extension
-        size_t startExt = indexName.find(".bam");
-        if(startExt == std::string::npos)
-        {
-            // Could not find the .bam extension, so just return false since the
-            // call to ReadBamIndex set the status.
-            return(false);
-        }
-        // Remove ".bam" and try reading the index again.
-        indexName.erase(startExt,  4);
-        return(ReadBamIndex(indexName.c_str()));
+      try
+      {
+          // Not found - try without the bam extension.
+          // Locate the start of the bam extension
+          size_t startExt = indexName.find(".bam");
+          if(startExt != std::string::npos && indexName.erase(startExt,  4).size() && ReadBamIndex(indexName.c_str()))
+              foundFile = true;
+      }
+      catch (std::exception&)
+      {
+          foundFile = false;
+      }
     }
+
+    if (!foundFile)
+    {
+        if (!myInterfacePtr->loadIndex()) // Try to load non bai index with htslib
+        {
+            myStatus.setStatus(SamStatus::FAIL_IO, "Failed to read the bam Index file");
+            return (false);
+        }
+    }
+
+    myStatus = SamStatus::SUCCESS;
     return(true);
 }
 
@@ -409,13 +420,14 @@ void SamFile::Close()
 // return: int - true = open; false = not open.
 bool SamFile::IsOpen()
 {
-    if (myFilePtr != NULL)
-    {
-        // File Pointer is set, so return if it is open.
-        return(myFilePtr->isOpen());
-    }
-    // File pointer is not set, so return false, not open.
-    return false;
+    return (myIsOpenForRead || myIsOpenForWrite);
+//    if (myFilePtr != NULL)
+//    {
+//        // File Pointer is set, so return if it is open.
+//        return(myFilePtr->isOpen());
+//    }
+//    // File pointer is not set, so return false, not open.
+//    return false;
 }
 
 
@@ -428,7 +440,7 @@ bool SamFile::IsEOF()
         // Not open for read, return true.
         return(true);
     }
-    return(myInterfacePtr->isEOF(myFilePtr));
+    return(myInterfacePtr->isEOF());
 }
 
 
@@ -436,13 +448,7 @@ bool SamFile::IsEOF()
 // return: bool - true = stream; false = not stream/not open.
 bool SamFile::IsStream()
 {
-    if (myFilePtr != NULL)
-    {
-        // File Pointer is set, so return if it is a stream.
-        return((myFilePtr->getFileName())[0] == '-');
-    }
-    // File pointer is not set, so return false, not a stream.
-    return false;
+    return (myFilename.size() && myFilename[0] == '-');
 }
 
 
@@ -466,7 +472,7 @@ bool SamFile::ReadHeader(SamFileHeader& header)
         return(false);
     }
 
-    if(myInterfacePtr->readHeader(myFilePtr, header, myStatus))
+    if(myInterfacePtr->readHeader(header, myStatus))
     {
         // The header has now been successfully read.
         myHasHeader = true;
@@ -498,7 +504,7 @@ bool SamFile::WriteHeader(SamFileHeader& header)
         return(false);
     }
 
-    if(myInterfacePtr->writeHeader(myFilePtr, header, myStatus))
+    if(myInterfacePtr->writeHeader(header, myStatus))
     {
         // The header has now been successfully written.
         myHasHeader = true;
@@ -539,7 +545,7 @@ bool SamFile::ReadRecord(SamFileHeader& header,
     // chunks for that region.
     if(myNewSection)
     {
-        if(!processNewSection(header))
+        if(myInterfacePtr->format() != htsExactFormat::cram && !processNewSection(header))
         {
             // Failed processing a new section.  Could be an 
             // order issue like the file not being open or the
@@ -560,17 +566,17 @@ bool SamFile::ReadRecord(SamFileHeader& header,
         // the correct position for the next record (if not already there).
         // Sets myStatus if it could not move to a good section.
         // Just returns true if it is not setup to read by index.
-        if(!ensureIndexedReadPosition())
-        {
-            // Either there are no more records in the section
-            // or it failed to move to the right section, so there
-            // is nothing more to read, stop looping.
-            break;
-        }
+//        if(!ensureIndexedReadPosition())
+//        {
+//            // Either there are no more records in the section
+//            // or it failed to move to the right section, so there
+//            // is nothing more to read, stop looping.
+//            break;
+//        }
         
         // File is open for reading and the header has been read, so read the
         // next record.
-        myInterfacePtr->readRecord(myFilePtr, header, record, myStatus);
+        myInterfacePtr->readRecord(header, record, myStatus);
         if(myStatus != SamStatus::SUCCESS)
         {
             // Failed to read the record, so break out of the loop.
@@ -664,7 +670,7 @@ bool SamFile::WriteRecord(SamFileHeader& header,
 
     // File is open for writing and the header has been written, so write the
     // record.
-    myStatus = myInterfacePtr->writeRecord(myFilePtr, header, record,
+    myStatus = myInterfacePtr->writeRecord(header, record,
                                            myWriteTranslation);
 
     if(myStatus == SamStatus::SUCCESS)
@@ -716,7 +722,7 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end,
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
     // set after the file is opened.
-    if(!myIsBamOpenForRead)
+    if(!myIsOpenForRead)
     {
         // There is not a BAM file open for reading.
         myStatus.setStatus(SamStatus::FAIL_ORDER, 
@@ -741,7 +747,7 @@ bool SamFile::SetReadSection(int32_t refID, int32_t start, int32_t end,
     myPrevRefID = 0;
     myPrevReadName.Clear();
 
-    return(true);
+    return(myInterfacePtr->setReadSection(refID, (start == -1 ? 0 : start), (end == -1 ? INT_MAX : end)));
 }
 
 
@@ -752,7 +758,7 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
     // If there is not a BAM file open for reading, return failure.
     // Opening a new file clears the read section, so it must be
     // set after the file is opened.
-    if(!myIsBamOpenForRead)
+    if(!myIsOpenForRead)
     {
         // There is not a BAM file open for reading.
         myStatus.setStatus(SamStatus::FAIL_ORDER, 
@@ -787,7 +793,7 @@ bool SamFile::SetReadSection(const char* refName, int32_t start, int32_t end,
     myPrevRefID = 0;
     myPrevReadName.Clear();
 
-    return(true);
+    return(myInterfacePtr->setReadSection(refName, (start == -1 ? 0 : start), (end == -1 ? (std::uint32_t)-1 : end)));
 }
 
 
@@ -922,7 +928,6 @@ const BamIndex* SamFile::GetBamIndex()
 // initialize.
 void SamFile::init()
 {
-    myFilePtr = NULL;
     myInterfacePtr = NULL;
     myStatistics = NULL;
     myBamIndex = NULL;
@@ -965,13 +970,6 @@ void SamFile::init(const char* filename, OpenType mode, SamFileHeader* header)
 // Reset variables for each file.
 void SamFile::resetFile()
 {
-    // Close the file.
-    if (myFilePtr != NULL)
-    {
-        // If we already have an open file, close it.
-        ifclose(myFilePtr);
-        myFilePtr = NULL;
-    }
     if(myInterfacePtr != NULL)
     {
         delete myInterfacePtr;
@@ -1163,49 +1161,49 @@ SamFile::SortedType SamFile::getSortOrderFromHeader(SamFileHeader& header)
 }
 
 
- bool SamFile::ensureIndexedReadPosition()
- {
-     // If no sections are specified, return true.
-     if(myRefID == BamIndex::REF_ID_ALL)
-     {
-         return(true);
-     }
-
-     // Check to see if we have more to read out of the current chunk.
-     // By checking the current position in relation to the current
-     // end chunk.  If the current position is >= the end of the
-     // current chunk, then we must see to the next chunk.
-     uint64_t currentPos = iftell(myFilePtr);
-     if(currentPos >= myCurrentChunkEnd)
-     {
-         // If there are no more chunks to process, return failure.
-         if(myChunksToRead.empty())
-         {
-             myStatus = SamStatus::NO_MORE_RECS;
-             return(false);
-         }
-         
-         // There are more chunks left, so get the next chunk.
-         Chunk newChunk = myChunksToRead.pop();
-         
-         // Move to the location of the new chunk if it is not adjacent
-         // to the current chunk.
-         if(newChunk.chunk_beg != currentPos)
-         {
-             // New chunk is not adjacent, so move to it.
-             if(ifseek(myFilePtr, newChunk.chunk_beg, SEEK_SET) != true)
-             {
-                 // seek failed, cannot retrieve next record, return failure.
-                 myStatus.setStatus(SamStatus::FAIL_IO, 
-                                    "Failed to seek to the next record");
-                 return(false);
-             }
-         }
-         // Seek succeeded, set the end of the new chunk.
-         myCurrentChunkEnd = newChunk.chunk_end;
-     }
-     return(true);
- }
+// bool SamFile::ensureIndexedReadPosition()
+// {
+//     // If no sections are specified, return true.
+//     if(myRefID == BamIndex::REF_ID_ALL)
+//     {
+//         return(true);
+//     }
+//
+//     // Check to see if we have more to read out of the current chunk.
+//     // By checking the current position in relation to the current
+//     // end chunk.  If the current position is >= the end of the
+//     // current chunk, then we must see to the next chunk.
+//     uint64_t currentPos = iftell(myFilePtr);
+//     if(currentPos >= myCurrentChunkEnd)
+//     {
+//         // If there are no more chunks to process, return failure.
+//         if(myChunksToRead.empty())
+//         {
+//             myStatus = SamStatus::NO_MORE_RECS;
+//             return(false);
+//         }
+//
+//         // There are more chunks left, so get the next chunk.
+//         Chunk newChunk = myChunksToRead.pop();
+//
+//         // Move to the location of the new chunk if it is not adjacent
+//         // to the current chunk.
+//         if(newChunk.chunk_beg != currentPos)
+//         {
+//             // New chunk is not adjacent, so move to it.
+//             if(ifseek(myFilePtr, newChunk.chunk_beg, SEEK_SET) != true)
+//             {
+//                 // seek failed, cannot retrieve next record, return failure.
+//                 myStatus.setStatus(SamStatus::FAIL_IO,
+//                                    "Failed to seek to the next record");
+//                 return(false);
+//             }
+//         }
+//         // Seek succeeded, set the end of the new chunk.
+//         myCurrentChunkEnd = newChunk.chunk_end;
+//     }
+//     return(true);
+// }
 
 
 bool SamFile::checkRecordInSection(SamRecord& record)
@@ -1307,7 +1305,7 @@ bool SamFile::processNewSection(SamFileHeader &header)
     // will be used.
     // Needs to be done here after we already know that the header has been
     // read.
-    myFilePtr->disableBuffering();
+    //myFilePtr->disableBuffering();
 
     myChunksToRead.clear();
     // Reset the end of the current chunk.  We are resetting our read, so
@@ -1364,9 +1362,11 @@ bool SamFile::processNewSection(SamFileHeader &header)
 //
 bool SamFile::attemptRecoverySync(bool (*checkSignature)(void *data) , int length)
 {
-    if(myFilePtr==NULL) return false;
-    // non-recovery aware objects will just return false:
-    return myFilePtr->attemptRecoverySync(checkSignature, length);
+    // TODO: implement
+    return false;
+//    if(myFilePtr==NULL) return false;
+//    // non-recovery aware objects will just return false:
+//    return myFilePtr->attemptRecoverySync(checkSignature, length);
 }
 
 // Default Constructor.

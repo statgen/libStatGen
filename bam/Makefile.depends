@@ -26,7 +26,7 @@ $(OBJDIR_OPT)/SamFile.o: ../include/MathVector.h ../include/CigarRoller.h
 $(OBJDIR_OPT)/SamFile.o: ../include/Cigar.h GenericSamInterface.h BamIndex.h
 $(OBJDIR_OPT)/SamFile.o: ../include/IndexBase.h SamStatistics.h
 $(OBJDIR_OPT)/SamFile.o: BamInterface.h SamInterface.h
-$(OBJDIR_OPT)/SamFile.o: ../include/BgzfFileType.h 
+$(OBJDIR_OPT)/SamFile.o: ../include/BgzfFileType.h
 $(OBJDIR_OPT)/GenericSamInterface.o: GenericSamInterface.h SamStatus.h
 $(OBJDIR_OPT)/GenericSamInterface.o: ../include/StatGenStatus.h
 $(OBJDIR_OPT)/GenericSamInterface.o: ../include/ErrorHandler.h

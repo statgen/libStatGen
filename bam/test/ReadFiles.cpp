@@ -20,6 +20,64 @@
 #include "SamTags.h"
 #include <assert.h>
 
+
+void testWriteCram()
+{
+
+
+    SamFileHeader samHdr;
+    SamFile inSam("testFiles/test.sam", SamFile::READ, &samHdr);
+    assert(!inSam.IsEOF());
+
+    GenomeSequence ref("testFiles/test.fa");
+    SamFile outCram;
+    outCram.SetReference(&ref);
+    outCram.OpenForWrite("testFiles/test.cram", &samHdr);
+    SamRecord rec;
+
+    int i = 0;
+    for ( ; inSam.ReadRecord(samHdr, rec) && outCram.WriteRecord(samHdr, rec); ++i)
+    {
+
+    }
+    assert(i == 7);
+}
+
+void testReadCram()
+{
+    SamFileHeader samHdr;
+    SamFile inSam1("testFiles/test.cram", SamFile::READ, &samHdr);
+
+    assert(!inSam1.IsEOF());
+    SamRecord rec;
+
+    int i = 0;
+    for ( ; inSam1.ReadRecord(samHdr, rec); ++i)
+    {
+        rec.getReadLength();
+    }
+    assert(i == 7);
+}
+
+void testReadCramSpecifyingRef()
+{
+    SamFileHeader samHdr;
+    SamFile inSam1;
+    GenomeSequence ref("testFiles/test.fa");
+    inSam1.SetReference(&ref);
+    inSam1.OpenForRead("testFiles/test.cram", &samHdr);
+
+    assert(!inSam1.IsEOF());
+    SamRecord rec;
+
+    int i = 0;
+    for ( ; inSam1.ReadRecord(samHdr, rec); ++i)
+    {
+        rec.getReadLength();
+    }
+    assert(i == 7);
+}
+
 void testReadSam()
 {
     SamFileHeader samHdr;
@@ -27,6 +85,7 @@ void testReadSam()
     assert(!inSam1.IsEOF());
     SamRecord rec;
     assert(inSam1.ReadRecord(samHdr, rec) == true);
+    assert(inSam1.ReadRecord(samHdr, rec) == false);
     assert(inSam1.IsEOF());
 
     SamFile inSam;
@@ -48,6 +107,7 @@ void testReadBam()
     assert(!inSam1.IsEOF());
     SamRecord rec;
     assert(inSam1.ReadRecord(samHdr, rec) == true);
+    assert(inSam1.ReadRecord(samHdr, rec) == false);
     assert(inSam1.IsEOF());
 
     SamFile inSam;
@@ -458,7 +518,11 @@ void validateRead1ModQuality(SamRecord& samRecord)
     //////////////////////////////////////////
     // Validate Record 1
     // Create record structure for validating.
-    int expectedBlockSize = 89;
+#ifdef __PRE_HTSLIB_1_4__
+    int expectedBlockSize = 89; //for htslib, update from 89 to 90
+#else
+    int expectedBlockSize = 90; //for htslib, update from 89 to 90
+#endif
     const char* expectedReferenceName = "1";
     const char* expectedMateReferenceName = "1";
     const char* expectedMateReferenceNameOrEqual = "=";
@@ -475,7 +539,11 @@ void validateRead1ModQuality(SamRecord& samRecord)
     expectedRecordPtr->myBlockSize = expectedBlockSize;
     expectedRecordPtr->myReferenceID = 0;
     expectedRecordPtr->myPosition = 1010;
-    expectedRecordPtr->myReadNameLength = 23;
+#ifdef __PRE_HTSLIB_1_4__
+    expectedRecordPtr->myReadNameLength = 23;  // htslib, update from 23 to 24
+#else
+    expectedRecordPtr->myReadNameLength = 24;  // htslib, update from 23 to 24
+#endif
     expectedRecordPtr->myMapQuality = 0;
     expectedRecordPtr->myBin = 4681;
     expectedRecordPtr->myCigarLength = 2;
@@ -615,42 +683,84 @@ void validateRead1ModQuality(SamRecord& samRecord)
     }
 
     // Validate the tags.  
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'D');
-    varPtr++;
-    assert(*varPtr == 'Z');
-    varPtr++;
-    assert(*varPtr == '3');
-    varPtr++;
-    assert(*varPtr == '7');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'N');
-    varPtr++;
-    assert(*varPtr == 'M');
-    varPtr++;
-    assert(*varPtr == 'C');
-    varPtr++;
-    assert(*varPtr == 0);
-    varPtr++;
-    assert(*varPtr == 'X');
-    varPtr++;
-    assert(*varPtr == 'T');
-    varPtr++;
-    assert(*varPtr == 'A');
-    varPtr++;
-    assert(*varPtr == 'R');
-    varPtr++;
+    if(*varPtr == 'X')
+    {
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '7');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+    }
+    else
+    {
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'D');
+        varPtr++;
+        assert(*varPtr == 'Z');
+        varPtr++;
+        assert(*varPtr == '3');
+        varPtr++;
+        assert(*varPtr == '7');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'N');
+        varPtr++;
+        assert(*varPtr == 'M');
+        varPtr++;
+        assert(*varPtr == 'C');
+        varPtr++;
+        assert(*varPtr == 0);
+        varPtr++;
+        assert(*varPtr == 'X');
+        varPtr++;
+        assert(*varPtr == 'T');
+        varPtr++;
+        assert(*varPtr == 'A');
+        varPtr++;
+        assert(*varPtr == 'R');
+        varPtr++;
+    }
 }
 
 
@@ -779,12 +889,13 @@ void testFlagRead(const char* fileName)
 
     ////////////////////////////////////////////////////////////
     // Required flag 0x4
-    // Exclude 0x8.
+    // Exclude 0x48.  (added to exclude 0x40 so it would skip flag 101 since
+    // record 4's flag is now 101 since htslib updated it from 97 for SAM files)
     // Only finds flag 133.
     assert(inSam.OpenForRead(fileName));
     assert(inSam.ReadHeader(samHeader));
     validateHeader(samHeader);
-    inSam.SetReadFlags(0x4, 0x8);
+    inSam.SetReadFlags(0x4, 0x48);
 
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead2(samRecord);
@@ -796,7 +907,10 @@ void testFlagRead(const char* fileName)
      ////////////////////////////////////////////////////////////
     // Required flag 0x4
     // Exclude nothing
-    // Finds flags 133 & 141.
+    // Finds flags:
+    //   133 & 141.
+    // TODO - some versions of htslib may include record 4 for sam files since
+    // it converts the flag from 97 to 101 since the cigar is '*'.
     assert(inSam.OpenForRead(fileName));
     assert(inSam.ReadHeader(samHeader));
     validateHeader(samHeader);
@@ -804,6 +918,14 @@ void testFlagRead(const char* fileName)
 
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead2(samRecord);
+
+    if(strcmp(fileName, "testFiles/testSam.sam") == 0)
+    {
+        // htslib changes the flag from 97 to 101 for sam files if
+        // the cigar is '*'
+        assert(inSam.ReadRecord(samHeader, samRecord) == true);
+        validateRead4(samRecord);
+    }
 
     assert(inSam.ReadRecord(samHeader, samRecord) == true);
     validateRead8(samRecord);

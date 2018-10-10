@@ -21,7 +21,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "FileType.h"
-#include "knetfile.h"
+#include <htslib/knetfile.h>
 
 class UncompressedFileType : public FileType
 {

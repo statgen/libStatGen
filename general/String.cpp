@@ -14,13 +14,12 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#ifdef OBSOLETE
 #include <iostream>
 
 #include "String.h"
 #include <vector>
 
-#ifdef OBSOLETE
 
 std::vector<csg::string> *csg::string::split(char splitChar)
 {

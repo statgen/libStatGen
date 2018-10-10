@@ -2,7 +2,7 @@ VERSION ?= 1.0.14
 
 .PHONY: package
 
-SUBDIRS=general bam fastq glf vcf 
+SUBDIRS=general bam fastq glf vcf
 
 include Makefiles/Makefile.base
 

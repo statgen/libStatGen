@@ -16,7 +16,7 @@
  */
 
 #include "PhoneHome.h"
-#include <knetfile.h>
+#include <htslib/knetfile.h>
 
 #include <time.h>
 #include <iostream>
@@ -82,7 +82,7 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
 
     // Found this program, so extract the version.
     start += ourToolName.Length();
-    while((start < ourReturnString.Length()) &&
+    while((start < ourReturnString.Length()) && 
            isspace(ourReturnString[start]))
     {
         // Consume whitespace
@@ -93,7 +93,7 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
     String thisVersion = version;
     String latestVersion;
     int end = start;
-    while((end < ourReturnString.Length()) &&
+    while((end < ourReturnString.Length()) && 
           !isspace(ourReturnString[end]))
     {
         latestVersion += ourReturnString[end];
@@ -105,9 +105,9 @@ bool PhoneHome::checkVersion(const char* programName, const char* version,
     if(latestVersion.FastCompare(thisVersion) > 0)
     {
         std::cerr << "\n**************************************************************************************\n"
-                  << "A new version, " << latestVersion
+                  << "A new version, " << latestVersion 
                   << ", of " << ourToolName
-                  << " is available (currently running "
+                  << " is available (currently running " 
                   << thisVersion.c_str() << ")"
                   << "\n**************************************************************************************\n\n";
         return(false);
@@ -201,7 +201,6 @@ bool PhoneHome::connect()
     ourReturnString.Clear();
     //  return(true);
 #ifndef _NO_PHONEHOME
-    //knet_silent(1);
     knetFile *file = knet_open(ourURL.c_str(), "r");
     if (file == 0) return(false);
 
@@ -218,7 +217,6 @@ bool PhoneHome::connect()
     }
 
     knet_close(file);
-    //knet_silent(0);
     // std::cerr << "PhoneHome URL = " << ourReturnString.c_str() << std::endl;
 #endif
     return(true);
