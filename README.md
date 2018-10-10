@@ -9,8 +9,6 @@ The following libraries are dependencies that need to be installed on the build 
 
 [htslib 1.9](https://github.com/samtools/htslib/tree/1.9)
 
-[samtools 1.9](https://github.com/samtools/samtools/tree/1.9)
-
 Building
 --------
 
