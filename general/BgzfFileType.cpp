@@ -37,7 +37,7 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
     } else {
         mode_len = strnlen(mode, 7);
     }
-    printf("%s", mode);
+
     if(mode_len < 8){
         strncpy(bgzfMode, mode, mode_len);
         bgzfMode[mode_len] = '\0';
