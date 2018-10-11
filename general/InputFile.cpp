@@ -35,9 +35,18 @@ InputFile::InputFile(const char * filename, const char * mode,
     myWriteIndex = 0;
     myCurrentBufferSize = 0;
     myAllocatedBufferSize = DEFAULT_BUFFER_SIZE;
-    myFileBuffer = new char[myAllocatedBufferSize];
-    myWriteBuffer = new char[myAllocatedBufferSize];
-    memset(myWriteBuffer, '\0', myAllocatedBufferSize);
+    if(strchr(mode, 'r') || strchr(mode, 'R')){
+        myFileBuffer = new char[myAllocatedBufferSize];
+    } else {
+        myFileBuffer = NULL;
+    }
+    if(strchr(mode, 'w') || strchr(mode, 'W') ||
+       strchr(mode, 'a') || strchr(mode, 'A')){
+        myWriteBuffer = new char[myAllocatedBufferSize];
+        memset(myWriteBuffer, '\0', myAllocatedBufferSize);
+    } else {
+        myWriteBuffer = NULL;
+    }
     myFileName.clear();
 
     openFile(filename, mode, compressionMode);
@@ -394,6 +403,11 @@ InputFile::~InputFile()
     {
         delete[] myFileBuffer;
         myFileBuffer = NULL;
+    }
+    if(myWriteBuffer != NULL)
+    {
+        delete[] myWriteBuffer;
+        myWriteBuffer = NULL;
     }
 }
 

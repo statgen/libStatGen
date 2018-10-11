@@ -57,9 +57,9 @@ public:
         myWriteIndex = 0;
         myCurrentBufferSize = 0;
         // Default to buffer.
-        myAllocatedBufferSize = DEFAULT_BUFFER_SIZE;
-        myFileBuffer = new char[myAllocatedBufferSize];
-        myWriteBuffer = new char[myAllocatedBufferSize];
+        myAllocatedBufferSize = 0;
+        myFileBuffer = NULL;
+        myWriteBuffer = NULL;
         memset(myWriteBuffer, '\0', myAllocatedBufferSize);
         myFileName.clear();
     }
@@ -142,7 +142,6 @@ public:
         ifflush();
         int result = myFileTypePtr->close();
         delete myFileTypePtr;
-        myWriteBuffer = NULL;
         myFileTypePtr = NULL;
         myFileName.clear();
         return result;
@@ -420,7 +419,7 @@ public:
             // No myFileTypePtr, so return 0 - nothing written.
             return 0;
         }
-        if(myAllocatedBufferSize == 0){
+        if(myAllocatedBufferSize == 0 || myWriteBuffer == NULL){
             return myFileTypePtr->write(buffer, size);
         }
         //return myFileTypePtr->write(buffer, size);
