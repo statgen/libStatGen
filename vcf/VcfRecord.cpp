@@ -157,7 +157,7 @@ bool VcfRecord::read(IFILE filePtr, bool siteOnly,
         catch(std::exception& e)
         {
             myDummyString = "Failed parsing the Genotype Fields of " + myChrom + ":" + 
-                std::to_string(my1BasedPosNum) + " (chr:pos) - " + e.what();
+                std::to_string((long long int)my1BasedPosNum) + " (chr:pos) - " + e.what();
             myStatus.setStatus(StatGenStatus::FAIL_PARSE, myDummyString.c_str());
             return(false);
         }
@@ -196,7 +196,7 @@ bool VcfRecord::write(IFILE filePtr, bool siteOnly)
     }
     else
     {
-        std::string strPos = std::to_string(my1BasedPosNum);
+        std::string strPos = std::to_string((long long int)my1BasedPosNum);
         numWritten += ifprintf(filePtr, "%s\t", strPos.c_str());
         numExpected += strPos.length() + 1;
     }
