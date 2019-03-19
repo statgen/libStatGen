@@ -306,6 +306,14 @@ int32_t CigarHelper::softClipEndByRefPos(SamRecord& record,
 
     // Determine the number of soft clips.
     int32_t numSoftClips = record.getReadLength() - readClipPosition;
+
+    if(numSoftClips < 0)
+    {
+        // Error, read len is less than the clip position
+        ErrorHandler::handleError("Soft clipping error: readLength is less than the clip position");
+        return(NO_CLIP);
+    }
+
     // NOTE that if the previous operation is a softclip, the CigarRoller logic
     // will merge this with that one.
     newCigar.Add(Cigar::softClip, numSoftClips);
