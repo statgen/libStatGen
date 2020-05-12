@@ -8,7 +8,10 @@ ifeq ($(UNAME), Linux)
   # an error, but allow unused results and variables for the
   # time being.
   #
-  USER_WARNINGS ?= -Werror $(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-strict-overflow" ; fi)
+  # Disable format-truncation check because StringBasics specifically tests
+  # to make sure snprintf truncates as expected.
+  USER_WARNINGS ?= -Wno-format-truncation $(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-strict-overflow" ; fi)
+#  USER_WARNINGS ?= -Werror $(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-strict-overflow" ; fi)
 #-Wno-strict-overflow
 # -Wno-unused-variable $(shell if [ X$(CCVERSION) \> X4.2.0 ] ; then echo " -Wno-unused-result" ; fi)
 endif

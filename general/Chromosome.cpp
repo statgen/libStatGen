@@ -27,7 +27,6 @@ Chromosome::Chromosome(GenomeSequence* gs, const char* chromosomeName)
 Chromosome::Chromosome(const char* genomseSequenceFileName, unsigned int chromosomeIndex, bool isColorSpace) 
 {
     std::string s(genomseSequenceFileName);
-    if (this->gs) delete gs;
     gs = new GenomeSequence;
     assert(gs);
     gs->setReferenceName(s);
@@ -39,7 +38,6 @@ Chromosome::Chromosome(const char* genomseSequenceFileName, unsigned int chromos
 
 Chromosome::Chromosome(const std::string& genomseSequenceFileName, unsigned int chromosomeIndex, bool isColorSpace) 
 {
-    if (this->gs) delete gs;
     gs = new GenomeSequence;
     assert(gs);
     gs->setReferenceName(genomseSequenceFileName);
