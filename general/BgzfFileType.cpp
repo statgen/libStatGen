@@ -45,7 +45,7 @@ BgzfFileType::BgzfFileType(const char * filename, const char * mode)
         strncpy(bgzfMode, mode, 7);
         bgzfMode[7] = '\0';
     }
-    if (thread_start != NULL && thread_start+1 != '\0'){
+    if (thread_start != NULL && thread_start[1] != '\0'){
         // Advance past the @, then parse the number of threads
         thread_start++;
         strncpy(threadSpec, thread_start, 7);
