@@ -5,6 +5,10 @@ On debian type systems (including Ubuntu), add the following packages if they ar
 
     sudo apt-get install g++ libssl-dev zlib1g-dev
 
+The following libraries are dependencies that need to be installed on the build system.
+
+[htslib 1.9](https://github.com/samtools/htslib/tree/1.9)
+
 Building
 --------
 
@@ -23,7 +27,6 @@ Under the main statgen repository, there are:
 - `glf` - library code for operating on glf files.
 - `include` - after compiling, the library headers are linked here
 - `Makefiles` - directory containing Makefiles that are used in the library and can be used for developing programs using the library
-- `samtools` - library code used from samtools
 
 After Compiling: `libStatGen.a`, `libStatGen_debug.a`, and `libStatGen_profile.a` are created at the top level.
 
