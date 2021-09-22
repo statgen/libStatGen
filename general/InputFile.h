@@ -57,9 +57,10 @@ public:
         myWriteIndex = 0;
         myCurrentBufferSize = 0;
         // Default to buffer.
-        myAllocatedBufferSize = 0;
-        myFileBuffer = NULL;
-        myWriteBuffer = NULL;
+        myAllocatedBufferSize = DEFAULT_BUFFER_SIZE;
+        myFileBuffer = new char[myAllocatedBufferSize];
+        myWriteBuffer = new char[myAllocatedBufferSize];
+        memset(myFileBuffer, '\0', myAllocatedBufferSize);
         memset(myWriteBuffer, '\0', myAllocatedBufferSize);
         myFileName.clear();
     }
