@@ -29,12 +29,14 @@ class BgzfFileType : public FileType
 public:
     BgzfFileType()
     {
+        numThreads = 1;
         bgzfHandle = NULL;
         myEOF = false;
     }
 
     virtual ~BgzfFileType()
     {
+        bgzf_close(bgzfHandle);
         bgzfHandle = NULL;
     }
 
@@ -110,7 +112,7 @@ public:
         }
         else if((bytesRead != (int)size) & (bytesRead >= 0))
         {
-            // Less then the requested size was read 
+            // Less then the requested size was read
             // and an error was not returned (bgzf_read returns -1 on error).
             myEOF = true;
         }
@@ -173,6 +175,9 @@ protected:
     // at the end of the file.  If the block is required, but not on the file,
     // the constructor fails to open the file.
     static bool ourRequireEofBlock;
+
+    // The number of threads to use when using multithreaded BGZF
+    int64_t numThreads;
 };
 
 #endif
