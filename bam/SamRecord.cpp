@@ -3018,33 +3018,31 @@ bool SamRecord::setTagsFromBuffer()
 
         // First check if the tag already exists.
         unsigned int location = extras.Find(key);
-        int origIndex = 0;
-        String* duplicate = NULL;
-        String* origTag = NULL;
+        int origIndex = -1;
+        String duplicate;
+        String origTag;
         if(location != LH_NOTFOUND)
         {
-            duplicate = new String;
-            origTag = new String;
             origIndex = extras[location];
 
-            *duplicate = (char)(extraPtr[0]);
-            *duplicate += (char)(extraPtr[1]);
-            *duplicate += ':';
+            duplicate = (char)(extraPtr[0]);
+            duplicate += (char)(extraPtr[1]);
+            duplicate += ':';
 
-            *origTag = *duplicate;
-            *duplicate += (char)(extraPtr[2]);
-            *duplicate += ':';
+            origTag = duplicate;
+            duplicate += (char)(extraPtr[2]);
+            duplicate += ':';
         }
 
         switch (extraPtr[2])
         {
             case 'A' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    *duplicate += (* (char *) content);
-                    *origTag += intType[origIndex];
-                    *origTag += ':';
-                    appendIntArrayValue(origIndex, *origTag);
+                    duplicate += (* (char *) content);
+                    origTag += intType[origIndex];
+                    origTag += ':';
+                    appendIntArrayValue(origIndex, origTag);
                     tagBufferSize -= getNumericTagTypeSize(intType[origIndex]);
                     integers[origIndex] = *(char *)content;
                     intType[origIndex] = extraPtr[2];
@@ -3060,12 +3058,12 @@ bool SamRecord::setTagsFromBuffer()
                 extraPtr += 4;
                 break;
             case 'c' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    *duplicate += (* (char *) content);
-                    *origTag += intType[origIndex];
-                    *origTag += ':';
-                    appendIntArrayValue(origIndex, *origTag);
+                    duplicate += (* (char *) content);
+                    origTag += intType[origIndex];
+                    origTag += ':';
+                    appendIntArrayValue(origIndex, origTag);
                     tagBufferSize -= getNumericTagTypeSize(intType[origIndex]);
                     integers[origIndex] = *(char *)content;
                     intType[origIndex] = extraPtr[2];
@@ -3081,12 +3079,12 @@ bool SamRecord::setTagsFromBuffer()
                 extraPtr += 4;
                 break;
             case 'C' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    *duplicate += (* (unsigned char *) content);
-                    *origTag += intType[origIndex];
-                    *origTag += ':';
-                    appendIntArrayValue(origIndex, *origTag);
+                    duplicate += (* (unsigned char *) content);
+                    origTag += intType[origIndex];
+                    origTag += ':';
+                    appendIntArrayValue(origIndex, origTag);
                     tagBufferSize -= getNumericTagTypeSize(intType[origIndex]);
                     integers[origIndex] = *(unsigned char *)content;
                     intType[origIndex] = extraPtr[2];
@@ -3102,12 +3100,12 @@ bool SamRecord::setTagsFromBuffer()
                 extraPtr += 4;
                 break;
             case 's' :
-               if(duplicate != NULL)
+               if(location != LH_NOTFOUND)
                 {
-                    *duplicate += (* (short *) content);
-                    *origTag += intType[origIndex];
-                    *origTag += ':';
-                    appendIntArrayValue(origIndex, *origTag);
+                    duplicate += (* (short *) content);
+                    origTag += intType[origIndex];
+                    origTag += ':';
+                    appendIntArrayValue(origIndex, origTag);
                     tagBufferSize -= getNumericTagTypeSize(intType[origIndex]);
                     integers[origIndex] = *(short *)content;
                     intType[origIndex] = extraPtr[2];
@@ -3123,12 +3121,12 @@ bool SamRecord::setTagsFromBuffer()
                 extraPtr += 5;
                 break;
             case 'S' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    *duplicate += (* (unsigned short *) content);
-                    *origTag += intType[origIndex];
-                    *origTag += ':';
-                    appendIntArrayValue(origIndex, *origTag);
+                    duplicate += (* (unsigned short *) content);
+                    origTag += intType[origIndex];
+                    origTag += ':';
+                    appendIntArrayValue(origIndex, origTag);
                     tagBufferSize -= getNumericTagTypeSize(intType[origIndex]);
                     integers[origIndex] = *(unsigned short *)content;
                     intType[origIndex] = extraPtr[2];
@@ -3144,12 +3142,12 @@ bool SamRecord::setTagsFromBuffer()
                 extraPtr += 5;
                 break;
             case 'i' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    *duplicate += (* (int *) content);
-                    *origTag += intType[origIndex];
-                    *origTag += ':';
-                    appendIntArrayValue(origIndex, *origTag);
+                    duplicate += (* (int *) content);
+                    origTag += intType[origIndex];
+                    origTag += ':';
+                    appendIntArrayValue(origIndex, origTag);
                     tagBufferSize -= getNumericTagTypeSize(intType[origIndex]);
                     integers[origIndex] = *(int *)content;
                     intType[origIndex] = extraPtr[2];
@@ -3165,12 +3163,12 @@ bool SamRecord::setTagsFromBuffer()
                 extraPtr += 7;
                 break;
             case 'I' :
-               if(duplicate != NULL)
+               if(location != LH_NOTFOUND)
                 {
-                    *duplicate += (* (unsigned int *) content);
-                    *origTag += intType[origIndex];
-                    *origTag += ':';
-                    appendIntArrayValue(origIndex, *origTag);
+                    duplicate += (* (unsigned int *) content);
+                    origTag += intType[origIndex];
+                    origTag += ':';
+                    appendIntArrayValue(origIndex, origTag);
                     tagBufferSize -= getNumericTagTypeSize(intType[origIndex]);
                     integers[origIndex] = *(unsigned int *)content;
                     intType[origIndex] = extraPtr[2];
@@ -3186,12 +3184,12 @@ bool SamRecord::setTagsFromBuffer()
                 extraPtr += 7;
                 break;
             case 'Z' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    *duplicate += ((const char *) content);
-                    *origTag += 'Z';
-                    *origTag += ':';
-                    *origTag += (char*)(strings[origIndex]);
+                    duplicate += ((const char *) content);
+                    origTag += 'Z';
+                    origTag += ':';
+                    origTag += (char*)(strings[origIndex]);
                     tagBufferSize -= strings[origIndex].Length();
                     strings[origIndex] = (const char *) content;
                     extraPtr += 4 + strings[origIndex].Length();
@@ -3206,17 +3204,17 @@ bool SamRecord::setTagsFromBuffer()
                 }
                 break;
             case 'B' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    *origTag += 'B';
-                    *origTag += ':';
-                    *origTag += (char*)(strings[origIndex]);
+                    origTag += 'B';
+                    origTag += ':';
+                    origTag += (char*)(strings[origIndex]);
                     tagBufferSize -= 
                         getBtagBufferSize(strings[origIndex]);
                     int bufferSize = 
                         getStringFromBtagBuffer((unsigned char*)content,
                                                 strings[origIndex]);
-                    *duplicate += (char *)(strings[origIndex]);
+                    duplicate += (char *)(strings[origIndex]);
                     tagBufferSize += bufferSize;
                     extraPtr += 3 + bufferSize;
                 }
@@ -3233,12 +3231,12 @@ bool SamRecord::setTagsFromBuffer()
                 }
                 break;
             case 'f' :
-                if(duplicate != NULL)
+                if(location != LH_NOTFOUND)
                 {
-                    duplicate->appendFullFloat(* (float *) content);
-                    *origTag += 'f';
-                    *origTag += ':';
-                    origTag->appendFullFloat(floats[origIndex]);
+                    duplicate.appendFullFloat(* (float *) content);
+                    origTag += 'f';
+                    origTag += ':';
+                    origTag.appendFullFloat(floats[origIndex]);
                     floats[origIndex] = *(float *)content;
                 }
                 else
@@ -3275,7 +3273,7 @@ bool SamRecord::setTagsFromBuffer()
                 status = false;
         }
 
-        if(duplicate != NULL)
+        if(location != LH_NOTFOUND)
         {
             // Duplicate tag in this record.
             // Tag already existed, print message about overwriting.
@@ -3283,7 +3281,7 @@ bool SamRecord::setTagsFromBuffer()
             if(myNumWarns++ < myMaxWarns)
             {
                 fprintf(stderr, "WARNING: Duplicate Tags, overwritting %s with %s\n",
-                        origTag->c_str(), duplicate->c_str());
+                        origTag.c_str(), duplicate.c_str());
                 if(myNumWarns == myMaxWarns)
                 {
                     fprintf(stderr, "Suppressing rest of Duplicate Tag warnings.\n");
