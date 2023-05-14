@@ -25,6 +25,7 @@
 #include <htslib/sam.h>
 #include <htslib/cram.h>
 
+#include <cstdint>
 
 
 class GenericSamInterface
